@@ -1,15 +1,4 @@
-### RPC account.FindByAPIKey
-
-Request
-
-```
-type FindByAPIKeyParams struct {
-	Key string `valid:"required"`
-}
-
-```
-
-Reply
+### Account Type
 
 ```
 type Account struct {
@@ -43,8 +32,42 @@ type AccountAPIKey struct {
 	KeyName string `json:"key_name" bson:"key_name"`
 	Key               string `json:"key" bson:"key"`
 }
+```
 
+### RPC account.FindByAPIKey
+
+Request
+
+```
+type FindByAPIKeyParams struct {
+	Key string `valid:"required"`
+}
+
+```
+
+Reply
+
+```
 type FindByAPIKeyReply struct {
+	Account *Account
+}
+```
+
+### RPC account.FindBySender
+
+Request
+
+```
+type FindBySenderParams struct {
+	Sender string `valid:"required"`
+}
+
+```
+
+Reply
+
+```
+type FindBySenderReply struct {
 	Account *Account
 }
 ```
