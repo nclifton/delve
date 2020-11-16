@@ -1,0 +1,4 @@
+FROM rabbitmq:3.8.9
+
+COPY backend/ops/docker-compose/rabbitmq/definitions.json /etc/rabbitmq
+COPY ops/dev/rabbitmq/enabled_plugins /etc/rabbitmq

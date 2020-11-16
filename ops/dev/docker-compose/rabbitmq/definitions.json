@@ -1,0 +1,56 @@
+{
+  "users": [
+    {
+      "name": "burstsms",
+      "password_hash": "RwZ0qa9nszKOgle1pv+ZqdThAggPqbtDWq3/SatwCD4rMx42",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    { "name": "burstmq" },
+    { "name": "event" },
+    { "name": "conversation" },
+    { "name": "webhook" },
+    { "name": "mm7" }
+  ],
+  "permissions": [
+    {
+      "user": "burstsms",
+      "vhost": "burstmq",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "burstsms",
+      "vhost": "event",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "burstsms",
+      "vhost": "conversation",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "burstsms",
+      "vhost": "webhook",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "burstsms",
+      "vhost": "mm7",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "parameters": [],
+  "policies": []
+}
