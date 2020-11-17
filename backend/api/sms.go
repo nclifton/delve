@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 )
 
@@ -10,16 +11,12 @@ type SMSPOSTRequest struct {
 	Sender    string `json:"sender"`
 }
 
-const (
-	smsStatusSent  = "ok"
-	smsStatusError = "error"
-)
-
 func SMSPOST(r *Route) {
-	_, err := r.RequireAccountContext()
+	account, err := r.RequireAccountContext()
 	if err != nil {
 		return
 	}
+	log.Printf("Account: %+v", account)
 
 	var req SMSPOSTRequest
 	err = r.DecodeRequest(&req)
@@ -28,7 +25,7 @@ func SMSPOST(r *Route) {
 	}
 
 	type payload struct {
-		Message string
+		Message string `json:"message"`
 	}
 
 	data := payload{

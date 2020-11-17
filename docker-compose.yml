@@ -19,6 +19,8 @@ services:
       - NR_TRACING=true
 
       - API_PORT=10000
+      - API_ACCOUNT_HOST=backend
+      - API_ACCOUNT_PORT=10001
 
       - ACCOUNT_RPC_PORT=10001
 
