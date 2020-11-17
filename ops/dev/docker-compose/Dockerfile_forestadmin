@@ -1,8 +1,0 @@
-FROM keymetrics/pm2:latest-jessie
-
-RUN apt-get install python g++ gcc make tzdata
-RUN npm install npm@latest -g
-
-WORKDIR /usr/src/app
-EXPOSE 3310
-CMD pm2-dev start server.js

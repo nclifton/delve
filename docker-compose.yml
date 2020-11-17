@@ -21,16 +21,11 @@ services:
       - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
       - WEBHOOK_RPC_HOST=backend
       - WEBHOOK_RPC_PORT=7008
-      - WEBHOOK_RABBIT_URL=amqp://burstsms:8ur575m5@rabbitmq:5672/webhook
-      - WEBHOOK_RABBIT_EXCHANGE=webhooks
-      - WEBHOOK_RABBIT_EXCHANGE_TYPE=direct
+      - WEBHOOK_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/webhook
       - WEBHOOK_CLIENT_TIMEOUT=3
       - WEBHOOK_REDIS_URL=redis:6379
 
-      - MM7_RABBIT_URL=amqp://burstsms:8ur575m5@rabbitmq:5672/mm7
-      - MM7_RABBIT_EXCHANGE=mm7
-      - MM7_RABBIT_EXCHANGE_TYPE=direct
-      - MM7_RABBIT_PREFETCHED_COUNT=1
+      - MM7_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
       - MM7_RPC_PORT=7009
       - MM7_RPC_HOST=backend
       - MM7_REDIS_URL=redis:6379
@@ -44,7 +39,7 @@ services:
 
       - TECLOO_RECEIVER_HTTP_PORT=7011
       - TECLOO_RECEIVER_TEMPLATE_PATH=tecloo_receiver/templates
-      - TECLOO_RECEIVER_RABBIT_URL=amqp://burstsms:8ur575m5@rabbitmq:5672/mm7
+      - TECLOO_RECEIVER_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
       - TECLOO_RECEIVER_RABBIT_EXCHANGE=mm7
       - TECLOO_RECEIVER_RABBIT_EXCHANGE_TYPE=direct
 
@@ -63,7 +58,7 @@ services:
   rabbitmq:
     build:
       context: .
-      dockerfile: backend/ops/docker-compose/Dockerfile_rabbitmq
+      dockerfile: ops/dev/docker-compose/Dockerfile_rabbitmq
     container_name: rabbitmq
     hostname: rabbitmq
     ports:
