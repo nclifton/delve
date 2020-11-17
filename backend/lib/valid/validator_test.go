@@ -38,12 +38,6 @@ type PrivateStruct struct {
 	Map          map[string]Address
 }
 
-type OIDStringStruct struct {
-	EmptyStringOK  string `valid:"oid_string"`
-	StringRequired string `valid:"required,oid_string"`
-	EmptyOIDOK     string `valid:"oid_string(allownil)"`
-}
-
 func TestValidate(t *testing.T) {
 	var tests = []struct {
 		param    interface{}

@@ -3,7 +3,6 @@ package valid
 import (
 	"errors"
 	"fmt"
-	"net"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -27,8 +26,6 @@ var TagMap = map[string]ValidatorFunc{
 	"rune_length": RuneLength,
 	"range":       Range,
 }
-
-var reservedIPNets []*net.IPNet
 
 func IsRequired(i interface{}, parent interface{}, params []string) error {
 	v := reflect.ValueOf(i)
@@ -226,14 +223,4 @@ func inRangeInt(val int, params []string) error {
 	}
 
 	return nil
-}
-
-func paramsContains(params []string, param string) bool {
-	for _, val := range params {
-		if val == param {
-			return true
-		}
-	}
-
-	return false
 }

@@ -28,19 +28,19 @@ func main() {
 
 	port := strconv.Itoa(env.HTTPPort)
 
-	newrelicM := newrelicagent.New(&newrelicagent.Options{
+	newrelicM := nr.New(&nr.Options{
 		AppName:                  env.NRName,
 		NewRelicLicense:          env.NRLicense,
 		DistributedTracerEnabled: env.NRTracing,
 	})
 
-	opts := tualet.TeclooAPIOptions{
+	opts := tualet.TualetAPIOptions{
 		NrApp:        newrelicM,
 		TemplatePath: env.TemplatePath,
 		DREndpoint:   env.DREndpoint,
 	}
 
-	server := t.NewTeclooAPI(&opts)
+	server := tualet.NewTualetAPI(&opts)
 	if err != nil {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", "tualet api http", err)
 	}

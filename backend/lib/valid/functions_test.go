@@ -1,7 +1,6 @@
 package valid
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -113,145 +112,6 @@ func TestIsURL(t *testing.T) {
 	}
 }
 
-func TestIsOID(t *testing.T) {
-	t.Run("should not allow nil oid without allownil param", func(t *testing.T) {
-		err := IsOID(kdb.OID{}, nil, nil)
-		if err == nil {
-			t.Error(err)
-		}
-	})
-	t.Run("should allow nil oid with allownil param", func(t *testing.T) {
-		err := IsOID(kdb.OID{}, nil, []string{"allownil"})
-		if err != nil {
-			t.Error("Got error with nil oid and allownil param")
-		}
-	})
-
-}
-
-func TestIsOIDString(t *testing.T) {
-	t.Run("should allow empty oid string", func(t *testing.T) {
-		err := IsOIDString("", nil, nil)
-		if err != nil {
-			t.Errorf("Could not provide empty oid_string: %s", err)
-		}
-	})
-
-	t.Run("should allow a valid oid", func(*testing.T) {
-		err := IsOIDString(kdb.NewOID().Hex(), nil, nil)
-		if err != nil {
-			t.Errorf("did not accept a valid oid: %s", err)
-		}
-	})
-
-	t.Run("should not allow a valid empty oid", func(*testing.T) {
-		err := IsOIDString(kdb.NilOID.Hex(), nil, nil)
-		if err == nil {
-			t.Errorf("Expected an error with an NilOID: %s", err)
-		}
-	})
-
-	t.Run("will allow a valid empty oid with allownil param", func(*testing.T) {
-		err := IsOIDString(kdb.NilOID.Hex(), nil, []string{"allownil"})
-		if err != nil {
-			t.Errorf("Could not provide a valid oid_string: %s", err)
-		}
-	})
-}
-
-func TestIsContactFieldType(t *testing.T) {
-
-	t.Parallel()
-
-	type ListValuesStruct struct {
-		Type       string
-		ListValues []string
-	}
-
-	var tests = []struct {
-		param    ListValuesStruct
-		expected bool
-	}{
-		{ListValuesStruct{Type: cdb.ContactFieldTypeText, ListValues: nil}, true},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeDate, ListValues: nil}, true},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeNumber, ListValues: nil}, true},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeList, ListValues: nil}, false},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeMulti, ListValues: nil}, false},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeList, ListValues: []string{"fred", "harry"}}, true},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeList, ListValues: []string{"fred"}}, true},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeMulti, ListValues: []string{"fred", "harry"}}, true},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeMulti, ListValues: []string{"fred"}}, true},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeText, ListValues: []string{"fred", "harry"}}, true},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeMulti, ListValues: []string{"fred", "fred"}}, false},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeMulti, ListValues: []string{"  ", "", "\n", "\t"}}, false},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeMulti, ListValues: []string{"  ", "", "fred", "\n", "\t"}}, true},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeMulti, ListValues: []string{"  ", "", "harry", "\n", "\t", "harry"}}, false},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeList, ListValues: []string{"dan", "dan"}}, false},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeList, ListValues: []string{"  ", "", "\n", "\t"}}, false},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeList, ListValues: []string{"  ", "", "dan", "\n", "\t"}}, true},
-		{ListValuesStruct{Type: cdb.ContactFieldTypeList, ListValues: []string{"  ", "", "rob", "\n", "\t", "rob"}}, false},
-	}
-
-	for _, test := range tests {
-		err := IsContactFieldType(test.param.Type, test.param, nil)
-		if (err == nil) != test.expected {
-			t.Errorf("Expected ContactFieldType(%q) with parent %v to be %v, got %v", test.param.Type, test.param, test.expected, (err == nil))
-		}
-	}
-
-	// Test with a struct with no listvalues
-	err := IsContactFieldType(cdb.ContactFieldTypeList, struct{ Moose string }{Moose: "narf"}, nil)
-	if err == nil {
-		t.Errorf("Expected Error from IsValidContactFieldType(%q) with parent %v returns %v", cdb.ContactFieldTypeList, struct{ Moose string }{Moose: "narf"}, err)
-	}
-}
-
-func TestContactStatus(t *testing.T) {
-	t.Parallel()
-
-	var tests = []struct {
-		param    string
-		expected bool
-	}{
-		{cdb.ContactStatusActive, true},
-		{cdb.ContactStatusUnsubscribed, true},
-		{strings.ToUpper(cdb.ContactStatusActive), false},
-		{strings.ToUpper(cdb.ContactStatusUnsubscribed), false},
-		{"unknown", false},
-		{"", false},
-	}
-
-	for _, test := range tests {
-		err := IsContactStatus(test.param, nil, nil)
-		if (err == nil) != test.expected {
-			t.Errorf("Expected ContactStatus(%q) to be %v, got %v", test.param, test.expected, (err == nil))
-		}
-	}
-}
-
-func TestListName(t *testing.T) {
-	t.Parallel()
-
-	var tests = []struct {
-		param    string
-		expected bool
-	}{
-		{"All", false},
-		{"All ", false},
-		{" All ", false},
-		{" all", false},
-		{"aLl", false},
-		{"hello", true},
-	}
-
-	for _, test := range tests {
-		err := IsListName(test.param, nil, nil)
-		if (err == nil) != test.expected {
-			t.Errorf("Expected ListName(%q) to be %v, got %v", test.param, test.expected, (err == nil))
-		}
-	}
-}
-
 func TestFloatRange(t *testing.T) {
 	t.Parallel()
 
@@ -294,33 +154,6 @@ func TestFloatRange(t *testing.T) {
 			t.Error("expected a greater than max error")
 		}
 	})
-}
-
-func TestUserNotificationType(t *testing.T) {
-	t.Parallel()
-
-	var tests = []struct {
-		param    string
-		expected bool
-	}{
-		{kdb.UserNotificationTypeEmail, true},
-		{kdb.UserNotificationTypeSMS, true},
-		{kdb.UserNotificationTypeBoth, true},
-		{kdb.UserNotificationTypeNone, true},
-		{strings.ToUpper(kdb.UserNotificationTypeEmail), false},
-		{strings.ToUpper(kdb.UserNotificationTypeSMS), false},
-		{strings.ToUpper(kdb.UserNotificationTypeBoth), false},
-		{strings.ToUpper(kdb.UserNotificationTypeNone), false},
-		{"unknown", false},
-		{"", true},
-	}
-
-	for _, test := range tests {
-		err := IsUserNotificationType(test.param, nil, nil)
-		if (err == nil) != test.expected {
-			t.Errorf("Expected UserNotificationType(%q) to be %v, got %v", test.param, test.expected, (err == nil))
-		}
-	}
 }
 
 func TestIntRange(t *testing.T) {
