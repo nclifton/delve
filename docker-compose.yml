@@ -86,7 +86,7 @@ services:
     ports:
       - "9999:9000"
     environment:
-      MINIO_ACCESS_KEY: tp
+      MINIO_ACCESS_KEY: mtmo-tp
       MINIO_SECRET_KEY: fr0gsn0g
       MINIO_REGION_NAME: ap-southeast-2
 
