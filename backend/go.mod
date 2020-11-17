@@ -16,6 +16,7 @@ require (
 	github.com/lib/pq v1.3.0
 	github.com/newrelic/go-agent/v3 v3.9.0
 	github.com/pborman/uuid v1.2.1 // indirect
+	github.com/sirupsen/logrus v1.4.2
 	github.com/streadway/amqp v1.0.0
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.12
