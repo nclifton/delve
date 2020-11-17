@@ -6,27 +6,31 @@ services:
       context: .
       dockerfile: ops/dev/docker-compose/Dockerfile
     image: backend
-    container_name: backend
     hostname: backend
     tty: true
     volumes:
       - ./backend:/backend
     ports:
+      - "10000:10000"
     environment:
       - DISABLE_NEW_RELIC=true
       - NR_NAME=TP Local
       - NR_LICENSE=3289b893db560c39096d3c222d4a33037c24f943
       - NR_TRACING=true
 
+      - API_PORT=10000
+
+      - ACCOUNT_RPC_PORT=10001
+
       - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
       - WEBHOOK_RPC_HOST=backend
-      - WEBHOOK_RPC_PORT=7008
+      - WEBHOOK_RPC_PORT=10002
       - WEBHOOK_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/webhook
       - WEBHOOK_CLIENT_TIMEOUT=3
       - WEBHOOK_REDIS_URL=redis:6379
 
       - MM7_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
-      - MM7_RPC_PORT=7009
+      - MM7_RPC_PORT=10003
       - MM7_RPC_HOST=backend
       - MM7_REDIS_URL=redis:6379
       - MM7_TECLOO_URL=http://backend:7010/v1
@@ -34,10 +38,10 @@ services:
       - MM7_AWS_REGION=ap-southeast-2
       - MM7_MMS_MEDIA_BUCKET=tp.mms.media
 
-      - TECLOO_HTTP_PORT=7010
+      - TECLOO_HTTP_PORT=10004
       - TECLOO_TEMPLATE_PATH=tecloo/templates
 
-      - TECLOO_RECEIVER_HTTP_PORT=7011
+      - TECLOO_RECEIVER_HTTP_PORT=10005
       - TECLOO_RECEIVER_TEMPLATE_PATH=tecloo_receiver/templates
       - TECLOO_RECEIVER_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
       - TECLOO_RECEIVER_RABBIT_EXCHANGE=mm7
@@ -53,34 +57,30 @@ services:
       - minio
       - miniosetup
       - postgres
-      - webhookpostgressetup
 
   rabbitmq:
     build:
       context: .
       dockerfile: ops/dev/docker-compose/Dockerfile_rabbitmq
-    container_name: rabbitmq
     hostname: rabbitmq
     ports:
-      - "15672:15672"
-      - "5672:5672"
+      - "27651:15672"
+      - "56721:5672"
 
   redis:
     image: redis:3.2.9
-    container_name: redis
     hostname: redis
     volumes:
       - redis_data:/data
 
   minio:
     image: minio/minio
-    container_name: minio
     hostname: minio
     command: server /data
     volumes:
       - minio_data:/data
     ports:
-      - "9000:9000"
+      - "9999:9000"
     environment:
       MINIO_ACCESS_KEY: tp
       MINIO_SECRET_KEY: fr0gsn0g
@@ -90,7 +90,6 @@ services:
     image: minio/mc
     depends_on:
       - minio
-    container_name: miniosetup
     environment:
       MINIO_ACCESS_KEY: tp
       MINIO_SECRET_KEY: fr0gsn0g
@@ -104,7 +103,6 @@ services:
 
   postgres:
     image: postgres:11.8-alpine
-    container_name: postgres
     hostname: postgres
     volumes:
       - postgres_data:/data/postgres
@@ -113,23 +111,7 @@ services:
       POSTGRES_PASSWORD: "example"
       PGDATA: /data/postgres
     ports:
-      - "5432:5432"
-
-  webhookpostgressetup:
-    build:
-      context: .
-      dockerfile: backend/service/webhook/migration/infra/Dockerfile
-    depends_on:
-      - postgres
-    container_name: webhookpostgressetup
-    volumes:
-      - ./backend:/backend
-    environment:
-      WEBHOOK_POSTGRES_HOST: postgres
-      WEBHOOK_POSTGRES_USER: postgres
-      WEBHOOK_POSTGRES_PASSWORD: example
-      WEBHOOK_POSTGRES_SSL: disable
-      WEBHOOK_POSTGRES_NAME: webhook
+      - "54321:5432"
 
 volumes:
   redis_data:
