@@ -28,9 +28,15 @@ func (s *Service) Receiver() interface{} {
 	return s.receiver
 }
 
-func NewService() rpc.Service {
+func NewService(postgresURL string) (rpc.Service, error) {
 	gob.Register(map[string]interface{}{})
-	return &Service{
-		receiver: &AccountService{db: &db{}, name: Name},
+	db, err := NewDB(postgresURL)
+	if err != nil {
+		return nil, err
 	}
+	service := &Service{
+		receiver: &AccountService{db: db, name: Name},
+	}
+
+	return service, nil
 }

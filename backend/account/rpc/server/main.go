@@ -10,7 +10,8 @@ import (
 )
 
 type Env struct {
-	RPCPort int `envconfig:"RPC_PORT"`
+	RPCPort     int    `envconfig:"RPC_PORT"`
+	PostgresURL string `envconfig:"POSTGRES_URL"`
 }
 
 func main() {
@@ -22,7 +23,12 @@ func main() {
 
 	port := env.RPCPort
 
-	server, err := rpc.NewServer(accountRPC.NewService(), port)
+	arpc, err := accountRPC.NewService(env.PostgresURL)
+	if err != nil {
+		log.Fatalf("failed to initialise service: %s reason: %s\n", accountRPC.Name, err)
+	}
+
+	server, err := rpc.NewServer(arpc, port)
 	if err != nil {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", accountRPC.Name, err)
 	}

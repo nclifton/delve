@@ -29,8 +29,10 @@ type FindByAPIKeyReply struct {
 }
 
 func (s *AccountService) FindByAPIKey(p FindByAPIKeyParams, r *FindByAPIKeyReply) error {
-	r.Account = &Account{
-		Name: "bob",
+	account, err := s.db.FindByAPIKey(p.Key)
+	if err != nil {
+		return err
 	}
+	r.Account = account
 	return nil
 }

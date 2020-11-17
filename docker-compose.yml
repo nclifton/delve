@@ -23,6 +23,7 @@ services:
       - API_ACCOUNT_PORT=10001
 
       - ACCOUNT_RPC_PORT=10001
+      - ACCOUNT_POSTGRES_URL=postgresql://postgres:example@postgres/account
 
       - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
       - WEBHOOK_RPC_HOST=backend
@@ -59,6 +60,7 @@ services:
       - minio
       - miniosetup
       - postgres
+      - accountpostgressetup
 
   rabbitmq:
     build:
@@ -114,6 +116,22 @@ services:
       PGDATA: /data/postgres
     ports:
       - "54321:5432"
+
+  accountpostgressetup:
+    build:
+      context: .
+      dockerfile: backend/account/migration/infra/Dockerfile
+    depends_on:
+      - postgres
+    container_name: accountpostgressetup
+    volumes:
+      - ./backend:/backend
+    environment:
+      ACCOUNT_POSTGRES_HOST: postgres
+      ACCOUNT_POSTGRES_USER: postgres
+      ACCOUNT_POSTGRES_PASSWORD: example
+      ACCOUNT_POSTGRES_SSL: disable
+      ACCOUNT_POSTGRES_NAME: account
 
 volumes:
   redis_data:
