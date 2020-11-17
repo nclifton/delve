@@ -12,6 +12,7 @@ services:
       - ./backend:/backend
     ports:
       - "10000:10000"
+      - "10006:10006"
     environment:
       - DISABLE_NEW_RELIC=true
       - NR_NAME=TP Local
@@ -49,6 +50,9 @@ services:
       - TECLOO_RECEIVER_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
       - TECLOO_RECEIVER_RABBIT_EXCHANGE=mm7
       - TECLOO_RECEIVER_RABBIT_EXCHANGE_TYPE=direct
+
+      - TUALET_HTTP_PORT=10006
+      - TUALET_TEMPLATE_PATH=tualet/templates
 
     deploy:
       resources:
