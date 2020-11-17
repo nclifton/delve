@@ -76,6 +76,7 @@ func NewTualetAPI(opts *TualetAPIOptions) *TualetAPI {
 	// we also need a route and chain for 404
 	router.NotFound = NewPlainRoute(api, baseChain, NotFoundRoute)
 	router.GET("/v1/status", NewRoute(api, baseChain, StatusGET))
+	router.GET("/api", NewRoute(api, baseChain, SubmitGET))
 
 	return api
 }
