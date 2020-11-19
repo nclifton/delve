@@ -1,4 +1,4 @@
-FROM rabbitmq:3.8.9
+FROM rabbitmq:3.8.9-management-alpine
 
 COPY ops/dev/docker-compose/rabbitmq/definitions.json /etc/rabbitmq
 COPY ops/dev/docker-compose/rabbitmq/enabled_plugins /etc/rabbitmq
