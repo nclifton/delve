@@ -1,14 +1,53 @@
 package rabbit_test
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
+	"github.com/NeowayLabs/wabbit"
+	"github.com/NeowayLabs/wabbit/amqptest"
 	"github.com/NeowayLabs/wabbit/amqptest/server"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/streadway/amqp"
 )
 
+func TestDeclareRetryQueues(t *testing.T) {
+	fakeServer := server.NewServer("amqp://localhost:5672/%2f")
+	err := fakeServer.Start()
+	if err != nil {
+		t.Error(err)
+	}
+
+	mockConn, err := amqptest.Dial("amqp://localhost:5672/%2f")
+	if err != nil {
+		t.Error(err)
+	}
+
+	testscale := []time.Duration{time.Second, 2 * time.Second, 3 * time.Second}
+
+	err = rabbit.DeclareRetryQueues(mockConn, "test.thing", "test.thing.exchange", "test.thing.key", testscale)
+	if err != nil {
+		t.Fatalf("Could not setup Retry Queues: %s", err)
+	}
+
+	channel, err := mockConn.Channel()
+	if err != nil {
+		t.Fatalf("Could not get mock channel: %s", err)
+	}
+
+	for i := 1; i <= len(testscale); i++ {
+		queuename := fmt.Sprintf("test.thing-retry%d", i)
+		_, err := channel.QueueInspect(queuename)
+		if err != nil {
+			t.Fatalf("Could not get expected retry queue: %s", queuename)
+		}
+	}
+
+}
+
 func TestGenerateRetry(t *testing.T) {
+
 	retryTests := []struct {
 		name          string
 		expectedKey   string
@@ -22,7 +61,7 @@ func TestGenerateRetry(t *testing.T) {
 				RouteKey:     "testing",
 				Exchange:     "testing-retry",
 				ExchangeType: "topic",
-				Delivery:     server.NewDelivery(nil, []byte("{}"), 1, "1", rabbit.Option{}),
+				Delivery:     server.NewDelivery(nil, []byte("{}"), 1, "1", wabbit.Option{}),
 				MaxRetries:   3,
 			},
 		},
@@ -33,7 +72,7 @@ func TestGenerateRetry(t *testing.T) {
 				RouteKey:     "testing",
 				Exchange:     "testing-retry",
 				ExchangeType: "topic",
-				Delivery: server.NewDelivery(nil, []byte("{}"), 1, "1", rabbit.Option{
+				Delivery: server.NewDelivery(nil, []byte("{}"), 1, "1", wabbit.Option{
 					"x-death": []interface{}{
 						amqp.Table{"queue": "testing-retry1"},
 					},
@@ -48,7 +87,7 @@ func TestGenerateRetry(t *testing.T) {
 				RouteKey:     "testing",
 				Exchange:     "testing-retry",
 				ExchangeType: "topic",
-				Delivery: server.NewDelivery(nil, []byte("{}"), 1, "1", rabbit.Option{
+				Delivery: server.NewDelivery(nil, []byte("{}"), 1, "1", wabbit.Option{
 					"x-death": []interface{}{
 						amqp.Table{"queue": "testing-retry2"},
 					},
@@ -64,7 +103,7 @@ func TestGenerateRetry(t *testing.T) {
 				RouteKey:     "testing",
 				Exchange:     "testing-retry",
 				ExchangeType: "topic",
-				Delivery: server.NewDelivery(nil, []byte("{}"), 1, "1", rabbit.Option{
+				Delivery: server.NewDelivery(nil, []byte("{}"), 1, "1", wabbit.Option{
 					"x-death": []interface{}{
 						amqp.Table{"queue": "testing-retry3"},
 					},

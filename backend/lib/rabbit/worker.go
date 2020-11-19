@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	agent "github.com/burstsms/mtmo-tp/backend/ops/newrelicagent"
+	agent "github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 

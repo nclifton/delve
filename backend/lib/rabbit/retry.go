@@ -93,7 +93,7 @@ func GenerateRetry(options GenerateRetryOptions) (PublishOptions, error) {
 	retryCount := 0
 
 	// Use length of the x-death array to determine how many times job has been retried
-	// See https://www.wabbitmq.com/dlx.html
+	// See https://www.rabbitmq.com/dlx.html
 	if headers["x-death"] != nil {
 		death := headers["x-death"].([]interface{})
 		if len(death) > 0 {
@@ -113,8 +113,10 @@ func GenerateRetry(options GenerateRetryOptions) (PublishOptions, error) {
 	bindKey := fmt.Sprintf("%s-retry%d", options.RouteKey, retryCount)
 
 	opt := PublishOptions{
-		RouteKey: bindKey,
-		Exchange: options.Exchange,
+		RouteKey:       bindKey,
+		Exchange:       options.Exchange,
+		ExchangeType:   options.ExchangeType,
+		DontEncodeJson: true,
 	}
 
 	return opt, nil
