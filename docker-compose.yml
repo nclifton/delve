@@ -16,6 +16,7 @@ services:
       - "10004:10004"
       - "10005:10005"
       - "10006:10006"
+      - "10007:10007"
     environment:
       - DISABLE_NEW_RELIC=true
       - NR_NAME=TP Local
@@ -35,6 +36,10 @@ services:
       - WEBHOOK_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/webhook
       - WEBHOOK_CLIENT_TIMEOUT=3
       - WEBHOOK_REDIS_URL=redis:6379
+
+
+      - MMS_RPC_PORT=10007
+      - MMS_POSTGRES_URL=postgresql://postgres:example@postgres/mms
 
       - MM7_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
       - MM7_RABBIT_EXCHANGE=mm7
@@ -76,6 +81,7 @@ services:
       - miniosetup
       - postgres
       - accountpostgressetup
+      - mmspostgressetup
 
   rabbitmq:
     build:
@@ -147,6 +153,24 @@ services:
       ACCOUNT_POSTGRES_PASSWORD: example
       ACCOUNT_POSTGRES_SSL: disable
       ACCOUNT_POSTGRES_NAME: account
+      ACCOUNT_POSTGRES_AUTH_DB: postgres
+
+  mmspostgressetup:
+    build:
+      context: .
+      dockerfile: backend/mms/migration/infra/Dockerfile
+    depends_on:
+      - postgres
+    container_name: mmspostgressetup
+    volumes:
+      - ./backend:/backend
+    environment:
+      MMS_POSTGRES_HOST: postgres
+      MMS_POSTGRES_USER: postgres
+      MMS_POSTGRES_PASSWORD: example
+      MMS_POSTGRES_SSL: disable
+      MMS_POSTGRES_NAME: mms
+      MMS_POSTGRES_AUTH_DB: postgres
 
 volumes:
   redis_data:

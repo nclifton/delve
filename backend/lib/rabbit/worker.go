@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	agent "github.com/burstsms/mtmo-tp/backend/lib/nr"
+	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
@@ -24,11 +24,11 @@ type Worker struct {
 	nrApp *newrelic.Application
 }
 
-func NewWorker(name string, con Conn, nr *agent.Options) *Worker {
+func NewWorker(name string, con Conn, nrOpts *nr.Options) *Worker {
 	worker := &Worker{
 		name:  name,
 		con:   con,
-		nrApp: agent.CreateApp(nr),
+		nrApp: nr.CreateApp(nrOpts),
 	}
 
 	return worker
@@ -61,7 +61,7 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 		log.Printf("processing message:")
 
 		// Connect this transaction to previous ones in the chain
-		agent.AcceptAMQPHeader(nrTxn, msg.Headers())
+		nr.AcceptAMQPHeader(nrTxn, msg.Headers())
 
 		err = handler.Handle(msg.Body(), msg.Headers())
 		if err != nil {

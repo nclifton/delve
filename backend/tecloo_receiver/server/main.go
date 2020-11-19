@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
-	"github.com/burstsms/mtmo-tp/backend/ops/newrelicagent"
 	receiver "github.com/burstsms/mtmo-tp/backend/tecloo_receiver"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -52,7 +52,7 @@ func main() {
 
 	port := strconv.Itoa(env.HTTPPort)
 
-	newrelicM := newrelicagent.New(&newrelicagent.Options{
+	newrelicM := nr.New(&nr.Options{
 		AppName:                  nrenv.Name,
 		NewRelicLicense:          nrenv.License,
 		DistributedTracerEnabled: nrenv.Tracing,

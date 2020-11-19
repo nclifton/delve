@@ -23,7 +23,7 @@ type Env struct {
 
 func main() {
 	var env Env
-	err := envconfig.Process("account", &env)
+	err := envconfig.Process("mms", &env)
 	if err != nil {
 		log.Fatal("failed to read env vars:", err)
 	}

@@ -2,7 +2,7 @@
 
 Request
 ```
-type MMSPOSTRequest struct {
+type SendParams struct {
 	// -- rename -- Body         string   `json:"body" valid:"required"`
 	// -- rename -- ResourceURLs []string `json:"resource_urls" valid:"required"`
 	ContactRef   string   `json:"contact_ref"`
@@ -16,7 +16,7 @@ type MMSPOSTRequest struct {
 	ShortenURLs 	bool 		`json:"shorten_urls"`
 	ContentURLs []string `json:"content_urls" valid:"required"`
 	
-	// facilitates matching messages on teh global webhooks
+	// facilitates matching messages on the global webhooks
 	// a new field to add on the MMS doc
 	MessageRef	string	`json:"message_ref"`
 }
