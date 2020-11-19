@@ -4,9 +4,68 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"time"
 
+	"github.com/NeowayLabs/wabbit"
 	"github.com/streadway/amqp"
 )
+
+// RetryScale is used as the default retry scale for retrying jobs
+var RetryScale = []time.Duration{time.Minute, 2 * time.Minute, 5 * time.Minute, 10 * time.Minute, 30 * time.Minute}
+
+// DeclareRetryQueues sets the resource up with the bindigns for a retry queue to a target DLX
+func DeclareRetryQueues(con Conn, ResourceName string, RetryExchange string, RetryKey string, RetryScale []time.Duration) error {
+	ch, err := con.Channel()
+	if err != nil {
+		return err
+	}
+
+	sourceExchange := fmt.Sprintf("%s-retry", ResourceName)
+
+	if err = ch.ExchangeDeclare(
+		sourceExchange,
+		"topic",
+		wabbit.Option{
+			"durable":  true,
+			"delete":   false,
+			"internal": false,
+			"noWait":   false,
+		},
+	); err != nil {
+		return err
+	}
+
+	for i, time := range RetryScale {
+		queue, err := ch.QueueDeclare(
+			fmt.Sprintf("%s-retry%d", ResourceName, i+1),
+			wabbit.Option{
+				"durable":   true,
+				"delete":    false,
+				"exclusive": false,
+				"noWait":    false,
+				"args": amqp.Table{
+					"x-dead-letter-exchange":    RetryExchange,
+					"x-dead-letter-routing-key": RetryKey,
+					"x-message-ttl":             time.Milliseconds(),
+				},
+			},
+		)
+
+		if err != nil {
+			return err
+		}
+
+		bindKey := fmt.Sprintf("%s-retry%d", ResourceName, i+1)
+
+		err = ch.QueueBind(queue.Name(), bindKey, sourceExchange, wabbit.Option{"noWait": false})
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 // GenerateRetryOptions specify headers and properties for a message before publishing.
 type GenerateRetryOptions struct {

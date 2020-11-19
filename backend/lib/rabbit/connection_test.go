@@ -24,12 +24,13 @@ func TestMessagePublish(t *testing.T) {
 	}
 	defer mockConn.Close()
 
-	err = rabbit.DeclareExchange(mockConn, "testing", "direct")
-	if err != nil {
-		t.Error(err)
-	}
-
-	_, _, err = rabbit.Consume(mockConn, "testing", 1)
+	_, _, err = rabbit.Consume(mockConn, rabbit.ConsumeOptions{
+		PrefetchCount: 1,
+		QueueName:     "testing",
+		Exchange:      "testing",
+		ExchangeType:  "direct",
+		RouteKey:      "testing",
+	})
 	if err != nil {
 		t.Fatalf("Could not setup consumer before publishing test message")
 	}
@@ -59,12 +60,13 @@ func TestMessageConsume(t *testing.T) {
 	}
 	defer mockConn.Close()
 
-	err = rabbit.DeclareExchange(mockConn, "testing", "direct")
-	if err != nil {
-		t.Error(err)
-	}
-
-	deliveries, _, err := rabbit.Consume(mockConn, "testing", 1)
+	deliveries, _, err := rabbit.Consume(mockConn, rabbit.ConsumeOptions{
+		PrefetchCount: 1,
+		QueueName:     "testing",
+		Exchange:      "testing",
+		ExchangeType:  "direct",
+		RouteKey:      "testing",
+	})
 	if err != nil {
 		t.Fatalf("Could not open delivery channel: %s", err)
 	}

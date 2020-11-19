@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi=
+"http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap-env:Header>
+   <TransactionID xmlns="http://www.3gpp.org/ftp/Specs/archive/23_series/23.140/schema/REL-6-MM7-1-4" soap-env:mustUnderstand="1">{{.TransactionID}}</TransactionID>
+</soap-env:Header>
+<soap-env:Body>
+   <DeliveryReportRsp xmlns="http://www.3gpp.org/ftp/Specs/archive/23_series/23.140/schema/REL-6-MM7-1-4">
+      <MM7Version>6.8.0</MM7Version>
+      <Status>
+         <StatusCode>{{.StatusCode}}</StatusCode>
+         <StatusText>{{.StatusText}}</StatusText>
+      </Status>
+   </DeliveryReportRsp>
+</soap-env:Body>
+</soap-env:Envelope>

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"strconv"
 	"time"
@@ -13,15 +12,18 @@ import (
 	"github.com/NeowayLabs/wabbit/amqp"
 )
 
+type Conn = wabbit.Conn
 type Delivery = wabbit.Delivery
 type Option = wabbit.Option
 
 type PublishOptions struct {
-	RouteKey   string
-	Exchange   string
-	Headers    map[string]interface{}
-	Expiration time.Duration
-	Priority   uint8
+	RouteKey       string
+	Exchange       string
+	ExchangeType   string
+	Headers        map[string]interface{}
+	Expiration     time.Duration
+	Priority       uint8
+	DontEncodeJson bool
 }
 
 // Publish will send each message specified by data to the exchange
@@ -60,16 +62,13 @@ func Publish(con Conn, options PublishOptions, message interface{}) error {
 
 	var body []byte
 
-	// If we already have a string, assume its json and dont encode it twice
-	switch message := message.(type) {
-	case string:
-		body = []byte(message)
-	default:
+	if options.DontEncodeJson {
+		body = message.([]byte)
+	} else {
 		body, err = json.Marshal(&message)
 		if err != nil {
 			return err
 		}
-
 	}
 
 	err = ch.Publish(options.Exchange, options.RouteKey, body, params)
@@ -89,8 +88,6 @@ func Publish(con Conn, options PublishOptions, message interface{}) error {
 	return nil
 }
 
-type Conn = wabbit.Conn
-
 func Connect(url string) (Conn, error) {
 	con, err := amqp.Dial(url)
 	if err != nil {
@@ -108,147 +105,4 @@ func Connect(url string) (Conn, error) {
 	}()
 
 	return con, nil
-}
-
-func closeChannel(c io.Closer) {
-	err := c.Close()
-	if err != nil {
-		log.Printf("could not close RabbitMQ channel: %s", err.Error())
-	}
-}
-
-func DeclareExchange(con Conn, name, exchangeType string) error {
-	ch, err := con.Channel()
-	if err != nil {
-		return err
-	}
-	defer closeChannel(ch)
-
-	err = ch.ExchangeDeclare(
-		name,
-		exchangeType,
-		wabbit.Option{
-			"durable":  true,
-			"delete":   false,
-			"internal": false,
-			"noWait":   false,
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func DeclareQueue(con Conn, name, exchange, routeKey string, retryScales []time.Duration) error {
-	ch, err := con.Channel()
-	if err != nil {
-		return err
-	}
-
-	// Declare Queue
-	queue, err := ch.QueueDeclare(
-		name,
-		wabbit.Option{
-			"durable":   true,
-			"delete":    false,
-			"exclusive": false,
-			"noWait":    false,
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	// Bind the queue
-	err = ch.QueueBind(
-		queue.Name(),
-		routeKey,
-		exchange,
-		wabbit.Option{
-			"noWait": false,
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	if len(retryScales) > 0 {
-		err = DeclareRetryQueues(con, queue.Name(), exchange, routeKey, retryScales)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// the default scales for declaring retry queues
-var RetryScales = []time.Duration{
-	time.Minute,
-	time.Minute * 2,
-	time.Minute * 5,
-	time.Minute * 10,
-	time.Minute * 30,
-}
-
-// creates a new exchange appended with "-retry" and a set of queues bound to it
-// it will create a queue for each scale and this queue will dead letter back to the
-// given exchange using the routeKey
-// https://www.wabbitmq.com/dlx.html may be useful reading
-func DeclareRetryQueues(con Conn, queue, exchange, routeKey string, scales []time.Duration) error {
-	ch, err := con.Channel()
-	if err != nil {
-		return err
-	}
-	defer ch.Close()
-
-	retryExchange := fmt.Sprintf("%s-retry", queue)
-
-	err = ch.ExchangeDeclare(
-		retryExchange,
-		"topic",
-		wabbit.Option{
-			"durable":  true,
-			"delete":   false,
-			"internal": false,
-			"noWait":   false,
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	// for each retry scale create a queue that sets a timeout for each message
-	// these queues have no consumers and when messages hit their TTL they are
-	// dead lettered back to the originating exchange for re-processing
-	for i, ttl := range scales {
-		queue, err := ch.QueueDeclare(
-			fmt.Sprintf("%s%d", retryExchange, i+1),
-			wabbit.Option{
-				"durable":   true,
-				"delete":    false,
-				"exclusive": false,
-				"noWait":    false,
-				"args": wabbit.Option{
-					"x-dead-letter-exchange":    exchange,
-					"x-dead-letter-routing-key": routeKey,
-					"x-message-ttl":             ttl.Milliseconds(),
-				},
-			},
-		)
-		if err != nil {
-			return err
-		}
-
-		// now bind the retry queue created to the retry exchange
-		// using the queue name as the routing key
-		err = ch.QueueBind(queue.Name(), queue.Name(), retryExchange, wabbit.Option{"noWait": false})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

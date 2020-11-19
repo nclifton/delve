@@ -3,8 +3,8 @@ package tualet
 import (
 	"net/http"
 
-	"github.com/burstsms/mtmo-tp/backend/api/middleware/logger"
-	"github.com/burstsms/mtmo-tp/backend/api/middleware/recovery"
+	"github.com/burstsms/mtmo-tp/backend/lib/middleware/logger"
+	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
 	belogger "github.com/burstsms/mtmo-tp/backend/logger"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"

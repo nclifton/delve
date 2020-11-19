@@ -1,10 +1,12 @@
 package rabbit
 
 import (
+	"io"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/NeowayLabs/wabbit"
 )
@@ -52,10 +54,10 @@ func NewConsumer(opts ConsumerOptions) (*Consumer, error) {
 	return consumer, nil
 }
 
-func (c *Consumer) Run(handler Handler) {
+func (c *Consumer) Run(opts ConsumeOptions, handler Handler) {
 	log.Printf("started and waiting for jobs")
 
-	messages, done, err := Consume(c.con, c.queue, c.prefetch)
+	messages, done, err := Consume(c.con, opts)
 	if err != nil {
 		log.Fatalf("failed to consume from queue: %s", err)
 	}
@@ -111,20 +113,78 @@ func (c *Consumer) Run(handler Handler) {
 	}
 }
 
-func Consume(con Conn, queue string, prefetch int) (chan Delivery, chan bool, error) {
+type ConsumeOptions struct {
+	PrefetchCount int
+	QueueName     string
+	Exchange      string
+	ExchangeType  string
+	RouteKey      string
+	RetryScale    []time.Duration
+}
+
+func Consume(con Conn, options ConsumeOptions) (chan Delivery, chan bool, error) {
 	ch, err := con.Channel()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	err = ch.Qos(prefetch, 0, false)
+	// Declare the exchange
+	err = ch.ExchangeDeclare(
+		options.Exchange,     // name of the exchange
+		options.ExchangeType, // type
+		wabbit.Option{
+			"durable":  true,
+			"delete":   false,
+			"internal": false,
+			"noWait":   false,
+		},
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Declare Queue
+	queue, err := ch.QueueDeclare(
+		options.QueueName, // name of the queue
+		wabbit.Option{
+			"durable":   true,
+			"delete":    false,
+			"exclusive": false,
+			"noWait":    false,
+		},
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Bind the queue
+	err = ch.QueueBind(
+		queue.Name(),     // name of the queue
+		options.RouteKey, // bindingKey
+		options.Exchange, // sourceExchange
+		wabbit.Option{
+			"noWait": false,
+		},
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if len(options.RetryScale) > 0 {
+		err = DeclareRetryQueues(con, options.QueueName, options.Exchange, options.RouteKey, options.RetryScale)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	err = ch.Qos(options.PrefetchCount, 0, false)
 	if err != nil {
 		defer closeChannel(ch)
 		return nil, nil, err
 	}
 
 	c, err := ch.Consume(
-		queue,
+		queue.Name(),
 		"",
 		wabbit.Option{
 			"autoAck":   false,
@@ -158,4 +218,11 @@ func Consume(con Conn, queue string, prefetch int) (chan Delivery, chan bool, er
 	}()
 
 	return dch, done, nil
+}
+
+func closeChannel(c io.Closer) {
+	err := c.Close()
+	if err != nil {
+		log.Printf("could not close RabbitMQ channel: %s", err.Error())
+	}
 }

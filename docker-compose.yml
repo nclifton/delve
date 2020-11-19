@@ -12,6 +12,9 @@ services:
       - ./backend:/backend
     ports:
       - "10000:10000"
+      - "10003:10003"
+      - "10004:10004"
+      - "10005:10005"
       - "10006:10006"
     environment:
       - DISABLE_NEW_RELIC=true
@@ -34,16 +37,24 @@ services:
       - WEBHOOK_REDIS_URL=redis:6379
 
       - MM7_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
+      - MM7_RABBIT_EXCHANGE=mm7
+      - MM7_RABBIT_EXCHANGE_TYPE=direct
+      - MM7_RABBIT_PREFETCHED_COUNT=1
       - MM7_RPC_PORT=10003
       - MM7_RPC_HOST=backend
       - MM7_REDIS_URL=redis:6379
       - MM7_TECLOO_URL=http://backend:7010/v1
       - MM7_TEMPLATE_PATH=tecloo/templates
       - MM7_AWS_REGION=ap-southeast-2
-      - MM7_MMS_MEDIA_BUCKET=tp.mms.media
+      - MM7_MMS_MEDIA_BUCKET=tp-mms-media
+      - MM7_AWS_S3_PUBLIC_URL=http://minio:9000
+      - MM7_AWS_S3_PATH_STYLE=true
+      - MM7_AWS_ACCESS_KEY=sendsei
+      - MM7_AWS_SECRET_KEY=fr0gsn0g
 
       - TECLOO_HTTP_PORT=10004
       - TECLOO_TEMPLATE_PATH=tecloo/templates
+      - TECLOO_DR_ENDPOINT=http://backend:10004/v1/mms/inbound
 
       - TECLOO_RECEIVER_HTTP_PORT=10005
       - TECLOO_RECEIVER_TEMPLATE_PATH=tecloo_receiver/templates

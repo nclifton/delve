@@ -6,8 +6,8 @@ import (
 	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/api/middleware/auth"
 	"github.com/burstsms/mtmo-tp/backend/api/middleware/context"
-	"github.com/burstsms/mtmo-tp/backend/api/middleware/logger"
-	"github.com/burstsms/mtmo-tp/backend/api/middleware/recovery"
+	"github.com/burstsms/mtmo-tp/backend/lib/middleware/logger"
+	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 )
