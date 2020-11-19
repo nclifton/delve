@@ -20,4 +20,5 @@ require (
 	github.com/streadway/amqp v1.0.0
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.12
+	gotest.tools v2.2.0+incompatible
 )
