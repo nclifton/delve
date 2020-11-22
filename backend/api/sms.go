@@ -1,14 +1,18 @@
 package api
 
 import (
-	"log"
+	"fmt"
 	"net/http"
+
+	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 )
 
 type SMSPOSTRequest struct {
-	Message   string `json:"message" valid:"required"`
-	Recipient string `json:"recipient"`
-	Sender    string `json:"sender"`
+	Message    string `json:"message" valid:"required"`
+	MessageRef string `json:"message_ref"`
+	Recipient  string `json:"recipient" valid:"required"`
+	Sender     string `json:"sender" valid:"required"`
+	Country    string `json:"country"`
 }
 
 func SMSPOST(r *Route) {
@@ -16,7 +20,6 @@ func SMSPOST(r *Route) {
 	if err != nil {
 		return
 	}
-	log.Printf("Account: %+v", account)
 
 	var req SMSPOSTRequest
 	err = r.DecodeRequest(&req)
@@ -24,13 +27,21 @@ func SMSPOST(r *Route) {
 		return
 	}
 
-	type payload struct {
-		Message string `json:"message"`
+	res, err := r.api.sms.Send(sms.SendParams{
+		MessageRef: req.MessageRef,
+		Message:    req.Message,
+		AccountID:  account.ID,
+		Sender:     req.Sender,
+		Recipient:  req.Recipient,
+		Country:    req.Country,
+		AlarisUser: "testing",
+		AlarisPass: "testing",
+	})
+	if err != nil {
+		// handler rpc error
+		r.WriteError(fmt.Sprintf("Could not process sms: %s", err.Error()), http.StatusInternalServerError)
+		return
 	}
 
-	data := payload{
-		Message: req.Message,
-	}
-
-	r.Write(data, http.StatusOK)
+	r.Write(res.SMS, http.StatusOK)
 }

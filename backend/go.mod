@@ -6,6 +6,7 @@ require (
 	github.com/NeowayLabs/wabbit v0.0.0-20201021105516-ded4a9ef19d2
 	github.com/aws/aws-sdk-go v1.17.7
 	github.com/burstsms/libphonenumber v1.1.0
+	github.com/cortesi/modd v0.0.0-20200630120222-8983974e5450 // indirect
 	github.com/fsouza/go-dockerclient v1.6.6 // indirect
 	github.com/go-redis/cache/v7 v7.0.2
 	github.com/go-redis/redis/v7 v7.4.0
@@ -24,6 +25,5 @@ require (
 	github.com/tiago4orion/conjure v0.0.0-20150908101743-93cb30b9d218 // indirect
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.12
-	go.mongodb.org/mongo-driver v1.1.0
 	gotest.tools v2.2.0+incompatible
 )

@@ -26,6 +26,8 @@ services:
       - API_PORT=10000
       - API_ACCOUNT_HOST=backend
       - API_ACCOUNT_PORT=10001
+      - API_SMS_HOST=backend
+      - API_SMS_PORT=10009
 
       - ACCOUNT_RPC_PORT=10001
       - ACCOUNT_POSTGRES_URL=postgresql://postgres:example@postgres/account
@@ -36,7 +38,6 @@ services:
       - WEBHOOK_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/webhook
       - WEBHOOK_CLIENT_TIMEOUT=3
       - WEBHOOK_REDIS_URL=redis:6379
-
 
       - MMS_RPC_PORT=10007
       - MMS_POSTGRES_URL=postgresql://postgres:example@postgres/mms
@@ -69,6 +70,14 @@ services:
 
       - TUALET_HTTP_PORT=10006
       - TUALET_TEMPLATE_PATH=tualet/templates
+
+      - SMS_RPC_PORT=10009
+      - SMS_HOST=backend
+      - SMS_POSTGRES_URL=postgresql://postgres:example@postgres/sms
+      - SMS_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/sms
+      - SMS_CLIENT_TIMEOUT=3
+      - SMS_REDIS_URL=redis:6379
+      - SMS_ALARIS_URL=http://backend:10006/api
 
     deploy:
       resources:
@@ -144,7 +153,6 @@ services:
       dockerfile: backend/account/migration/infra/Dockerfile
     depends_on:
       - postgres
-    container_name: accountpostgressetup
     volumes:
       - ./backend:/backend
     environment:
@@ -171,6 +179,21 @@ services:
       MMS_POSTGRES_SSL: disable
       MMS_POSTGRES_NAME: mms
       MMS_POSTGRES_AUTH_DB: postgres
+
+  smspostgressetup:
+    build:
+      context: .
+      dockerfile: backend/sms/migration/infra/Dockerfile
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/backend
+    environment:
+      SMS_POSTGRES_HOST: postgres
+      SMS_POSTGRES_USER: postgres
+      SMS_POSTGRES_PASSWORD: example
+      SMS_POSTGRES_SSL: disable
+      SMS_POSTGRES_NAME: sms
 
 volumes:
   redis_data:

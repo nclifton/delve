@@ -7,6 +7,7 @@ import (
 	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/api"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
+	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -18,6 +19,9 @@ type Env struct {
 
 	AccountHost string `envconfig:"ACCOUNT_HOST"`
 	AccountPort int    `envconfig:"ACCOUNT_PORT"`
+
+	SMSHost string `envconfig:"SMS_HOST"`
+	SMSPort int    `envconfig:"SMS_PORT"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
@@ -40,6 +44,7 @@ func main() {
 	app := api.New(&api.Options{
 		Gitref:        gitref,
 		AccountClient: account.New(env.AccountHost, env.AccountPort),
+		SMSClient:     sms.New(env.SMSHost, env.SMSPort),
 		NrApp:         newrelicM,
 	})
 

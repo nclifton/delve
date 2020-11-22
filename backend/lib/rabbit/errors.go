@@ -6,8 +6,8 @@ type ErrWorkerMessageParse struct {
 	message string
 }
 
-func NewErrWorkerMessageParse(message string) *ErrRetryWorkerMessage {
-	return &ErrRetryWorkerMessage{
+func NewErrWorkerMessageParse(message string) *ErrWorkerMessageParse {
+	return &ErrWorkerMessageParse{
 		message: message,
 	}
 }

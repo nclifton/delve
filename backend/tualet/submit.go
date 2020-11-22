@@ -5,8 +5,10 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/burstsms/mtmo-tp/backend/logger"
+	"github.com/burstsms/mtmo-tp/backend/sms/biz"
 )
 
 type submitParams struct {
@@ -83,6 +85,12 @@ func SubmitGET(r *Route) {
 		}
 	}
 
+	count, err := biz.IsValidSMS(values.message)
+	if err != nil {
+		status = http.StatusBadRequest
+		response = err.Error()
+	}
+
 	r.api.log.Fields(logger.Fields{
 		"msgid":           "xxx",
 		"dnis":            values.dnis,
@@ -100,12 +108,36 @@ func SubmitGET(r *Route) {
 		return
 	}
 
-	type payload struct {
-		MessageID string `json:"message_id"`
-	}
-	data := payload{
-		MessageID: "xxx",
+	if count > 1 {
+		// ok its a multi sms, so we need a multi response
+		type payload struct {
+			MessageID  string `json:"message_id"`
+			DNIS       string `json:"dnis"`
+			SegmentNum string `json:"segment_num"`
+		}
+		data := []payload{}
+
+		for segment := 1; segment <= count; segment++ {
+			data = append(data, payload{
+				MessageID:  "xxx",
+				DNIS:       values.dnis,
+				SegmentNum: strconv.Itoa(segment),
+			})
+
+		}
+
+		r.Write(data, http.StatusOK)
+
+	} else {
+
+		type payload struct {
+			MessageID string `json:"message_id"`
+		}
+		data := payload{
+			MessageID: "xxx",
+		}
+
+		r.Write(data, http.StatusOK)
 	}
 
-	r.Write(data, http.StatusOK)
 }

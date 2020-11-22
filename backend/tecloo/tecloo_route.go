@@ -11,8 +11,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strings"
-
-	"github.com/burstsms/mtmo-tp/backend/lib/mongo"
 	//"github.com/burstsms/mtmo-tp/backend/biz/valid"
 )
 
@@ -94,22 +92,6 @@ type JSONErrors struct {
 
 func (r *Route) WriteValidatorError(err error) {
 	//r.Write(&JSONErrors{Error: "Validation Error", ErrorData: valid.ErrorsByField(err)}, http.StatusOK)
-}
-
-// for checking id and writing errors out
-func (r *Route) EnsureIDParam() (mongo.OID, error) {
-	return r.EnsureIDParamByName("id")
-}
-
-func (r *Route) EnsureIDParamByName(name string) (mongo.OID, error) {
-	idStr := r.params.ByName(name)
-	id, err := mongo.OIDFromHex(idStr)
-	if err != nil {
-		r.WriteError("Invalid ID: "+idStr, http.StatusBadRequest)
-		return id, errors.New("Invalid ID")
-	}
-
-	return id, nil
 }
 
 type mmspart struct {
