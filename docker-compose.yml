@@ -198,6 +198,21 @@ services:
       SMS_POSTGRES_SSL: disable
       SMS_POSTGRES_NAME: sms
 
+  webhookpostgressetup:
+    build:
+      context: .
+      dockerfile: backend/webhook/migration/infra/Dockerfile
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/backend
+    environment:
+      WEBHOOK_POSTGRES_HOST: postgres
+      WEBHOOK_POSTGRES_USER: postgres
+      WEBHOOK_POSTGRES_PASSWORD: example
+      WEBHOOK_POSTGRES_SSL: disable
+      WEBHOOK_POSTGRES_NAME: webhook
+
 volumes:
   redis_data:
   rabbitmq_data:

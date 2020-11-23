@@ -38,7 +38,6 @@ type SendReply struct {
 }
 
 func (s *SMSService) Send(p SendParams, r *SendReply) error {
-
 	// check the sms size
 	count, err := biz.IsValidSMS(p.Message)
 	if err != nil {
