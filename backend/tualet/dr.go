@@ -45,7 +45,7 @@ func (api *TualetAPI) sendDLRRequest(params *DLRParams) {
 
 		if resp.StatusCode != http.StatusOK {
 			body, _ := ioutil.ReadAll(resp.Body)
-			api.log.Errorf("Not OK response from %s, with code: %s, body %s", api.opts.DLREndpoint, resp.StatusCode, string(body))
+			api.log.Errorf("Not OK response from %s, with code: %d, body %s", api.opts.DLREndpoint, resp.StatusCode, string(body))
 		}
 
 	}

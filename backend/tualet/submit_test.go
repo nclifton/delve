@@ -17,7 +17,6 @@ func TestSubmit(t *testing.T) {
 
 	testValues := []struct {
 		values               submitParams
-		expectedMsgId        string
 		expectedResponseCode int
 		expectedResponseBody string
 		expectedLogMessage   string
@@ -26,7 +25,6 @@ func TestSubmit(t *testing.T) {
 			values: submitParams{
 				username: "froggy",
 			},
-			expectedMsgId:        "xxx",
 			expectedResponseCode: http.StatusUnauthorized,
 			expectedResponseBody: `not authorized (check login and password)`,
 			expectedLogMessage:   `not authorized (check login and password)`,
@@ -41,9 +39,8 @@ func TestSubmit(t *testing.T) {
 				ani:             "61455678900",
 				longMessageMode: "split",
 			},
-			expectedMsgId:        "xxx",
 			expectedResponseCode: http.StatusOK,
-			expectedResponseBody: `{"message_id":"xxx"}`,
+			expectedResponseBody: `{"message_id":"`,
 			expectedLogMessage:   `submission`,
 		},
 		{
@@ -56,7 +53,6 @@ func TestSubmit(t *testing.T) {
 				ani:             "61455678900",
 				longMessageMode: "split",
 			},
-			expectedMsgId:        "xxx",
 			expectedResponseCode: http.StatusBadRequest,
 			expectedResponseBody: `NO ROUTES`,
 			expectedLogMessage:   `NO ROUTES`,
@@ -109,7 +105,7 @@ func TestSubmit(t *testing.T) {
 		}
 
 		// Check the response body is what we expect.
-		if strings.TrimSpace(rr.Body.String()) != testValue.expectedResponseBody {
+		if !strings.Contains(strings.TrimSpace(rr.Body.String()), testValue.expectedResponseBody) {
 			t.Errorf("handler returned unexpected body: got '%v' want '%v'",
 				rr.Body.String(), testValue.expectedResponseBody)
 		}
@@ -119,7 +115,6 @@ func TestSubmit(t *testing.T) {
 		assert.Equal(t, logrus.InfoLevel, logentry.Level)
 		assert.Equal(t, testValue.values.message, logentry.Data[`message`])
 		assert.Equal(t, testValue.values.command, logentry.Data[`command`])
-		assert.Equal(t, testValue.expectedMsgId, logentry.Data[`msgid`])
 		assert.Equal(t, testValue.values.dnis, logentry.Data[`dnis`])
 		assert.Equal(t, testValue.values.ani, logentry.Data[`ani`])
 		assert.Equal(t, testValue.values.longMessageMode, logentry.Data[`longMessageMode`])

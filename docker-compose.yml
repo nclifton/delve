@@ -71,6 +71,7 @@ services:
       - TUALET_HTTP_PORT=10006
       - TUALET_TEMPLATE_PATH=tualet/templates
       - TUALET_DLR_ENDPOINT=http://backend:10008/v1/sms/dlr
+      - TUALET_MO_ENDPOINT=http://backend:10008/v1/sms/mo
 
       - SMS_RPC_PORT=10009
       - SMS_INBOUND_PORT=10008

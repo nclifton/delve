@@ -14,6 +14,7 @@ type TualetAPIOptions struct {
 	NrApp        func(http.Handler) http.Handler
 	TemplatePath string
 	DLREndpoint  string
+	MOEndpoint   string
 	Client       *http.Client
 }
 
@@ -76,6 +77,7 @@ func NewTualetAPI(opts *TualetAPIOptions) *TualetAPI {
 	// we also need a route and chain for 404
 	router.NotFound = NewPlainRoute(api, baseChain, NotFoundRoute)
 	router.GET("/v1/status", NewRoute(api, baseChain, StatusGET))
+	router.GET("/v1/fakemo", NewRoute(api, baseChain, HandsetGET))
 	router.GET("/api", NewRoute(api, baseChain, SubmitGET))
 
 	return api

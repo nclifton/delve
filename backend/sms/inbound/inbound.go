@@ -61,7 +61,7 @@ func NewInboundAPI(opts *InboundOptions) *InboundAPI {
 	// we also need a route and chain for 404
 	router.NotFound = NewPlainRoute(api, baseChain, NotFoundRoute)
 	router.POST("/v1/sms/dlr", NewRoute(api, baseChain, InboundDLRPOST))
-	//router.GET("/v1/sms/mo", NewRoute(api, baseChain, InboundMOGET))
+	router.POST("/v1/sms/mo", NewRoute(api, baseChain, InboundMOPOST))
 
 	return api
 }
@@ -159,7 +159,8 @@ func InboundDLRPOST(r *Route) {
 	fmt.Fprintf(r.w, "0 OK")
 }
 
-/*func InboundMOGET(r *Route) {
+func InboundMOPOST(r *Route) {
+	log.Print("Got MO")
 	err := r.r.ParseForm()
 	if err != nil {
 		http.Error(r.w, "Internal server error", http.StatusInternalServerError)
@@ -167,71 +168,30 @@ func InboundDLRPOST(r *Route) {
 		return
 	}
 
-	if len(r.r.Form["source"]) < 1 || len(r.r.Form["message"]) < 1 || len(r.r.Form["dest"]) < 1 {
+	log.Printf("MO Form values: %+v", r.r.Form)
+
+	if len(r.r.Form["msgid"]) < 1 || len(r.r.Form["message"]) < 1 {
 		http.Error(r.w, "Internal server error", http.StatusInternalServerError)
-		log.Printf("Failed to parse MO request from Kannel")
+		log.Printf("Failed to parse MO response from Alaris")
 		return
 	}
 
-	source := r.r.Form["source"][0]
-	dest := r.r.Form["dest"][0]
-	message := r.r.Form["message"][0]
+	log.Printf("[%s] MO To: %s From: %s", r.r.FormValue("msgid"), r.r.FormValue("to"), r.r.FormValue("from"))
 
-	log.Printf("MO: source:%s dest:%s message:%s", source, dest, message)
-
-	// Is this a response to an sms we have sent
-	sms, err := r.api.sms.FindByMO(source, dest)
-	if err != nil {
-		// if not redirect it to buu
-		if err.Error() == mongo.ErrNoDocuments.Error() {
-			log.Printf("Did not find related SMS so letting buu handle it: %s", err)
-			redirectURL := fmt.Sprintf("%s/sms/mo?%s", r.api.opts.BuuRestUrl, r.r.URL.RawQuery)
-			http.Redirect(r.w, r.r, redirectURL, http.StatusFound)
-			return
-		}
-		log.Printf("Failed to find reply MO: %s", err)
-		http.Error(r.w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	log.Printf("Found related sms: %+v", sms.SMS)
-
-	isValid, err := r.api.sms.ValidateSender(dest, "", sms.SMS.AccountID)
-	if err != nil {
-		log.Printf("Failed to Validate Sender ID: %s", err)
-		http.Error(r.w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	if !isValid.ValidAccount {
-		log.Printf("Did not find related SMS so letting buu handle it: %s", err)
-		redirectURL := fmt.Sprintf("%s/sms/mo?%s", r.api.opts.BuuRestUrl, r.r.URL.RawQuery)
-		http.Redirect(r.w, r.r, redirectURL, http.StatusFound)
-		return
-	}
-
-	// Does this account still own this sender id
-	opts := rabbit.PublishOptions{
-		RouteKey:     msg.MOProcess.RouteKey,
-		Exchange:     msg.MOProcess.Exchange,
-		ExchangeType: msg.MOProcess.ExchangeType,
-	}
-
-	mojob := msg.MOProcessSpec{
-		ReplyTo:   sms.SMS.ID,
-		AccountID: sms.SMS.AccountID,
-		Source:    source,
-		Dest:      dest,
-		Message:   message,
-	}
-
-	err = r.api.db.RabbitPublish(opts, mojob)
+	err = r.api.sms.QueueMO(rpc.QueueMOParams{
+		MessageID:     r.r.FormValue("msgid"),
+		Message:       r.r.FormValue("message"),
+		To:            r.r.FormValue("to"),
+		From:          r.r.FormValue("from"),
+		SARID:         r.r.FormValue("sarId"),
+		SARPartNumber: r.r.FormValue("sarPartNumber"),
+		SARParts:      r.r.FormValue("sarParts"),
+	})
 	if err != nil {
 		http.Error(r.w, "Internal server error", http.StatusInternalServerError)
-		log.Printf("Failed to publish MO to queue response(%s) for message(%s) from Kannel: %s", message, sms.SMS.ID.Hex(), err)
-
-		return
+		log.Printf("Failed to queue MO response from Alaris: %s", err)
 	}
 
 	r.w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(r.w, "0 OK")
-}*/
+}
