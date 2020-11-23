@@ -28,6 +28,8 @@ services:
       - API_ACCOUNT_PORT=10001
       - API_SMS_HOST=backend
       - API_SMS_PORT=10009
+      - API_MMS_HOST=backend
+      - API_MMS_PORT=10007
 
       - ACCOUNT_RPC_PORT=10001
       - ACCOUNT_POSTGRES_URL=postgresql://postgres:example@postgres/account
@@ -172,7 +174,6 @@ services:
       dockerfile: backend/mms/migration/infra/Dockerfile
     depends_on:
       - postgres
-    container_name: mmspostgressetup
     volumes:
       - ./backend:/backend
     environment:

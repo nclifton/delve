@@ -1,28 +1,88 @@
 package rpc
 
+import (
+	"context"
+	"time"
+)
+
+type MMS struct {
+	ID          string    `json:"id"`
+	AccountID   string    `json:"account_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	ProviderKey string    `json:"provider_key"`
+	MessageID   string    `json:"message_id"`
+	MessageRef  string    `json:"message_ref"`
+	Country     string    `json:"country"`
+	Subject     string    `json:"subject"`
+	Message     string    `json:"message"`
+	ContentURLs []string  `json:"content_urls"`
+	Recipient   string    `json:"recipient"`
+	Sender      string    `json:"sender"`
+	Status      string    `json:"status"`
+	ShortenURLs bool      `json:"shorten_urls"`
+	Unsub       bool      `json:"unsub"`
+}
+
 type SendParams struct {
-	// -- rename -- Body         string   `json:"body" valid:"required"`
-	// -- rename -- ResourceURLs []string `json:"resource_urls" valid:"required"`
-	ContactRef string `json:"contact_ref"`
-	Recipient  string `json:"recipient"`
-	Sender     string `json:"sender" valid:"required"`
-	Subject    string `json:"subject"`
-
-	// new additions
-	Message     string   `json:"message"`
-	Country     string   `json:"country"`
-	ShortenURLs bool     `json:"shorten_urls"`
-	ContentURLs []string `json:"content_urls" valid:"required"`
-
-	// facilitates matching messages on the global webhooks
-	// a new field to add on the MMS doc
-	MessageRef string `json:"message_ref"`
+	AccountID   string
+	Subject     string
+	Message     string
+	Recipient   string
+	Sender      string
+	Country     string
+	MessageRef  string
+	ContentURLs []string
+	ShortenURLs bool
 }
 
 type SendReply struct {
+	MMS *MMS
 }
 
 func (s *MMSService) Send(p SendParams, r *SendReply) error {
-	// TODO: to implement
+	ctx := context.Background()
+
+	newMMS := MMS{
+		AccountID:   p.AccountID,
+		Subject:     p.Subject,
+		Message:     p.Message,
+		Recipient:   p.Recipient,
+		Sender:      p.Sender,
+		Country:     p.Country,
+		MessageRef:  p.MessageRef,
+		ContentURLs: p.ContentURLs,
+	}
+
+	newMMS.Status = `pending`
+	newMMS.ProviderKey = `fake`
+
+	mms, err := s.db.InsertMMS(ctx, newMMS)
+	if err != nil {
+		return err
+	}
+
+	r.MMS = mms
+	return nil
+}
+
+type FindByIDParams struct {
+	ID        string
+	AccountID string
+}
+
+type FindByIDReply struct {
+	MMS *MMS
+}
+
+func (s *MMSService) FindByID(p FindByIDParams, r *FindByIDReply) error {
+	ctx := context.Background()
+
+	mms, err := s.db.FindByID(ctx, p.ID, p.AccountID)
+	if err != nil {
+		return err
+	}
+
+	r.MMS = mms
 	return nil
 }

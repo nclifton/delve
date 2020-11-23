@@ -8,6 +8,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/api/middleware/context"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
+	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
@@ -18,12 +19,14 @@ type Options struct {
 	Gitref        string
 	AccountClient *account.Client
 	SMSClient     *sms.Client
+	MMSClient     *mms.Client
 	NrApp         func(http.Handler) http.Handler
 }
 
 type RPCClients struct {
 	account *account.Client
 	sms     *sms.Client
+	mms     *mms.Client
 }
 
 // API wraps an instance of our api app
@@ -43,6 +46,7 @@ func New(opts *Options) *API {
 	clients := RPCClients{
 		account: opts.AccountClient,
 		sms:     opts.SMSClient,
+		mms:     opts.MMSClient,
 	}
 
 	api := &API{
@@ -93,6 +97,9 @@ func New(opts *Options) *API {
 
 	// ------ authenticated routes
 	router.POST("/v1/sms/message", NewRoute(api, authChain, SMSPOST))
+
+	router.GET("/v1/mms/:id", NewRoute(api, authChain, MMSGET))
+	router.POST("/v1/mms/message", NewRoute(api, authChain, MMSPOST))
 
 	return api
 }
