@@ -58,7 +58,6 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 
 	for msg := range messages {
 		nrTxn := w.nrApp.StartTransaction(w.name)
-		log.Printf("processing message:")
 
 		// Connect this transaction to previous ones in the chain
 		nr.AcceptAMQPHeader(nrTxn, msg.Headers())

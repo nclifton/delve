@@ -7,8 +7,13 @@ var WebhookMessage = MessageSpec{
 	RouteKey:     "",
 }
 
+type WebhookBody struct {
+	Event string      `json:"event"`
+	Data  interface{} `json:"data"`
+}
+
 type WebhookMessageSpec struct {
-	URL       string `json:"url"`
-	RateLimit int    `json:"rate_limit"`
-	Payload   []byte `json:"payload"`
+	URL       string      `json:"url"`
+	RateLimit int         `json:"rate_limit"`
+	Payload   WebhookBody `json:"payload"`
 }

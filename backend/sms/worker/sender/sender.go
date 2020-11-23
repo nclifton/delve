@@ -54,7 +54,6 @@ func (h *SenderHandler) OnFinalFailure(body []byte) error {
 		log.Printf("[SMS Send] error marking %s as failed: %s", jobdata.ID, err)
 		return err
 	}
-
 	return nil
 }
 

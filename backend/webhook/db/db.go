@@ -19,12 +19,11 @@ const (
 type DB struct {
 	postgres *pgxpool.Pool
 	rabbit   rabbit.Conn
-	opts     RabbitPublishOptions
 }
 
 // New db interface
-func New(postgres *pgxpool.Pool, rabbitmq rabbit.Conn, opts RabbitPublishOptions) *DB {
-	return &DB{postgres: postgres, rabbit: rabbitmq, opts: opts}
+func New(postgres *pgxpool.Pool, rabbitmq rabbit.Conn) *DB {
+	return &DB{postgres: postgres, rabbit: rabbitmq}
 }
 
 type CommandTag = pgconn.CommandTag
@@ -39,6 +38,6 @@ func bg() context.Context {
 
 type RabbitPublishOptions = rabbit.PublishOptions
 
-func (db *DB) Publish(msg interface{}) error {
-	return rabbit.Publish(db.rabbit, db.opts, msg)
+func (db *DB) Publish(msg interface{}, opts RabbitPublishOptions) error {
+	return rabbit.Publish(db.rabbit, opts, msg)
 }

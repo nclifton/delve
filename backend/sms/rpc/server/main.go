@@ -6,6 +6,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	smsRPC "github.com/burstsms/mtmo-tp/backend/sms/rpc"
+	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -16,6 +17,8 @@ type Env struct {
 	RabbitURL          string `envconfig:"RABBIT_URL"`
 	RabbitExchange     string `envconfig:"RABBIT_EXCHANGE"`
 	RabbitExchangeType string `envconfig:"RABBIT_EXCHANGE_TYPE"`
+	WebhookRPCHost     string `envconfig:"WEBHOOK_RPC_HOST"`
+	WebhookRPCPort     int    `envconfig:"WEBHOOK_RPC_PORT"`
 }
 
 func main() {
@@ -32,12 +35,9 @@ func main() {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
 	}
 
-	rabbitOpts := smsRPC.RabbitPublishOptions{
-		Exchange:     env.RabbitExchange,
-		ExchangeType: "direct",
-	}
+	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort)
 
-	arpc, err := smsRPC.NewService(env.PostgresURL, rabbitmq, rabbitOpts)
+	arpc, err := smsRPC.NewService(env.PostgresURL, rabbitmq, wrpc)
 	if err != nil {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
 	}

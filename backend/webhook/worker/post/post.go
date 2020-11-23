@@ -44,14 +44,20 @@ func (h *Webhook) Handle(body []byte, headers map[string]interface{}) error {
 		return errors.New("Hit Ratelimit")
 	}
 
-	req, err := http.NewRequest("POST", data.URL, bytes.NewReader(data.Payload))
+	payload, err := json.Marshal(data.Payload)
 	if err != nil {
 		return err
 	}
 
+	req, err := http.NewRequest("POST", data.URL, bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
 	resp, err := h.client.Do(req)
 	if err != nil {
-		return rabbit.NewErrRetryWorkerMessage(fmt.Sprintf("Failed sending webhook to: %s With params: %s Error: %s", data.URL, string(data.Payload), err.Error()))
+		return rabbit.NewErrRetryWorkerMessage(fmt.Sprintf("Failed sending webhook to: %s With params: %+v Error: %s", data.URL, data.Payload, err.Error()))
 	}
 	defer resp.Body.Close()
 

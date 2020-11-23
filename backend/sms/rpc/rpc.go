@@ -5,6 +5,7 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
 const Name = "SMS"
@@ -13,8 +14,9 @@ type NoParams struct{}
 type NoReply struct{}
 
 type SMSService struct {
-	db   *db
-	name string
+	db         *db
+	webhookRPC *webhook.Client
+	name       string
 }
 
 type Service struct {
@@ -29,14 +31,14 @@ func (s *Service) Receiver() interface{} {
 	return s.receiver
 }
 
-func NewService(postgresURL string, rabbitmq rabbit.Conn, opts RabbitPublishOptions) (rpc.Service, error) {
+func NewService(postgresURL string, rabbitmq rabbit.Conn, webhook *webhook.Client) (rpc.Service, error) {
 	gob.Register(map[string]interface{}{})
-	db, err := NewDB(postgresURL, rabbitmq, opts)
+	db, err := NewDB(postgresURL, rabbitmq)
 	if err != nil {
 		return nil, err
 	}
 	service := &Service{
-		receiver: &SMSService{db: db, name: Name},
+		receiver: &SMSService{db: db, name: Name, webhookRPC: webhook},
 	}
 
 	return service, nil

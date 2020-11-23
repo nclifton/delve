@@ -1,9 +1,11 @@
 package rpc
 
 import (
+	"log"
 	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
+	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
 type QueueDLRParams struct {
@@ -39,5 +41,47 @@ func (s *SMSService) QueueDLR(p QueueDLRParams, r *NoReply) error {
 		return err
 	}
 
+	return nil
+}
+
+type ProcessDLRParams struct {
+	MessageID  string
+	State      string
+	ReasonCode string
+	To         string
+	Time       time.Time
+	MCC        string
+	MNC        string
+}
+
+func (s *SMSService) ProcessDLR(p ProcessDLRParams, r *NoReply) error {
+	// find sms by the given dlr messageid
+	sms, err := s.db.FindSMSByMessageID(p.MessageID)
+	if err != nil {
+		log.Printf("[Processing DLR] SMS Not Found with MessageID: %s", p.MessageID)
+		return err
+	}
+
+	log.Printf("[Processing DLR] Found SMS: %+v", sms)
+
+	// update the sms status with the dlr status
+	err = s.db.MarkStatus(sms.ID, p.State)
+	if err != nil {
+		return err
+	}
+
+	// if it exists call the webhook service to send any status event webhooks
+	err = s.webhookRPC.PublishSMSStatusUpdate(webhookRPC.PublishSMSStatusUpdateParams{
+		AccountID:       sms.AccountID,
+		SMSID:           sms.ID,
+		MessageRef:      sms.MessageRef,
+		Recipient:       sms.Recipient,
+		Sender:          sms.Sender,
+		Status:          p.State,
+		StatusUpdatedAt: time.Now(),
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }

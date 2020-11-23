@@ -2,6 +2,7 @@ package tualet
 
 import (
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -20,33 +21,41 @@ type DLRParams struct {
 
 func (api *TualetAPI) sendDLRRequest(params *DLRParams) {
 
+	rand.Seed(time.Now().UnixNano())
+
 	if api.opts.DLREndpoint != "" {
-		data := url.Values{}
-		data.Set("msgid", params.MessageID)
-		data.Set("state", params.Status)
-		data.Set("reasoncode", params.ReasonCode)
-		data.Set("to", params.To)
-		data.Set("time", time.Now().UTC().Format(time.RFC3339))
-		data.Set("mcc", params.MCC)
-		data.Set("mnc", params.MNC)
+		go func() {
+			// Introduce some random time between dlrs, so they can come out of sequence and not before they
+			// have been marked sent
+			delay := rand.Intn(6)
+			time.Sleep(time.Duration((delay + 1)) * time.Second)
+			data := url.Values{}
+			data.Set("msgid", params.MessageID)
+			data.Set("state", params.Status)
+			data.Set("reasoncode", params.ReasonCode)
+			data.Set("to", params.To)
+			data.Set("time", time.Now().UTC().Format(time.RFC3339))
+			data.Set("mcc", params.MCC)
+			data.Set("mnc", params.MNC)
 
-		req, err := http.NewRequest("POST", api.opts.DLREndpoint, strings.NewReader(data.Encode()))
-		if err != nil {
-			api.log.Errorf("Could not create DLR request: %s", err)
-		}
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		req.Header.Set("Content-Length", strconv.Itoa(len(data.Encode())))
+			req, err := http.NewRequest("POST", api.opts.DLREndpoint, strings.NewReader(data.Encode()))
+			if err != nil {
+				api.log.Errorf("Could not create DLR request: %s", err)
+			}
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			req.Header.Set("Content-Length", strconv.Itoa(len(data.Encode())))
 
-		resp, err := api.client.Do(req)
-		if err != nil {
-			api.log.Errorf("Could not do DLR request: %s", err)
-		}
-		defer resp.Body.Close()
+			resp, err := api.client.Do(req)
+			if err != nil {
+				api.log.Errorf("Could not do DLR request: %s", err)
+			}
+			defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			body, _ := ioutil.ReadAll(resp.Body)
-			api.log.Errorf("Not OK response from %s, with code: %d, body %s", api.opts.DLREndpoint, resp.StatusCode, string(body))
-		}
+			if resp.StatusCode != http.StatusOK {
+				body, _ := ioutil.ReadAll(resp.Body)
+				api.log.Errorf("Not OK response from %s, with code: %s, body %s", api.opts.DLREndpoint, resp.StatusCode, string(body))
+			}
+		}()
 
 	}
 

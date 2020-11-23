@@ -15,18 +15,17 @@ const (
 type db struct {
 	postgres *pgxpool.Pool
 	rabbit   rabbit.Conn
-	opts     RabbitPublishOptions
 }
 
 // New db interface
 
-func NewDB(postgresURL string, rabbitmq rabbit.Conn, opts RabbitPublishOptions) (*db, error) {
+func NewDB(postgresURL string, rabbitmq rabbit.Conn) (*db, error) {
 	postgres, err := pgxpool.Connect(context.Background(), postgresURL)
 	if err != nil {
 		return nil, err
 	}
 
-	return &db{postgres: postgres, rabbit: rabbitmq, opts: opts}, nil
+	return &db{postgres: postgres, rabbit: rabbitmq}, nil
 }
 
 type CommandTag = pgconn.CommandTag

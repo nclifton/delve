@@ -37,14 +37,7 @@ func main() {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", webhookRPC.Name, err)
 	}
 
-	rabbitOpts := db.RabbitPublishOptions{
-		Exchange:     env.RabbitExchange,
-		ExchangeType: env.RabbitExchangeType,
-	}
-
-	// TODO we should be doing queue setup here, instead of every publish call
-
-	webhookDB := db.New(postgres, rabbitmq, rabbitOpts)
+	webhookDB := db.New(postgres, rabbitmq)
 
 	server, err := rpc.NewServer(webhookRPC.NewService(webhookDB), env.RPCPort)
 	if err != nil {

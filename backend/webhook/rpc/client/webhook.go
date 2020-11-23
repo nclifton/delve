@@ -55,10 +55,3 @@ func (c *Client) Update(id, accountID, event, name, url string, rateLimit int) (
 	}, r)
 	return
 }
-
-type PublishContactUpdateParams = wrpc.PublishContactUpdateParams
-
-func (c *Client) PublishContactUpdate(params PublishContactUpdateParams) error {
-	err := c.Call("PublishContactUpdate", params, &NoReply{})
-	return err
-}

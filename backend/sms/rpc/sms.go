@@ -10,6 +10,7 @@ import (
 type SMS struct {
 	ID         string
 	AccountID  string
+	MessageID  string
 	Recipient  string
 	Sender     string
 	Country    string
