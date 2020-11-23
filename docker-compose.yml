@@ -70,8 +70,10 @@ services:
 
       - TUALET_HTTP_PORT=10006
       - TUALET_TEMPLATE_PATH=tualet/templates
+      - TUALET_DLR_ENDPOINT=http://backend:10008/v1/sms/dlr
 
       - SMS_RPC_PORT=10009
+      - SMS_INBOUND_PORT=10008
       - SMS_HOST=backend
       - SMS_POSTGRES_URL=postgresql://postgres:example@postgres/sms
       - SMS_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/sms

@@ -13,7 +13,7 @@ import (
 type TualetAPIOptions struct {
 	NrApp        func(http.Handler) http.Handler
 	TemplatePath string
-	DREndpoint   string
+	DLREndpoint  string
 	Client       *http.Client
 }
 

@@ -13,7 +13,7 @@ import (
 type Env struct {
 	HTTPPort     int    `envconfig:"HTTP_PORT"`
 	TemplatePath string `envconfig:"TEMPLATE_PATH"`
-	DREndpoint   string `envconfig:"DR_ENDPOINT"`
+	DLREndpoint  string `envconfig:"DLR_ENDPOINT"`
 	NRName       string `envconfig:"NR_NAME"`
 	NRLicense    string `envconfig:"NR_LICENSE"`
 	NRTracing    bool   `envconfig:"NR_TRACING"`
@@ -37,7 +37,7 @@ func main() {
 	opts := tualet.TualetAPIOptions{
 		NrApp:        newrelicM,
 		TemplatePath: env.TemplatePath,
-		DREndpoint:   env.DREndpoint,
+		DLREndpoint:  env.DLREndpoint,
 	}
 
 	server := tualet.NewTualetAPI(&opts)

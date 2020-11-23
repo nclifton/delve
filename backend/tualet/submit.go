@@ -2,13 +2,13 @@ package tualet
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 
 	"github.com/burstsms/mtmo-tp/backend/logger"
 	"github.com/burstsms/mtmo-tp/backend/sms/biz"
+	"github.com/google/uuid"
 )
 
 type submitParams struct {
@@ -73,10 +73,12 @@ func SubmitGET(r *Route) {
 
 	status, response, values := checkParams(r.r.URL.Query())
 
+	dlrStatus := `DELIVRD`
+	dlrCode := "000"
+
 	if values.dnis != "" {
 		// Check for special overrides on number suffix
 		number := values.dnis[len(values.dnis)-4:]
-		log.Printf("Number: %s", number)
 		// Check for spoofing a submission error
 		switch number {
 		case "1400":
@@ -91,8 +93,11 @@ func SubmitGET(r *Route) {
 		response = err.Error()
 	}
 
+	uuid := uuid.New()
+	MessageID := uuid.String()
+
 	r.api.log.Fields(logger.Fields{
-		"msgid":           "xxx",
+		"msgid":           MessageID,
 		"dnis":            values.dnis,
 		"ani":             values.ani,
 		"message":         values.message,
@@ -118,11 +123,21 @@ func SubmitGET(r *Route) {
 		data := []payload{}
 
 		for segment := 1; segment <= count; segment++ {
+			MessageID := uuid.String()
 			data = append(data, payload{
-				MessageID:  "xxx",
+				MessageID:  MessageID,
 				DNIS:       values.dnis,
 				SegmentNum: strconv.Itoa(segment),
 			})
+			dlrParams := DLRParams{
+				To:         values.dnis,
+				Status:     dlrStatus,
+				ReasonCode: dlrCode,
+				MessageID:  MessageID,
+				MCC:        `61`,
+				MNC:        `6142`,
+			}
+			r.api.sendDLRRequest(&dlrParams)
 
 		}
 
@@ -130,14 +145,25 @@ func SubmitGET(r *Route) {
 
 	} else {
 
+		dlrParams := DLRParams{
+			To:         values.dnis,
+			Status:     dlrStatus,
+			ReasonCode: dlrCode,
+			MessageID:  MessageID,
+			MCC:        `61`,
+			MNC:        `6142`,
+		}
+
 		type payload struct {
 			MessageID string `json:"message_id"`
 		}
 		data := payload{
-			MessageID: "xxx",
+			MessageID: MessageID,
 		}
 
 		r.Write(data, http.StatusOK)
+
+		r.api.sendDLRRequest(&dlrParams)
 	}
 
 }
