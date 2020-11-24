@@ -3,21 +3,24 @@ package rpc
 import (
 	"context"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type db struct {
 	postgres *pgxpool.Pool
+	rabbit   rabbit.Conn
+	opts     RabbitPublishOptions
 }
 
 // New db interface
-func NewDB(postgresURL string) (*db, error) {
+func NewDB(postgresURL string, rabbitmq rabbit.Conn, opts RabbitPublishOptions) (*db, error) {
 	postgres, err := pgxpool.Connect(context.Background(), postgresURL)
 	if err != nil {
 		return nil, err
 	}
 
-	return &db{postgres: postgres}, nil
+	return &db{postgres: postgres, rabbit: rabbitmq, opts: opts}, nil
 }
 
 func (db *db) FindByID(ctx context.Context, id, accountID string) (*MMS, error) {
@@ -84,4 +87,27 @@ func (db *db) InsertMMS(ctx context.Context, mms MMS) (*MMS, error) {
 	}
 
 	return &mms, nil
+}
+
+func (db *db) UpdateStatus(ctx context.Context, id, status string) error {
+	sql := `
+		UPDATE mms 
+		SET status = $1
+		WHERE id = $2
+	`
+
+	_, err := db.postgres.Exec(ctx, sql, status, id)
+
+	return err
+}
+
+type RabbitPublishOptions = rabbit.PublishOptions
+
+func (db *db) Publish(msg interface{}, routeKey string) error {
+	publishOpts := RabbitPublishOptions{
+		Exchange:     db.opts.Exchange,
+		ExchangeType: db.opts.ExchangeType,
+		RouteKey:     routeKey,
+	}
+	return rabbit.Publish(db.rabbit, publishOpts, msg)
 }

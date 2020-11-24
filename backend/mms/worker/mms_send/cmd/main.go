@@ -1,0 +1,58 @@
+package main
+
+import (
+	"log"
+
+	mm7c "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
+	mmsc "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
+
+	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
+	"github.com/burstsms/mtmo-tp/backend/mms/worker"
+	mmsw "github.com/burstsms/mtmo-tp/backend/mms/worker/mms_send"
+	"github.com/kelseyhightower/envconfig"
+)
+
+var Name = "mm7-worker-fake-submit"
+
+type Env struct {
+	RabbitURL             string `envconfig:"RABBIT_URL"`
+	RabbitExchange        string `envconfig:"RABBIT_EXCHANGE"`
+	RabbitExchangeType    string `envconfig:"RABBIT_EXCHANGE_TYPE"`
+	RabbitPrefetchedCount int    `envconfig:"RABBIT_PREFETCHED_COUNT"`
+	mm7RPCHost            string `envconfig:"MM7_RPC_HOST"`
+	mm7RPCPort            int    `envconfig:"MM7_RPC_PORT"`
+	mmsRPCHost            string `envconfig:"RPC_HOST"`
+	mmsRPCPort            int    `envconfig:"RPC_PORT"`
+}
+
+func main() {
+	log.Printf("starting worker: %s", Name)
+
+	var env Env
+	err := envconfig.Process("mms", &env)
+	if err != nil {
+		log.Fatal("failed to read env vars:", err)
+	}
+
+	log.Printf("ENV: %+v", env)
+
+	rabbitmq, err := rabbit.Connect(env.RabbitURL)
+	if err != nil {
+		log.Fatalf("failed to initialise rabbit: %s reason: %s\n", Name, err)
+	}
+
+	opts := rabbit.ConsumeOptions{
+		PrefetchCount: env.RabbitPrefetchedCount,
+		Exchange:      env.RabbitExchange,
+		ExchangeType:  env.RabbitExchangeType,
+		RouteKey:      worker.MMSSendRouteKey,
+		QueueName:     worker.MMSSendQueueName,
+	}
+
+	w := rabbit.NewWorker(Name, rabbitmq, nil)
+
+	mm7cli := mm7c.NewClient(env.mm7RPCHost, env.mm7RPCPort)
+	mmscli := mmsc.New(env.mmsRPCHost, env.mmsRPCPort)
+
+	w.Run(opts, mmsw.NewHandler(mm7cli, mmscli))
+}

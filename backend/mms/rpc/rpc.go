@@ -3,6 +3,7 @@ package rpc
 import (
 	"encoding/gob"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 )
 
@@ -28,9 +29,9 @@ func (s *Service) Receiver() interface{} {
 	return s.receiver
 }
 
-func NewService(postgresURL string) (rpc.Service, error) {
+func NewService(postgresURL string, rabbitmq rabbit.Conn, opts rabbit.PublishOptions) (rpc.Service, error) {
 	gob.Register(map[string]interface{}{})
-	db, err := NewDB(postgresURL)
+	db, err := NewDB(postgresURL, rabbitmq, opts)
 	if err != nil {
 		return nil, err
 	}

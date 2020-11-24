@@ -3,6 +3,15 @@ package rpc
 import (
 	"context"
 	"time"
+
+	"github.com/burstsms/mtmo-tp/backend/mms/worker"
+)
+
+const (
+	MMSStatusNew       = "new"
+	MMSStatusProcessed = "processed"
+	MMSStatusFailed    = "failed"
+	MMSStatusSent      = "sent"
 )
 
 type MMS struct {
@@ -62,6 +71,19 @@ func (s *MMSService) Send(p SendParams, r *SendReply) error {
 		return err
 	}
 
+	job := worker.Job{
+		ID:          mms.ID,
+		AccountID:   mms.AccountID,
+		Sender:      mms.Sender,
+		Subject:     mms.Subject,
+		ContentURLs: mms.ContentURLs,
+		Recipient:   mms.Recipient,
+		ProviderKey: mms.ProviderKey,
+		Message:     mms.Message,
+	}
+
+	err = s.db.Publish(job, worker.MMSSendQueueName)
+
 	r.MMS = mms
 	return nil
 }
@@ -85,4 +107,15 @@ func (s *MMSService) FindByID(p FindByIDParams, r *FindByIDReply) error {
 
 	r.MMS = mms
 	return nil
+}
+
+type UpdateStatusParams struct {
+	ID     string
+	Status string
+}
+
+func (s *MMSService) UpdateStatus(p UpdateStatusParams, r *NoReply) error {
+	ctx := context.Background()
+	err := s.db.UpdateStatus(ctx, p.ID, p.Status)
+	return err
 }

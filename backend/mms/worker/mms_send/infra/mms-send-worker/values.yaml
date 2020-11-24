@@ -1,0 +1,87 @@
+# The subchart contains default values which can be overridden here
+k8sServiceChart:
+  name: mms-send-worker
+  # Component is the group of services (domain) the service belongs to
+  component: mm7
+  namespace: sendsei
+  replicas: 1
+
+  image:
+    repository: 410370493805.dkr.ecr.ap-southeast-2.amazonaws.com/mms_worker_mms_send
+    tag: latest
+
+  podLabels:
+    # env label required for New Relic integration
+    env: mtmo-tp
+
+  # WORKAROUND: Till https://www.pivotaltracker.com/story/show/174031674 is implemented
+  podAnnotations:
+    linkerd.io/inject: disabled
+
+  # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
+  #serviceType: 
+  #servicePort: 
+  #serviceTargetPort: 
+  # For Headless Services (e.g. RabbitMQ Consumers) 
+  # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
+  serviceClusterIP: None
+
+  # HorizontalPodAutoscaler
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 12
+    cpuTargetAverageUtilization: 80
+    memoryTargetAverageUtilization: 80
+
+  # Pod resource limits
+  resourceLimits:
+    cpu: 80m
+    memory: 256Mi
+  resourceRequests:
+    cpu: 80m
+    memory: 256Mi
+
+  # Flag to turn on/off the exposing of the contianer port and liveness and readiness probes
+  # TODO: Remove this flag once all services have liveness and readiness endpoints
+  exposePorts: false
+
+  # Liveness Probe configuration
+  livenessProbe:
+    httpGet: true
+    path: /
+    initialDelaySeconds: 60
+    periodSeconds: 60
+    successThreshold: 1
+    timeoutSeconds: 1
+
+  # Readiness Probe configuration
+  readinessProbe:
+    httpGet: true
+    path: /
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+
+  # Specify all environment variables to be added to the container.
+  # The following two maps, config and secrets, are put into a ConfigMap
+  # and a Secret, respectively.
+  # Both are added to the container environment in podSpec as envFrom source.
+  #env:
+  #  config:
+  #    key1: value1
+  #  secrets:
+  #    key2: value2
+
+  # TODO: Remove this and use defined env vars above
+  existingConfigMapName: service-config
+  #existingSecretName: staging
+
+  # Old configuration to support config toml files (optional)
+  # All new services can delete this as they use env vars defined above
+  #config:
+  #  name: backend-config
+  #  key: config
+  #  mountPath: /config
+  #  filename: config.toml
