@@ -9,6 +9,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc"
+	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -59,7 +60,12 @@ func main() {
 		MMSMediaBucket: env.MMSMediaBucket,
 	}
 
-	server, err := rpc.NewServer(mm7RPC.NewService(rabbitmq, rabbitOpts, redisCon, limiter, s3Svc, configVar), port)
+	svc := mm7RPC.ConfigSvc{
+		S3:  s3Svc,
+		MMS: mms.New(env.MMSHost, env.MMSPort),
+	}
+
+	server, err := rpc.NewServer(mm7RPC.NewService(rabbitmq, rabbitOpts, redisCon, limiter, svc, configVar), port)
 	if err != nil {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", mm7RPC.Name, err)
 	}

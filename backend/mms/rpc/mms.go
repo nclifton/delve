@@ -5,13 +5,7 @@ import (
 	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/mms/worker"
-)
-
-const (
-	MMSStatusNew       = "new"
-	MMSStatusProcessed = "processed"
-	MMSStatusFailed    = "failed"
-	MMSStatusSent      = "sent"
+	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
 type MMS struct {
@@ -100,7 +94,7 @@ type FindByIDReply struct {
 func (s *MMSService) FindByID(p FindByIDParams, r *FindByIDReply) error {
 	ctx := context.Background()
 
-	mms, err := s.db.FindByID(ctx, p.ID, p.AccountID)
+	mms, err := s.db.FindByIDAndAccountID(ctx, p.ID, p.AccountID)
 	if err != nil {
 		return err
 	}
@@ -110,12 +104,32 @@ func (s *MMSService) FindByID(p FindByIDParams, r *FindByIDReply) error {
 }
 
 type UpdateStatusParams struct {
-	ID     string
-	Status string
+	ID          string
+	MessageID   string
+	Status      string
+	Description string
 }
 
 func (s *MMSService) UpdateStatus(p UpdateStatusParams, r *NoReply) error {
 	ctx := context.Background()
-	err := s.db.UpdateStatus(ctx, p.ID, p.Status)
-	return err
+
+	mms, err := s.db.FindByID(ctx, p.ID)
+	if err != nil {
+		return err
+	}
+
+	if err := s.db.UpdateStatus(ctx, p.ID, p.MessageID, p.Status); err != nil {
+		return err
+	}
+
+	return s.svc.Webhook.PublishMMSStatusUpdate(webhook.PublishMMSStatusUpdateParams{
+		AccountID:         mms.AccountID,
+		MMSID:             mms.ID,
+		MessageRef:        mms.MessageRef,
+		Recipient:         mms.Recipient,
+		Sender:            mms.Sender,
+		Status:            p.Status,
+		StatusDescription: p.Description,
+		StatusUpdatedAt:   time.Now(),
+	})
 }

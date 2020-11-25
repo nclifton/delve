@@ -5,10 +5,6 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 )
 
-type s3Svc interface {
-	PutS3Content(content []byte, bucket, key string) error
-}
-
 // wrap the underlying connection so that exported methods
 // can concistently drive database operations
 type db struct {
@@ -16,7 +12,6 @@ type db struct {
 	opts    RabbitPublishOptions
 	redis   *redis.Connection
 	limiter *redis.Limiter
-	s3      s3Svc
 }
 
 type RabbitPublishOptions = rabbit.PublishOptions

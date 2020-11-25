@@ -39,9 +39,10 @@ Request
 
 ```
 type MM7UpdateStatusParams struct {
-	ID 					string
-	Status			string
-	Description	string
+	MMSID       string
+	MessageID   string
+	Status      string
+	Description string
 }
 ```
 

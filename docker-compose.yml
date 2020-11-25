@@ -52,6 +52,8 @@ services:
       - MMS_MM7_RPC_HOST=backend
       - MMS_MM7_RPC_PORT=10003
       - MMS_POSTGRES_URL=postgresql://postgres:example@postgres/mms
+      - MMS_WEBHOOK_RPC_HOST=backend
+      - MMS_WEBHOOK_RPC_PORT=10002
 
       - MM7_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
       - MM7_RABBIT_EXCHANGE=mm7
@@ -68,6 +70,8 @@ services:
       - MM7_AWS_S3_PATH_STYLE=true
       - MM7_AWS_ACCESS_KEY=sendsei
       - MM7_AWS_SECRET_KEY=fr0gsn0g
+      - MM7_MMS_HOST=backend
+      - MM7_MMS_PORT=10007
 
       - TECLOO_HTTP_PORT=10004
       - TECLOO_TEMPLATE_PATH=tecloo/templates
@@ -92,6 +96,8 @@ services:
       - SMS_CLIENT_TIMEOUT=3
       - SMS_REDIS_URL=redis:6379
       - SMS_ALARIS_URL=http://backend:10006/api
+      - SMS_WEBHOOK_RPC_HOST=backend
+      - SMS_WEBHOOK_RPC_PORT=10002
 
     deploy:
       resources:

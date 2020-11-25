@@ -23,11 +23,49 @@ func NewDB(postgresURL string, rabbitmq rabbit.Conn, opts RabbitPublishOptions) 
 	return &db{postgres: postgres, rabbit: rabbitmq, opts: opts}, nil
 }
 
-func (db *db) FindByID(ctx context.Context, id, accountID string) (*MMS, error) {
+func (db *db) FindByID(ctx context.Context, id string) (*MMS, error) {
 	var mms MMS
 
 	sql := `
-		SELECT id, created_at, updated_at, provider_key, message_id, message_ref,
+		SELECT id, account_id, created_at, updated_at, provider_key, message_id, message_ref,
+			country, subject, messsage, content_urls, recipient, sender, status,
+			shorten_urls, unsub
+		FROM mms
+		WHERE id = $1
+	`
+
+	row := db.postgres.QueryRow(ctx, sql, id)
+
+	err := row.Scan(
+		&mms.ID,
+		&mms.AccountID,
+		&mms.CreatedAt,
+		&mms.UpdatedAt,
+		&mms.ProviderKey,
+		&mms.MessageID,
+		&mms.MessageRef,
+		&mms.Country,
+		&mms.Subject,
+		&mms.Message,
+		&mms.ContentURLs,
+		&mms.Recipient,
+		&mms.Sender,
+		&mms.Status,
+		&mms.ShortenURLs,
+		&mms.Unsub,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &mms, nil
+}
+
+func (db *db) FindByIDAndAccountID(ctx context.Context, id, accountID string) (*MMS, error) {
+	var mms MMS
+
+	sql := `
+		SELECT id, account_id, created_at, updated_at, provider_key, message_id, message_ref,
 			country, subject, messsage, content_urls, recipient, sender, status,
 			shorten_urls, unsub
 		FROM mms
@@ -89,14 +127,14 @@ func (db *db) InsertMMS(ctx context.Context, mms MMS) (*MMS, error) {
 	return &mms, nil
 }
 
-func (db *db) UpdateStatus(ctx context.Context, id, status string) error {
+func (db *db) UpdateStatus(ctx context.Context, id, messageID, status string) error {
 	sql := `
 		UPDATE mms 
-		SET status = $1
-		WHERE id = $2
+		SET status = $3, message_id = $2
+		WHERE id = $1
 	`
 
-	_, err := db.postgres.Exec(ctx, sql, status, id)
+	_, err := db.postgres.Exec(ctx, sql, id, messageID, status)
 
 	return err
 }

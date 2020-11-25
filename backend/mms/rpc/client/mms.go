@@ -24,10 +24,8 @@ func (c *Client) Send(p SendParams) (r *SendReply, err error) {
 	return
 }
 
-func (c *Client) UpdateStatus(id, status string) (err error) {
-	err = c.Call("UpdateStatus", rpc.UpdateStatusParams{
-		ID:     id,
-		Status: status,
-	}, &NoReply{})
-	return
+type UpdateStatusParams rpc.UpdateStatusParams
+
+func (c *Client) UpdateStatus(p UpdateStatusParams) (err error) {
+	return c.Call("UpdateStatus", p, &NoReply{})
 }

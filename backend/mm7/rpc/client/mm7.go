@@ -41,14 +41,15 @@ func (c *Client) ProviderSpec(p MM7ProviderSpecParams) (r *MM7ProviderSpecReply,
 
 type MM7UpdateStatusParams = mrpc.MM7UpdateStatusParams
 
-func (c *Client) UpdateStatus(p MM7UpdateStatusParams) (r *NoReply, err error) {
-	r = &NoReply{}
-	err = c.Call("UpdateStatus", MM7UpdateStatusParams{
+func (c *Client) UpdateStatus(p MM7UpdateStatusParams) error {
+	r := &NoReply{}
+
+	return c.Call("UpdateStatus", MM7UpdateStatusParams{
 		ID:          p.ID,
+		MessageID:   p.MessageID,
 		Status:      p.Status,
 		Description: p.Description,
 	}, r)
-	return
 }
 
 type MM7DLRParams = mrpc.MM7DLRParams

@@ -6,6 +6,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 )
 
 const Name = "MM7"
@@ -23,6 +24,22 @@ type Env struct {
 	RPCHost            string `envconfig:"RPC_HOST"`
 	RPCPort            int    `envconfig:"RPC_PORT"`
 	RedisURL           string `envconfig:"REDIS_URL"`
+
+	MMSHost string `envconfig:"MMS_HOST"`
+	MMSPort int    `envconfig:"MMS_PORT"`
+}
+
+type s3Svc interface {
+	PutS3Content(content []byte, bucket, key string) error
+}
+
+type mmsSvc interface {
+	UpdateStatus(p mms.UpdateStatusParams) (err error)
+}
+
+type ConfigSvc struct {
+	S3  s3Svc
+	MMS mmsSvc
 }
 
 type ConfigVar struct {
@@ -36,6 +53,7 @@ type NoReply struct{}
 type MM7 struct {
 	db        *db
 	name      string
+	svc       ConfigSvc
 	configVar ConfigVar
 }
 
@@ -51,9 +69,9 @@ func (s *Service) Receiver() interface{} {
 	return s.receiver
 }
 
-func NewService(r rabbit.Conn, opts RabbitPublishOptions, redis *redis.Connection, limiter *redis.Limiter, s3 s3Svc, configVar ConfigVar) rpc.Service {
+func NewService(r rabbit.Conn, opts RabbitPublishOptions, redis *redis.Connection, limiter *redis.Limiter, svc ConfigSvc, configVar ConfigVar) rpc.Service {
 	gob.Register(map[string]interface{}{})
 	return &Service{
-		receiver: &MM7{db: &db{rabbit: r, opts: opts, redis: redis, limiter: limiter, s3: s3}, name: Name, configVar: configVar},
+		receiver: &MM7{db: &db{rabbit: r, opts: opts, redis: redis, limiter: limiter}, svc: svc, name: Name, configVar: configVar},
 	}
 }

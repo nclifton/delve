@@ -15,7 +15,7 @@ import (
 )
 
 type mm7RPCClient interface {
-	UpdateStatus(p mm7RPC.MM7UpdateStatusParams) (r *mm7RPC.NoReply, err error)
+	UpdateStatus(p mm7RPC.MM7UpdateStatusParams) error
 	CheckRateLimit(p mm7RPC.MM7CheckRateLimitParams) (r *mm7RPC.MM7CheckRateLimitReply, err error)
 	GetCachedContent(p mm7RPC.MM7GetCachedContentParams) (r *mm7RPC.MM7GetCachedContentReply, err error)
 }
@@ -94,7 +94,7 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 		status = MMSStatusFailed
 		description = err.Error()
 		h.logError(msg, status, description, "Tecloo http request failed")
-		err := h.updateStatus(msg.ID, status, description)
+		err := h.updateStatus(msg.ID, "", status, description)
 		return err
 	}
 
@@ -103,24 +103,23 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 	if result.Body.SubmitRsp.Status.StatusCode != "1000" {
 		status = MMSStatusFailed
 		h.logError(msg, status, description, "Received error status from Tecloo")
-		err := h.updateStatus(msg.ID, status, description)
+		err := h.updateStatus(msg.ID, result.Body.SubmitRsp.MessageID, status, description)
 		return err
 	}
 
 	status = MMSStatusSent
 	h.logSuccess(msg, status, description, "Fake MM7 Submit Worker Successful send")
-	err = h.updateStatus(msg.ID, status, description)
-	return err
+
+	return h.updateStatus(msg.ID, result.Body.SubmitRsp.MessageID, status, description)
 }
 
-func (h *FakeMM7SubmitHandler) updateStatus(id, status, description string) error {
-	_, err := h.mm7RPC.UpdateStatus(mm7RPC.MM7UpdateStatusParams{
+func (h *FakeMM7SubmitHandler) updateStatus(id, messageID, status, description string) error {
+	return h.mm7RPC.UpdateStatus(mm7RPC.MM7UpdateStatusParams{
 		ID:          id,
+		MessageID:   messageID,
 		Status:      status,
 		Description: description,
 	})
-
-	return err
 }
 
 func (h *FakeMM7SubmitHandler) logError(msg *worker.SubmitMessage, status, description, label string) {

@@ -7,8 +7,7 @@ import (
 type PublishSMSStatusUpdateParams = wrpc.PublishSMSStatusUpdateParams
 
 func (c *Client) PublishSMSStatusUpdate(params PublishSMSStatusUpdateParams) error {
-	err := c.Call("PublishSMSStatusUpdate", params, &NoReply{})
-	return err
+	return c.Call("PublishSMSStatusUpdate", params, &NoReply{})
 }
 
 type PublishMOParams = wrpc.PublishMOParams

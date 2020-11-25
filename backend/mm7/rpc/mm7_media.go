@@ -17,7 +17,7 @@ type MM7MediaStoreReply struct {
 func (s *MM7) Store(p MM7MediaStoreParams, r *MM7MediaStoreReply) error {
 	key := fmt.Sprintf("%s_%s%s", p.ProviderKey, p.FileName, p.Extension)
 
-	if err := s.db.s3.PutS3Content(p.Data, s.configVar.MMSMediaBucket, key); err != nil {
+	if err := s.svc.S3.PutS3Content(p.Data, s.configVar.MMSMediaBucket, key); err != nil {
 		return err
 	}
 

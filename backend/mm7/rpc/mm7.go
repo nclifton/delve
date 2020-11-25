@@ -9,6 +9,7 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/burstsms/mtmo-tp/backend/mm7/worker"
+	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 )
 
 type PingResponse struct {
@@ -71,13 +72,18 @@ func (s *MM7) ProviderSpec(p MM7ProviderSpecParams, r *MM7ProviderSpecReply) err
 
 type MM7UpdateStatusParams struct {
 	ID          string
+	MessageID   string
 	Status      string
 	Description string
 }
 
 func (s *MM7) UpdateStatus(p MM7UpdateStatusParams, r *NoReply) error {
-	log.Printf("RPC call UpdateStatus, params: %+v", p)
-	return nil
+	return s.svc.MMS.UpdateStatus(mms.UpdateStatusParams{
+		ID:          p.ID,
+		MessageID:   p.MessageID,
+		Status:      p.Status,
+		Description: p.Description,
+	})
 }
 
 type MM7DLRParams struct {

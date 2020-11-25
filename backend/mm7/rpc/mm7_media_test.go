@@ -45,8 +45,8 @@ func TestStore(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			mm7 := MM7{
-				db: &db{
-					s3: test.s3,
+				svc: ConfigSvc{
+					S3: test.s3,
 				},
 				configVar: ConfigVar{
 					AWSRegion:      "ap-southeast-2",

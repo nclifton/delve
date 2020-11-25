@@ -13,8 +13,8 @@ type mockRPCClient struct {
 	err                error
 }
 
-func (m mockRPCClient) UpdateStatus(p mm7RPC.MM7UpdateStatusParams) (r *mm7RPC.NoReply, err error) {
-	return nil, m.err
+func (m mockRPCClient) UpdateStatus(p mm7RPC.MM7UpdateStatusParams) error {
+	return m.err
 }
 
 func (m mockRPCClient) CheckRateLimit(p mm7RPC.MM7CheckRateLimitParams) (r *mm7RPC.MM7CheckRateLimitReply, err error) {

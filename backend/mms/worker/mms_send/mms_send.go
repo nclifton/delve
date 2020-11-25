@@ -7,8 +7,16 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/logger"
 	belogger "github.com/burstsms/mtmo-tp/backend/logger"
 	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc"
-	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc"
+	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/mms/worker"
+)
+
+// TODO: to fix ? shouldn't be exported or in a common folder?
+const (
+	MMSStatusNew       = "new"
+	MMSStatusProcessed = "processed"
+	MMSStatusFailed    = "failed"
+	MMSStatusSent      = "sent"
 )
 
 type mm7RPCClient interface {
@@ -16,7 +24,7 @@ type mm7RPCClient interface {
 }
 
 type mmsRPCClient interface {
-	UpdateStatus(id, status string) (err error)
+	UpdateStatus(p mmsRPC.UpdateStatusParams) error
 }
 
 type MMSSendHandler struct {
@@ -55,16 +63,18 @@ func (h *MMSSendHandler) Handle(body []byte, headers map[string]interface{}) err
 		ProviderKey: msg.ProviderKey,
 	})
 	if err != nil {
-		h.logError(msg, mmsRPC.MMSStatusFailed, err.Error(), "Problem sending to mm7")
-		err = h.mmsRPC.UpdateStatus(msg.ID, mmsRPC.MMSStatusFailed)
-		return err
+		h.logError(msg, MMSStatusFailed, err.Error(), "Problem sending to mm7")
+
+		return h.mmsRPC.UpdateStatus(mmsRPC.UpdateStatusParams{
+			ID:          msg.ID,
+			Status:      MMSStatusFailed,
+			Description: err.Error(),
+		})
 	}
 
-	// update mms status
-	h.logSuccess(msg, mmsRPC.MMSStatusSent, "", "MMS send successful")
-	err = h.mmsRPC.UpdateStatus(msg.ID, mmsRPC.MMSStatusSent)
+	h.logSuccess(msg, MMSStatusSent, "", "MMS send successfully to mm7 service")
 
-	return err
+	return nil
 }
 
 func (h *MMSSendHandler) logError(msg *worker.Job, status, description, label string) {
@@ -75,7 +85,6 @@ func (h *MMSSendHandler) logError(msg *worker.Job, status, description, label st
 		"Status":      status,
 		"Description": description,
 	}
-
 	h.log.Fields(fields).Error(label)
 }
 
