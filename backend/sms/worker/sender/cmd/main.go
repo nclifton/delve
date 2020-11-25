@@ -52,7 +52,7 @@ func main() {
 		Exchange:      msg.SMSSendMessage.Exchange,
 		ExchangeType:  msg.SMSSendMessage.ExchangeType,
 		RouteKey:      msg.SMSSendMessage.RouteKey,
-		RetryScale:    rabbit.RetryScale,
+		RetryScale:    []time.Duration{5 * time.Second, 10 * time.Second, 20 * time.Second},
 	}
 
 	nrOpts := &agent.Options{

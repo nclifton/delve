@@ -32,6 +32,7 @@ services:
       - API_MMS_PORT=10007
 
       - ACCOUNT_RPC_PORT=10001
+      - ACCOUNT_RPC_HOST=backend
       - ACCOUNT_POSTGRES_URL=postgresql://postgres:example@postgres/account
 
       - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
@@ -118,6 +119,8 @@ services:
     hostname: redis
     volumes:
       - redis_data:/data
+    ports:
+      - "16379:6379"
 
   minio:
     image: minio/minio

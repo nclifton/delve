@@ -1,0 +1,5 @@
+BEGIN;
+DROP INDEX IF EXISTS account_sender;
+ALTER TABLE
+  account DROP COLUMN sender;
+COMMIT;

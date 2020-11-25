@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/logger"
 	"github.com/burstsms/mtmo-tp/backend/sms/biz"
@@ -64,56 +66,65 @@ func HandsetGET(r *Route) {
 	if status != http.StatusOK {
 		r.w.Header().Set("Content-Type", "text/html")
 		r.w.WriteHeader(status)
-		fmt.Fprintf(r.w, response)
+		fmt.Fprint(r.w, response)
 		return
 	}
 
 	sarId := `"$sarId$"`
 	sarParts := `"$sarParts$"`
 	sarPartNumber := `"$sarPartNumber$"`
+	sarIdsplit := uuid.String()
 
 	for part, msg := range split.Parts {
-		if split.CountParts > 1 {
-			// ok its a multi sms, so we need valid sar parameters
-			sarParts = strconv.Itoa(split.CountParts)
-			sarId = "0"
-			sarPartNumber = strconv.Itoa(part + 1)
-		}
-		r.api.log.Fields(logger.Fields{
-			"msgid":   MessageID,
-			"dnis":    values.dnis,
-			"ani":     values.ani,
-			"message": msg.Content,
-			"status":  status,
-		}).Info(response)
+		go func(part int, msg biz.Sms) {
+			rand.Seed(time.Now().UnixNano())
+			delay := rand.Intn(10)
+			time.Sleep(time.Duration((delay + 1)) * time.Second)
+			if split.CountParts > 1 {
+				// ok its a multi sms, so we need valid sar parameters
+				sarParts = strconv.Itoa(split.CountParts)
+				sarId = sarIdsplit
+				sarPartNumber = strconv.Itoa(part + 1)
+			}
+			r.api.log.Fields(logger.Fields{
+				"msgid":   MessageID,
+				"dnis":    values.dnis,
+				"ani":     values.ani,
+				"message": msg.Content,
+				"status":  status,
+			}).Info(response)
 
-		MessageID := uuid.String()
-		data := url.Values{}
-		data.Set("msgid", MessageID)
-		data.Set("to", values.dnis)
-		data.Set("from", values.ani)
-		data.Set("message", msg.Content)
-		data.Set("sarId", sarId)
-		data.Set("sarPartNumber", sarPartNumber)
-		data.Set("sarParts", sarParts)
+			MessageID := uuid.String()
+			data := url.Values{}
+			data.Set("msgid", MessageID)
+			data.Set("to", values.dnis)
+			data.Set("from", values.ani)
+			data.Set("message", msg.Content)
+			data.Set("sarId", sarId)
+			data.Set("sarPartNumber", sarPartNumber)
+			data.Set("sarParts", sarParts)
 
-		req, err := http.NewRequest("POST", r.api.opts.MOEndpoint, strings.NewReader(data.Encode()))
-		if err != nil {
-			r.api.log.Errorf("Could not create DLR request: %s", err)
-		}
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		req.Header.Set("Content-Length", strconv.Itoa(len(data.Encode())))
+			req, err := http.NewRequest("POST", r.api.opts.MOEndpoint, strings.NewReader(data.Encode()))
+			if err != nil {
+				r.api.log.Errorf("Could not create DLR request: %s", err)
+				return
+			}
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			req.Header.Set("Content-Length", strconv.Itoa(len(data.Encode())))
 
-		resp, err := r.api.client.Do(req)
-		if err != nil {
-			r.api.log.Errorf("Could not do DLR request: %s", err)
-		}
-		defer resp.Body.Close()
+			resp, err := r.api.client.Do(req)
+			if err != nil {
+				r.api.log.Errorf("Could not do DLR request: %s", err)
+				return
+			}
+			defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			body, _ := ioutil.ReadAll(resp.Body)
-			r.api.log.Errorf("Not OK response from %s, with code: %d, body %s", r.api.opts.DLREndpoint, resp.StatusCode, string(body))
-		}
+			if resp.StatusCode != http.StatusOK {
+				body, _ := ioutil.ReadAll(resp.Body)
+				r.api.log.Errorf("Not OK response from %s, with code: %d, body %s", r.api.opts.DLREndpoint, resp.StatusCode, string(body))
+				return
+			}
+		}(part, msg)
 	}
 
 }

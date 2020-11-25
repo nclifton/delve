@@ -41,6 +41,7 @@ func (api *TualetAPI) sendDLRRequest(params *DLRParams) {
 			req, err := http.NewRequest("POST", api.opts.DLREndpoint, strings.NewReader(data.Encode()))
 			if err != nil {
 				api.log.Errorf("Could not create DLR request: %s", err)
+				return
 			}
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			req.Header.Set("Content-Length", strconv.Itoa(len(data.Encode())))
@@ -48,15 +49,16 @@ func (api *TualetAPI) sendDLRRequest(params *DLRParams) {
 			resp, err := api.client.Do(req)
 			if err != nil {
 				api.log.Errorf("Could not do DLR request: %s", err)
+				return
 			}
 			defer resp.Body.Close()
 
 			if resp.StatusCode != http.StatusOK {
 				body, _ := ioutil.ReadAll(resp.Body)
-				api.log.Errorf("Not OK response from %s, with code: %s, body %s", api.opts.DLREndpoint, resp.StatusCode, string(body))
+				api.log.Errorf("Not OK response from %s, with code: %d, body %s", api.opts.DLREndpoint, resp.StatusCode, string(body))
+				return
 			}
 		}()
-
 	}
 
 }

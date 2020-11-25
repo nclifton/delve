@@ -24,11 +24,18 @@ type SendSMSParams struct {
 	DNIS            string
 	ANI             string
 	LongMessageMode string
+	URL             string
 }
 
 func (s *Service) SendSMS(params SendSMSParams) (string, error) {
+
+	apiURL := params.URL
+	if apiURL == "" {
+		apiURL = s.apiURL
+	}
+
 	// hand off to alaris
-	req, err := http.NewRequest("GET", s.apiURL, nil)
+	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		return "", NewError(err.Error(), false)
 	}

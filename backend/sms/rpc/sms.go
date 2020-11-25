@@ -32,6 +32,7 @@ type SendParams struct {
 	MessageRef string
 	AlarisUser string
 	AlarisPass string
+	AlarisURL  string
 }
 
 type SendReply struct {
@@ -39,6 +40,7 @@ type SendReply struct {
 }
 
 func (s *SMSService) Send(p SendParams, r *SendReply) error {
+
 	// check the sms size
 	count, err := biz.IsValidSMS(p.Message)
 	if err != nil {
@@ -78,6 +80,7 @@ func (s *SMSService) Send(p SendParams, r *SendReply) error {
 		AccountID:  sms.AccountID,
 		AlarisUser: p.AlarisUser,
 		AlarisPass: p.AlarisPass,
+		AlarisURL:  p.AlarisURL,
 	}
 
 	err = s.db.Publish(job, opts)

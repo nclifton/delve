@@ -10,3 +10,11 @@ func (c *Client) PublishSMSStatusUpdate(params PublishSMSStatusUpdateParams) err
 	err := c.Call("PublishSMSStatusUpdate", params, &NoReply{})
 	return err
 }
+
+type PublishMOParams = wrpc.PublishMOParams
+type LastMessage = wrpc.LastMessage
+
+func (c *Client) PublishMO(params PublishMOParams) error {
+	err := c.Call("PublishMO", params, &NoReply{})
+	return err
+}

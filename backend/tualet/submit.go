@@ -109,7 +109,7 @@ func SubmitGET(r *Route) {
 	if status != http.StatusOK {
 		r.w.Header().Set("Content-Type", "text/html")
 		r.w.WriteHeader(status)
-		fmt.Fprintf(r.w, response)
+		fmt.Fprint(r.w, response)
 		return
 	}
 

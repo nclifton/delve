@@ -27,6 +27,17 @@ func SMSPOST(r *Route) {
 		return
 	}
 
+	// Check sender against the acconts sender list
+	var validSender bool
+	for _, possibleSender := range account.Sender {
+		validSender = possibleSender == req.Sender
+	}
+
+	if !validSender {
+		r.WriteError(fmt.Sprintf("Sender: %s is not valid for account: %s(%s)", req.Sender, account.Name, account.ID), http.StatusBadRequest)
+		return
+	}
+
 	res, err := r.api.sms.Send(sms.SendParams{
 		MessageRef: req.MessageRef,
 		Message:    req.Message,
@@ -34,8 +45,9 @@ func SMSPOST(r *Route) {
 		Sender:     req.Sender,
 		Recipient:  req.Recipient,
 		Country:    req.Country,
-		AlarisUser: "testing",
-		AlarisPass: "testing",
+		AlarisUser: account.AlarisUsername,
+		AlarisPass: account.AlarisPassword,
+		AlarisURL:  account.AlarisURL,
 	})
 	if err != nil {
 		// handler rpc error

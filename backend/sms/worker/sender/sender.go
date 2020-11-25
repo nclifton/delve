@@ -3,7 +3,6 @@ package sender
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -65,10 +64,9 @@ func (h *SenderHandler) Handle(body []byte, headers map[string]interface{}) erro
 		return rabbit.NewErrWorkerMessageParse(err.Error())
 	}
 	log.Printf("[SMS Send] got message: %+v", jobdata)
-
 	if !h.limiter.Allow(jobdata.AlarisUser, float64(100), 100) {
 		log.Printf("[SMS Send] retrying %s due to ratelimit", jobdata.ID)
-		return rabbit.NewErrRetryWorkerMessage(err.Error())
+		return rabbit.NewErrRetryWorkerMessage(fmt.Sprintf("[SMS Send] retrying %s due to ratelimit", jobdata.ID))
 	}
 
 	// hand off to alaris
@@ -80,6 +78,7 @@ func (h *SenderHandler) Handle(body []byte, headers map[string]interface{}) erro
 		DNIS:            jobdata.Recipient,
 		ANI:             jobdata.Sender,
 		LongMessageMode: "split",
+		URL:             jobdata.AlarisURL,
 	})
 	if err != nil {
 		aerror, ok := err.(*alaris.AlarisClientError)
@@ -88,7 +87,7 @@ func (h *SenderHandler) Handle(body []byte, headers map[string]interface{}) erro
 				return rabbit.NewErrRetryWorkerMessage(fmt.Sprintf("[SMS Send] Failed sending sms to alaris Error: %s", aerror.Error()))
 			}
 		}
-		return errors.New(fmt.Sprintf("[SMS Send] Failed sending sms to alaris Error: %s", aerror.Error()))
+		return fmt.Errorf("[SMS Send] Failed sending sms to alaris Error: %s", aerror.Error())
 	}
 
 	log.Printf("[SMS Send] sent msg to alaris SMSID:(%s), MessageID:(%s)", jobdata.ID, messageID)

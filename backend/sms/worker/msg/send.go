@@ -15,4 +15,5 @@ type SMSSendMessageSpec struct {
 	Sender     string `json:"sender"`
 	AlarisUser string `json:"alaris_user"`
 	AlarisPass string `json:"alaris_pass"`
+	AlarisURL  string `json:"alaris_url"`
 }

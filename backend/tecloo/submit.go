@@ -66,7 +66,6 @@ func (api *TeclooAPI) parseSubmit(contentType string, body io.Reader) (string, *
 			soap := strings.Replace(string(part.Body), "\n", "", -1)
 			soap = stripRegex.ReplaceAllString(soap, "><")
 			if !submitRegex.MatchString(soap) {
-				status = "2007"
 				return "", nil, errors.New("Submit Request must contain a SubmitReq Element")
 			}
 			recipient = mm7utils.ExtractEntity(*recipientRegex, soap)

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
+	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -15,17 +16,23 @@ const (
 type db struct {
 	postgres *pgxpool.Pool
 	rabbit   rabbit.Conn
+	redis    *redis.Connection
 }
 
 // New db interface
 
-func NewDB(postgresURL string, rabbitmq rabbit.Conn) (*db, error) {
+func NewDB(postgresURL string, rabbitmq rabbit.Conn, redisURL string) (*db, error) {
 	postgres, err := pgxpool.Connect(context.Background(), postgresURL)
 	if err != nil {
 		return nil, err
 	}
 
-	return &db{postgres: postgres, rabbit: rabbitmq}, nil
+	redis, err := redis.Connect(redisURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return &db{postgres: postgres, rabbit: rabbitmq, redis: redis}, nil
 }
 
 type CommandTag = pgconn.CommandTag
