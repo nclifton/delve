@@ -37,12 +37,12 @@ func main() {
 		ExchangeType: env.RabbitExchangeType,
 	}
 
-	arpc, err := mmsRPC.NewService(env.PostgresURL, rabbitmq, rabbitOpts)
+	mmsrpc, err := mmsRPC.NewService(env.PostgresURL, rabbitmq, rabbitOpts)
 	if err != nil {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", mmsRPC.Name, err)
 	}
 
-	server, err := rpc.NewServer(arpc, port)
+	server, err := rpc.NewServer(mmsrpc, port)
 	if err != nil {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", mmsRPC.Name, err)
 	}

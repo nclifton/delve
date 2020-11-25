@@ -70,6 +70,7 @@ func (s *MMSService) Send(p SendParams, r *SendReply) error {
 	if err != nil {
 		return err
 	}
+	r.MMS = mms
 
 	job := worker.Job{
 		ID:          mms.ID,
@@ -84,8 +85,7 @@ func (s *MMSService) Send(p SendParams, r *SendReply) error {
 
 	err = s.db.Publish(job, worker.MMSSendQueueName)
 
-	r.MMS = mms
-	return nil
+	return err
 }
 
 type FindByIDParams struct {

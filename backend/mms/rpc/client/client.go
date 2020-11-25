@@ -4,11 +4,11 @@ import (
 	"encoding/gob"
 	"strconv"
 
-	arpc "github.com/burstsms/mtmo-tp/backend/account/rpc"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	mmsrpc "github.com/burstsms/mtmo-tp/backend/mms/rpc"
 )
 
-type NoReply = arpc.NoReply
+type NoReply = mmsrpc.NoReply
 
 type Client struct {
 	rpc.Client
@@ -19,7 +19,7 @@ func New(host string, port int) *Client {
 	return &Client{
 		Client: rpc.Client{
 			ServiceAddress: host + ":" + strconv.Itoa(port),
-			ServiceName:    arpc.Name,
+			ServiceName:    mmsrpc.Name,
 		},
 	}
 }
