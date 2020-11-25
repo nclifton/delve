@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/lib/pq"
@@ -14,16 +15,22 @@ const (
 
 type db struct {
 	postgres *pgxpool.Pool
+	redis    *redis.Connection
 }
 
 // New db interface
-func NewDB(postgresURL string) (*db, error) {
+func NewDB(postgresURL string, redisURL string) (*db, error) {
 	postgres, err := pgxpool.Connect(context.Background(), postgresURL)
 	if err != nil {
 		return nil, err
 	}
 
-	return &db{postgres: postgres}, nil
+	redis, err := redis.Connect(redisURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return &db{postgres: postgres, redis: redis}, nil
 }
 
 type CommandTag = pgconn.CommandTag

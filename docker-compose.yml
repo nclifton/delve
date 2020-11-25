@@ -34,6 +34,7 @@ services:
       - ACCOUNT_RPC_PORT=10001
       - ACCOUNT_RPC_HOST=backend
       - ACCOUNT_POSTGRES_URL=postgresql://postgres:example@postgres/account
+      - ACCOUNT_REDIS_URL=redis:6379
 
       - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
       - WEBHOOK_RPC_HOST=backend

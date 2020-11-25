@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"log"
 	"time"
 )
 
@@ -34,7 +33,17 @@ type FindByAPIKeyReply struct {
 }
 
 func (s *AccountService) FindByAPIKey(p FindByAPIKeyParams, r *FindByAPIKeyReply) error {
-	account, err := s.db.FindByAPIKey(p.Key)
+
+	var account *Account
+
+	err := s.db.redis.Cached(
+		"Account.FindByAPIKey:"+p.Key,
+		&account,
+		time.Minute*5,
+		func() (interface{}, error) {
+			return s.db.FindByAPIKey(p.Key)
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -51,8 +60,16 @@ type FindBySenderReply struct {
 }
 
 func (s *AccountService) FindBySender(p FindBySenderParams, r *FindBySenderReply) error {
-	log.Printf("In find by sender function on server")
-	account, err := s.db.FindBySender(p.Sender)
+	var account *Account
+
+	err := s.db.redis.Cached(
+		"Account.FindBySender:"+p.Sender,
+		&account,
+		time.Minute*5,
+		func() (interface{}, error) {
+			return s.db.FindBySender(p.Sender)
+		},
+	)
 	if err != nil {
 		return err
 	}

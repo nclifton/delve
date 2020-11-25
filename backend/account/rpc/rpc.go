@@ -28,9 +28,9 @@ func (s *Service) Receiver() interface{} {
 	return s.receiver
 }
 
-func NewService(postgresURL string) (rpc.Service, error) {
+func NewService(postgresURL string, redisURL string) (rpc.Service, error) {
 	gob.Register(map[string]interface{}{})
-	db, err := NewDB(postgresURL)
+	db, err := NewDB(postgresURL, redisURL)
 	if err != nil {
 		return nil, err
 	}
