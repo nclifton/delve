@@ -16,6 +16,7 @@ import (
 
 type mm7RPCClient interface {
 	UpdateStatus(p mm7RPC.MM7UpdateStatusParams) error
+	ProviderSpec(p mm7RPC.MM7ProviderSpecParams) (r *mm7RPC.MM7ProviderSpecReply, err error)
 	CheckRateLimit(p mm7RPC.MM7CheckRateLimitParams) (r *mm7RPC.MM7CheckRateLimitReply, err error)
 	GetCachedContent(p mm7RPC.MM7GetCachedContentParams) (r *mm7RPC.MM7GetCachedContentReply, err error)
 }
@@ -66,6 +67,14 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 		return rabbit.NewErrRetryWorkerMessage(fmt.Sprintf("Failed sending message id: %s Error: rate limit reached", msg.ID))
 	}
 
+	psReply, err := h.mm7RPC.ProviderSpec(mm7RPC.MM7ProviderSpecParams{
+		ProviderKey: worker.FakeProviderKey,
+	})
+	if err != nil {
+		h.logError(msg, "", err.Error(), "Unexpected mm7RPC.ProviderSpec response")
+		return err
+	}
+
 	var images [][]byte
 	for _, url := range msg.ContentURLs {
 		r, err := h.mm7RPC.GetCachedContent(mm7RPC.MM7GetCachedContentParams{
@@ -74,6 +83,13 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 		if err != nil {
 			h.logError(msg, "", err.Error(), "Unexpected mm7RPC.GetCachedContent response")
 			return err
+		}
+
+		// validation image size
+		if len(r.Content) > psReply.ImageSizeMaxKB*1000 {
+			description := fmt.Sprintf("Total image size > %dkb", psReply.ImageSizeMaxKB)
+			h.logError(msg, MMSStatusFailed, description, "Validation error")
+			return h.updateStatus(msg.ID, "", MMSStatusFailed, description)
 		}
 
 		images = append(images, r.Content)

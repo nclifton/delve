@@ -8,13 +8,19 @@ import (
 )
 
 type mockRPCClient struct {
+	providerSpecReply  mm7RPC.MM7ProviderSpecReply
 	rateLimitReply     mm7RPC.MM7CheckRateLimitReply
 	cachedContentReply mm7RPC.MM7GetCachedContentReply
-	err                error
+
+	err error
 }
 
 func (m mockRPCClient) UpdateStatus(p mm7RPC.MM7UpdateStatusParams) error {
 	return m.err
+}
+
+func (m mockRPCClient) ProviderSpec(p mm7RPC.MM7ProviderSpecParams) (r *mm7RPC.MM7ProviderSpecReply, err error) {
+	return &m.providerSpecReply, m.err
 }
 
 func (m mockRPCClient) CheckRateLimit(p mm7RPC.MM7CheckRateLimitParams) (r *mm7RPC.MM7CheckRateLimitReply, err error) {

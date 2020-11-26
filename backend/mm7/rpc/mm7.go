@@ -189,7 +189,7 @@ func getProviderDetail(providerKey string) (ProviderDetail, error) {
 		return ProviderDetail{
 			Rate:            1.0,
 			Burst:           20,
-			ImageSizeMaxKB:  400,
+			ImageSizeMaxKB:  450,
 			QueueNameSubmit: worker.QueueNameSubmitOptus,
 		}, nil
 	case worker.MgageProviderKey:
