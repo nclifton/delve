@@ -15,3 +15,9 @@
 # vendor/
 
 backend/coverage_report.txt
+
+# Ops
+.terraform/
+terraform.*
+.generated-values.yaml
+

@@ -1,0 +1,33 @@
+env:
+  pgpassfile: /var/lib/pgadmin/storage/pgadmin/file.pgpass
+extraSecretMounts:
+  - name: pgpassfile
+    secret: pgpassfile
+    subPath: pgpassfile
+    mountPath: "/var/lib/pgadmin/storage/pgadmin/file.pgpass"
+    readOnly: true
+serverDefinitions:
+  enabled: true
+  servers: |-
+    "1": {
+        "Name": "Sendsei",
+        "Group": "Servers",
+        "Port": 5432,
+        "Username": "foo",
+        "PassFile": "/var/lib/pgadmin/storage/pgadmin/file.pgpass",
+        "Host": "${postgres_endpoint}",
+        "SSLMode": "prefer",
+        "MaintenanceDB": "postgres"
+      }
+VolumePermissions:
+  # chown -R pgadmin:pgadmin /var/lib/pgadmin
+  enabled: true
+extraInitContainers: |
+  - name: add-folder-for-pgpass
+    image: "dpage/pgadmin4:4.23"
+    command: ["/bin/mkdir", "-p", "/var/lib/pgadmin/storage/pgadmin"]
+    volumeMounts:
+      - name: pgadmin-data
+        mountPath: /var/lib/pgadmin
+    securityContext:
+      runAsUser: 5050

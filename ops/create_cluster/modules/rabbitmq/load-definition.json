@@ -1,0 +1,65 @@
+{
+  "users": [
+    {
+      "name": "burstsms",
+      "password": "9ur686m6",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    },
+    {
+      "name": "event"
+    },
+    {
+      "name": "conversation"
+    },
+    {
+      "name": "webhook"
+    },
+    {
+      "name": "mm7"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "burstsms",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "burstsms",
+      "vhost": "event",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "burstsms",
+      "vhost": "conversation",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "burstsms",
+      "vhost": "webhook",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "burstsms",
+      "vhost": "mm7",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "parameters": [],
+  "policies": []
+}

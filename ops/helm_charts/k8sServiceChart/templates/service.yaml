@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{required "value 'name' is required" .Values.name}}
+  namespace: {{required "value 'namespace' is required" .Values.namespace}}
+  labels:
+    app.kubernetes.io/name: {{required "value 'name' is required" .Values.name | quote}}
+    helm.sh/chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
+    app.kubernetes.io/instance: {{$.Release.Name | quote}}
+    app.kubernetes.io/version: {{$.Chart.AppVersion | quote}}
+    app.kubernetes.io/component: {{required "value 'component' is required" .Values.component | quote}}
+    app.kubernetes.io/part-of: {{required "value 'namespace' is required" .Values.namespace | quote}}
+    app.kubernetes.io/managed-by: {{$.Release.Service | quote}}
+spec:
+  {{- if .Values.serviceClusterIP}}
+  clusterIP: {{.Values.serviceClusterIP}}
+  {{- else}}
+  type: {{required "value 'serviceType' is required" .Values.serviceType}}
+  ports:
+  - port: {{required "value 'servicePort' is required" .Values.servicePort}}
+    targetPort: {{required "value 'serviceTargetPort' is required" .Values.serviceTargetPort}}
+    protocol: TCP
+  {{- end}}
+  selector:
+    app: {{required "value 'name' is required" .Values.name}}

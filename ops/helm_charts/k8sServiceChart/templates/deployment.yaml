@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{required "value 'name' is required" .Values.name}}
+  namespace: {{required "value 'namespace' is required" .Values.namespace}}
+  labels:
+    app.kubernetes.io/name: {{required "value 'name' is required" .Values.name | quote}}
+    helm.sh/chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
+    app.kubernetes.io/instance: {{$.Release.Name | quote}}
+    app.kubernetes.io/version: {{$.Chart.AppVersion | quote}}
+    app.kubernetes.io/component: {{required "value 'component' is required" .Values.component | quote}}
+    app.kubernetes.io/part-of: {{required "value 'namespace' is required" .Values.namespace | quote}}
+    app.kubernetes.io/managed-by: {{$.Release.Service | quote}}
+spec:
+  replicas: {{required "value 'replicas' is required" .Values.replicas | int}}
+  selector:
+    matchLabels:
+      app: {{required "value 'name' is required" .Values.name}}
+  template:
+    metadata:
+      labels:
+        app: {{required "value 'name' is required" .Values.name | quote}}
+        app.kubernetes.io/name: {{required "value 'name' is required" .Values.name | quote}}
+        helm.sh/chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
+        app.kubernetes.io/instance: {{$.Release.Name | quote}}
+        app.kubernetes.io/version: {{$.Chart.AppVersion | quote}}
+        app.kubernetes.io/component: {{required "value 'component' is required" .Values.component | quote}}
+        app.kubernetes.io/part-of: {{required "value 'namespace' is required" .Values.namespace | quote}}
+        app.kubernetes.io/managed-by: {{$.Release.Service | quote}}
+        {{- range $key, $value := .Values.podLabels}}
+        {{$key}}: {{$value | quote}}
+        {{- end}}
+      {{- if .Values.podAnnotations}}
+      annotations:
+        {{- range $key, $value := .Values.podAnnotations}}
+        {{$key}}: {{$value | quote}}
+        {{- end}}
+      {{- end}}
+    spec:
+      {{- if .Values.dockercfg}}
+      imagePullSecrets:
+      - name: {{required "value 'name' is required" .Values.name}}-dockercfg
+      {{- end}}
+      containers:
+      - name: {{required "value 'name' is required" .Values.name}}
+        image: "{{required "value 'image.repository' is required" .Values.image.repository}}:{{required "value 'image.tag' is required" .Values.image.tag}}"
+        {{- if or .Values.env.config .Values.env.secrets .Values.existingConfigMapName .Values.existingSecretName}}
+        envFrom:
+        {{- if .Values.env.config}}
+        - configMapRef:
+            name: {{required "value 'name' is required" .Values.name}}
+        {{- end}}
+        {{- if .Values.env.secrets}}
+        - secretRef:
+            name: {{required "value 'name' is required" .Values.name}}
+        {{- end}}
+        {{- if .Values.existingConfigMapName}}
+        - configMapRef:
+            name: {{required "value 'existingConfigMapName' is required" .Values.existingConfigMapName}}
+        {{- end}}
+        {{- if .Values.existingSecretName}}
+        - secretRef:
+            name: {{required "value 'existingSecretName' is required" .Values.existingSecretName}}
+        {{- end}}
+        {{- end}}
+        {{- if .Values.exposePorts}}
+        ports:
+        - containerPort: {{required "value 'serviceTargetPort' is required" .Values.serviceTargetPort}}
+        livenessProbe:
+          {{- if .Values.livenessProbe.httpGet}}
+          httpGet:
+            path: {{required "value 'livenessProbe.path' is required" .Values.livenessProbe.path}}
+            port: {{required "value 'serviceTargetPort' is required" .Values.serviceTargetPort}}
+          {{- else}}
+          tcpSocket:
+            port: {{required "value 'serviceTargetPort' is required" .Values.serviceTargetPort}}
+          {{- end}}
+          initialDelaySeconds: {{required "value 'livenessProbe.initialDelaySeconds' is required" .Values.livenessProbe.initialDelaySeconds}}
+          periodSeconds: {{required "value 'livenessProbe.periodSeconds' is required" .Values.livenessProbe.periodSeconds}}
+          successThreshold: {{required "value 'livenessProbe.successThreshold' is required" .Values.livenessProbe.successThreshold}}
+          timeoutSeconds: {{required "value 'livenessProbe.timeoutSeconds' is required" .Values.livenessProbe.timeoutSeconds}}
+        readinessProbe:
+          {{- if .Values.readinessProbe.httpGet}}
+          httpGet:
+            path: {{required "value 'readinessProbe.path' is required" .Values.readinessProbe.path}}
+            port: {{required "value 'serviceTargetPort' is required" .Values.serviceTargetPort}}
+          {{- else}}
+          tcpSocket:
+            port: {{required "value 'serviceTargetPort' is required" .Values.serviceTargetPort}}
+          {{- end}}
+          periodSeconds: {{required "value 'readinessProbe.periodSeconds' is required" .Values.readinessProbe.periodSeconds}}
+          successThreshold: {{required "value 'readinessProbe.successThreshold' is required" .Values.readinessProbe.successThreshold}}
+          timeoutSeconds: {{required "value 'readinessProbe.timeoutSeconds' is required" .Values.readinessProbe.timeoutSeconds}}
+        {{- end}}
+        resources:
+          limits:
+            cpu: {{required "value 'resourceLimits.cpu' is required" .Values.resourceLimits.cpu}}
+            memory: {{required "value 'resourceLimits.memory' is required" .Values.resourceLimits.memory}}
+          requests:
+            cpu: {{required "value 'resourceRequests.cpu' is required" .Values.resourceRequests.cpu}}
+            memory: {{required "value 'resourceRequests.memory' is required" .Values.resourceRequests.memory}}
+      {{- if .Values.config}}
+        volumeMounts:
+        - name: {{required "value 'config.name' is required" .Values.config.name}}
+          mountPath: {{.Values.config.mountPath}}
+      volumes:
+      - name: {{required "value 'config.name' is required" .Values.config.name}}
+        configMap:
+          name: {{required "value 'config.name' is required" .Values.config.name}}
+          items:
+          - key: {{required "value 'config.key' is required" .Values.config.key}}
+            path: {{required "value 'config.filename' is required" .Values.config.filename}}
+      {{- end}}

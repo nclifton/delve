@@ -1,0 +1,76 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{required "value 'name' is required" .Values.name}}
+  namespace: {{required "value 'namespace' is required" .Values.namespace}}
+  labels:
+    app.kubernetes.io/name: {{required "value 'name' is required" .Values.name | quote}}
+    helm.sh/chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
+    app.kubernetes.io/instance: {{$.Release.Name | quote}}
+    app.kubernetes.io/version: {{$.Chart.AppVersion | quote}}
+    app.kubernetes.io/component: {{required "value 'component' is required" .Values.component | quote}}
+    app.kubernetes.io/part-of: {{required "value 'namespace' is required" .Values.namespace | quote}}
+    app.kubernetes.io/managed-by: {{$.Release.Service | quote}}
+  {{- if .Values.jobAnnotations}}
+  annotations:
+    {{- range $key, $value := .Values.jobAnnotations}}
+    {{$key}}: {{$value | quote}}
+    {{- end}}
+  {{- end}}
+spec:
+  schedule: {{required "value 'job.schedule' is required" .Values.job.schedule}}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: {{required "value 'name' is required" .Values.name}}
+          labels:
+            app: {{required "value 'name' is required" .Values.name | quote}}
+            app.kubernetes.io/name: {{required "value 'name' is required" .Values.name | quote}}
+            helm.sh/chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
+            app.kubernetes.io/instance: {{$.Release.Name | quote}}
+            app.kubernetes.io/version: {{$.Chart.AppVersion | quote}}
+            app.kubernetes.io/component: {{required "value 'component' is required" .Values.component | quote}}
+            app.kubernetes.io/part-of: {{required "value 'namespace' is required" .Values.namespace | quote}}
+            app.kubernetes.io/managed-by: {{$.Release.Service | quote}}
+            {{- range $key, $value := .Values.podLabels}}
+            {{$key}}: {{$value | quote}}
+            {{- end}}
+          {{- if .Values.podAnnotations}}
+          annotations:
+            {{- range $key, $value := .Values.podAnnotations}}
+            {{$key}}: {{$value | quote}}
+            {{- end}}
+          {{- end}}
+        spec:
+          {{- if .Values.dockercfg}}
+          imagePullSecrets:
+          - name: {{required "value 'name' is required" .Values.name}}-dockercfg
+          {{- end}}
+          restartPolicy: {{required "value 'restartPolicy' is required" .Values.restartPolicy }}
+          containers:
+          - name: {{required "value 'name' is required" .Values.name}}
+            image: "{{required "value 'image.repository' is required" .Values.image.repository}}:{{required "value 'image.tag' is required" .Values.image.tag}}"
+            {{- if or .Values.env.config .Values.env.secrets .Values.existingConfigMapName}}
+            envFrom:
+            {{- if .Values.env.config}}
+            - configMapRef:
+                name: {{required "value 'name' is required" .Values.name}}
+            {{- end}}
+            {{- if .Values.env.secrets}}
+            - secretRef:
+                name: {{required "value 'name' is required" .Values.name}}
+            {{- end}}
+            {{- if .Values.existingConfigMapName}}
+            - configMapRef:
+                name: {{required "value 'existingConfigMapName' is required" .Values.existingConfigMapName}}
+            {{- end}}
+            {{- end}}
+            {{ if .Values.job.command }}
+            command:
+            {{ toYaml .Values.job.command}}
+            {{ end }}
+            {{ if .Values.job.args }}
+            args:
+            {{ toYaml .Values.job.args}}
+            {{ end }}

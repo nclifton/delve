@@ -1,0 +1,51 @@
+# TODO: Only use ${service.name} here once we move to Harness completely
+name: job-name
+# Component is the group of services (domain) the service belongs to
+component: service-name
+# TODO: Only use ${app.name} here once we move to Harness completely
+namespace: sendsei
+replicas: 1
+
+# TODO: Only use ${artifact.metadata.image} here once we move to Harness completely
+image:
+  repository: 410370493805.dkr.ecr.ap-southeast-2.amazonaws.com/job-name
+  tag: latest
+
+# TODO: Comment back in once we mve to Harness completely
+#dockercfg: ${artifact.source.dockerconfig}
+
+# TODO: Only use env.name here once we move to Harness completely
+podLabels:
+  env: ${env.name}
+
+# WORKAROUND: Till https://www.pivotaltracker.com/story/show/174031674 is implemented
+podAnnotations:
+  linkerd.io/inject: disabled
+
+restartPolicy: Never
+
+job:
+  command:
+    - /app
+  #parallelism: 
+  #args:
+
+# post-install what defines this resource as a hook. Without this line, the
+# job is considered part of the release.
+jobAnnotations:
+  hook: post-install
+  hook-weight: "-5"
+  hook-delete-policy: hook-succeeded
+
+# Specify all environment variables to be added to the container.
+# The following two maps, config and secrets, are put into a ConfigMap
+# and a Secret, respectively.
+# Both are added to the container environment in podSpec as envFrom source.
+env: {}
+#  config:
+#    key1: value1
+#  secrets:
+#    key2: value2
+
+# TODO: Remove this and use defined env vars above
+#existingConfigMapName: service-config

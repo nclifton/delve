@@ -1,0 +1,61 @@
+{{- if .Values.env}}
+{{- if .Values.env.config}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{required "value 'name' is required" .Values.name}}
+  namespace: {{required "value 'namespace' is required" .Values.namespace}}
+  labels:
+    app.kubernetes.io/name: {{required "value 'name' is required" .Values.name | quote}}
+    helm.sh/chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
+    app.kubernetes.io/instance: {{$.Release.Name | quote}}
+    app.kubernetes.io/version: {{$.Chart.AppVersion | quote}}
+    app.kubernetes.io/component: {{required "value 'component' is required" .Values.component | quote}}
+    app.kubernetes.io/part-of: {{required "value 'namespace' is required" .Values.namespace | quote}}
+    app.kubernetes.io/managed-by: {{$.Release.Service | quote}}
+data:
+{{.Values.env.config | toYaml | indent 2}}
+---
+{{- end}}
+
+{{- if .Values.env.secrets}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{required "value 'name' is required" .Values.name}}
+  namespace: {{required "value 'namespace' is required" .Values.namespace}}
+  labels:
+    app.kubernetes.io/name: {{required "value 'name' is required" .Values.name | quote}}
+    helm.sh/chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
+    app.kubernetes.io/instance: {{$.Release.Name | quote}}
+    app.kubernetes.io/version: {{$.Chart.AppVersion | quote}}
+    app.kubernetes.io/component: {{required "value 'component' is required" .Values.component | quote}}
+    app.kubernetes.io/part-of: {{required "value 'namespace' is required" .Values.namespace | quote}}
+    app.kubernetes.io/managed-by: {{$.Release.Service | quote}}
+stringData:
+{{.Values.env.secrets | toYaml | indent 2}}
+---
+{{- end}}
+{{- end}}
+
+{{- if .Values.dockercfg}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{required "value 'name' is required" .Values.name}}-dockercfg
+  namespace: {{required "value 'namespace' is required" .Values.namespace}}
+  labels:
+    app.kubernetes.io/name: {{required "value 'name' is required" .Values.name | quote}}
+    helm.sh/chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
+    app.kubernetes.io/instance: {{$.Release.Name | quote}}
+    app.kubernetes.io/version: {{$.Chart.AppVersion | quote}}
+    app.kubernetes.io/component: {{required "value 'component' is required" .Values.component | quote}}
+    app.kubernetes.io/part-of: {{required "value 'namespace' is required" .Values.namespace | quote}}
+    app.kubernetes.io/managed-by: {{$.Release.Service | quote}}
+  annotations:
+    harness.io/skip-versioning: true
+data:
+  .dockercfg: {{.Values.dockercfg}}
+type: kubernetes.io/dockercfg
+---
+{{- end}}

@@ -1,0 +1,103 @@
+# TODO: Only use ${service.name} here once we move to Harness completely
+name: service-name
+# Component is the group of services (domain) the service belongs to
+component: service-name
+# TODO: Only use ${app.name} here once we move to Harness completely
+namespace: sendsei
+replicas: 1
+
+# TODO: Only use ${artifact.metadata.image} here once we move to Harness completely
+image: 
+  repository: 410370493805.dkr.ecr.ap-southeast-2.amazonaws.com/service-name
+  tag: latest
+
+# TODO: Comment back in once we mve to Harness completely
+#dockercfg: ${artifact.source.dockerconfig}
+
+# TODO: Only use env.name here once we move to Harness completely
+podLabels:
+  env: ${env.name}
+
+#podAnnotations:
+
+# Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
+serviceType: NodePort
+servicePort: 4002
+serviceTargetPort: 80
+# For Headless Services (e.g. RabbitMQ Consumers) 
+# uncomment the below and ignore serviceType, servicePort and serviceTargetPort
+#serviceClusterIP: None
+
+# HorizontalPodAutoscaler
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 12
+  cpuTargetAverageUtilization: 80
+  memoryTargetAverageUtilization: 80
+
+# Cluster Ingress
+ingress:
+  enabled: false
+  annotations: 
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/success-codes: "200,404"
+  # Add ingress rules (cluster ingress endpoints) as a list below
+  rules:
+    - host: 
+      path: 
+
+# Pod resource limits
+resourceLimits:
+  cpu: 400m
+  memory: 256Mi
+resourceRequests:
+  cpu: 400m
+  memory: 256Mi
+
+# Flag to turn on/off the exposing of the contianer port and liveness and readiness probes
+# TODO: Remove this flag once all services have liveness and readiness endpoints
+exposePorts: true
+
+# Liveness Probe configuration
+livenessProbe:
+  httpGet: true
+  path: /
+  initialDelaySeconds: 60
+  periodSeconds: 60
+  successThreshold: 1
+  timeoutSeconds: 1
+
+# Readiness Probe configuration
+readinessProbe:
+  httpGet: true
+  path: /
+  failureThreshold: 3
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 1
+
+# Specify all environment variables to be added to the container.
+# The following two maps, config and secrets, are put into a ConfigMap
+# and a Secret, respectively.
+# Both are added to the container environment in podSpec as envFrom source.
+env: {}
+#  config:
+#    key1: value1
+#  secrets:
+#    key2: value2
+
+# TODO: Remove this and use defined env vars above
+#existingConfigMapName: service-config
+#existingSecretName: staging
+
+# Old configuration to support config toml files (optional)
+# All new services can delete this as they use env vars defined above
+#config:
+#  name: backend-config
+#  key: config
+#  mountPath: /config
+#  filename: config.toml
