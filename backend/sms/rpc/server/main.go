@@ -23,6 +23,8 @@ type Env struct {
 	WebhookRPCPort     int    `envconfig:"WEBHOOK_RPC_PORT"`
 	AccountRPCHost     string `envconfig:"ACCOUNT_RPC_HOST"`
 	AccountRPCPort     int    `envconfig:"ACCOUNT_RPC_PORT"`
+	TrackLinkDomain    string `envconfig:"TRACKLINK_DOMAIN"`
+	OptOutLinkDomain   string `envconfig:"OPTOUTLINK_DOMAIN"`
 }
 
 func main() {
@@ -42,7 +44,12 @@ func main() {
 	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort)
 	arpc := accountRPC.New(env.AccountRPCHost, env.AccountRPCPort)
 
-	srpc, err := smsRPC.NewService(env.PostgresURL, rabbitmq, wrpc, arpc, env.RedisURL)
+	features := smsRPC.SMSFeatures{
+		TrackLinkDomain:  env.TrackLinkDomain,
+		OptOutLinkDomain: env.OptOutLinkDomain,
+	}
+
+	srpc, err := smsRPC.NewService(features, env.PostgresURL, rabbitmq, wrpc, arpc, env.RedisURL)
 	if err != nil {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
 	}

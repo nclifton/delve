@@ -63,7 +63,7 @@ type LastMessage struct {
 }
 
 func (s *Webhook) PublishMO(p PublishMOParams, r *NoReply) error {
-	webhooks, err := s.db.FindByEvent(p.AccountID, "sms_mo")
+	webhooks, err := s.db.FindByEvent(p.AccountID, "sms_inbound")
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func (s *Webhook) PublishMO(p PublishMOParams, r *NoReply) error {
 		err = s.db.Publish(msg.WebhookMessageSpec{
 			URL:       w.URL,
 			RateLimit: w.RateLimit,
-			Payload:   msg.WebhookBody{Event: "sms_mo", Data: p},
+			Payload:   msg.WebhookBody{Event: "sms_inbound", Data: p},
 		}, db.RabbitPublishOptions{
 			Exchange:     msg.WebhookMessage.Exchange,
 			ExchangeType: msg.WebhookMessage.ExchangeType,

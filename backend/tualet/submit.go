@@ -87,7 +87,7 @@ func SubmitGET(r *Route) {
 		}
 	}
 
-	count, err := biz.IsValidSMS(values.message)
+	count, err := biz.IsValidSMS(values.message, biz.SMSOptions{MaxParts: 8})
 	if err != nil {
 		status = http.StatusBadRequest
 		response = err.Error()

@@ -44,7 +44,7 @@ func (db *db) FindByAPIKey(key string) (*Account, error) {
 	var account Account
 
 	sql := `
-SELECT account.id, account.name, account.created_at, account.updated_at, account.sender, account.alaris_username, account.alaris_password, account.alaris_url
+SELECT account.id, account.name, account.created_at, account.updated_at, account.sender_sms, account.sender_mms, account.alaris_username, account.alaris_password, account.alaris_url
 FROM account
 LEFT JOIN account_api_keys as api_keys ON account.id = api_keys.account_id
 WHERE api_keys.key = $1;
@@ -56,7 +56,8 @@ WHERE api_keys.key = $1;
 		&account.Name,
 		&account.CreatedAt,
 		&account.UpdatedAt,
-		(*pq.StringArray)(&account.Sender),
+		(*pq.StringArray)(&account.SenderSMS),
+		(*pq.StringArray)(&account.SenderMMS),
 		&account.AlarisUsername,
 		&account.AlarisPassword,
 		&account.AlarisURL,
@@ -68,14 +69,14 @@ WHERE api_keys.key = $1;
 	return &account, nil
 }
 
-func (db *db) FindBySender(sender string) (*Account, error) {
+func (db *db) FindBySenderSMS(sender string) (*Account, error) {
 
 	var account Account
 
 	sql := `
-SELECT account.id, account.name, account.created_at, account.updated_at, account.sender, account.alaris_username, account.alaris_password, account.alaris_url
+SELECT account.id, account.name, account.created_at, account.updated_at, account.sender_sms, account.sender_mms, account.alaris_username, account.alaris_password, account.alaris_url
 FROM account
-WHERE $1 = ANY (sender);
+WHERE sender_sms @> '{$1}';
 	`
 
 	row := db.postgres.QueryRow(bg(), sql, sender)
@@ -84,7 +85,8 @@ WHERE $1 = ANY (sender);
 		&account.Name,
 		&account.CreatedAt,
 		&account.UpdatedAt,
-		(*pq.StringArray)(&account.Sender),
+		(*pq.StringArray)(&account.SenderSMS),
+		(*pq.StringArray)(&account.SenderMMS),
 		&account.AlarisUsername,
 		&account.AlarisPassword,
 		&account.AlarisURL,

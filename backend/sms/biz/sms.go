@@ -1,12 +1,20 @@
 package biz
 
 import (
+	"fmt"
 	"math"
 	"regexp"
 	"unicode/utf16"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/number"
 )
+
+type SMSOptions struct {
+	TrackLink        bool
+	TrackLinkDomain  string
+	OptOutLinkDomain string
+	MaxParts         int
+}
 
 func ParseMobileCountry(mobile string, country string) (string, string, error) {
 	return number.ParseMobileCountry(mobile, country)
@@ -16,13 +24,13 @@ func GetCountryFromPhone(mobile string) (string, error) {
 	return number.GetCountryFromPhone(mobile)
 }
 
-func IsValidSMS(message string) (int, error) {
+func IsValidSMS(message string, opt SMSOptions) (int, error) {
 	// TODO unsub url length calculation
 	// this would be knowing what char count to use for [unsubscribe] in the message
 
 	// message length
-	smsCount := CountSMSParts(message)
-	if smsCount > 4 {
+	smsCount := CountSMSParts(message, opt)
+	if smsCount > opt.MaxParts {
 		return smsCount, ErrInvalidSMSTooManyParts
 	}
 
@@ -191,7 +199,7 @@ func isHighSurrogate(r rune) bool {
 }
 
 // CountSMSParts returns the sms count of a message body
-func CountSMSParts(content string) int {
+func CountSMSParts(content string, opt SMSOptions) int {
 	var start, cutOff int = 161, 153 // GSM by default
 
 	if !IsGSMString(content) { // If not GSM string, use unicode
@@ -199,7 +207,7 @@ func CountSMSParts(content string) int {
 		cutOff = 67
 	}
 
-	contentLength := contentLength(content)
+	contentLength := contentLength(content, opt)
 	if contentLength >= start {
 		return int(math.Ceil(float64(contentLength) / float64(cutOff)))
 	}
@@ -207,8 +215,19 @@ func CountSMSParts(content string) int {
 	return 1
 }
 
+var urlRegex = regexp.MustCompile(`(http|https)\://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,6}(/\S*)?`)
+var optoutRegex = regexp.MustCompile(`\[opt-out-link\]`)
+
 // contentLength returns length of a message body considering gsm escape chars
-func contentLength(content string) int {
+func contentLength(content string, opt SMSOptions) int {
+	if opt.TrackLink {
+		// Replace all urls in content with a template matching the length
+		// of a shortlink
+		content = urlRegex.ReplaceAllString(content, fmt.Sprintf(`%s/12345678`, opt.TrackLinkDomain))
+	}
+	// Check for opt out link tag
+	content = optoutRegex.ReplaceAllString(content, fmt.Sprintf(`%s/12345678`, opt.OptOutLinkDomain))
+
 	var length = len([]rune(content))
 
 	if IsGSMString(content) {

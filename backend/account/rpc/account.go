@@ -9,7 +9,8 @@ type Account struct {
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 	Name           string    `json:"name"`
-	Sender         []string  `json:"sender"`
+	SenderSMS      []string  `json:"sender_sms"`
+	SenderMMS      []string  `json:"sender_mms"`
 	AlarisUsername string    `json:"alaris_username"`
 	AlarisPassword string    `json:"alaris_password"`
 	AlarisURL      string    `json:"alaris_url"`
@@ -67,7 +68,7 @@ func (s *AccountService) FindBySender(p FindBySenderParams, r *FindBySenderReply
 		&account,
 		time.Minute*5,
 		func() (interface{}, error) {
-			return s.db.FindBySender(p.Sender)
+			return s.db.FindBySenderSMS(p.Sender)
 		},
 	)
 	if err != nil {

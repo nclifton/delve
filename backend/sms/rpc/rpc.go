@@ -19,6 +19,12 @@ type SMSService struct {
 	webhookRPC *webhook.Client
 	accountRPC *account.Client
 	name       string
+	features   SMSFeatures
+}
+
+type SMSFeatures struct {
+	TrackLinkDomain  string
+	OptOutLinkDomain string
 }
 
 type Service struct {
@@ -33,14 +39,14 @@ func (s *Service) Receiver() interface{} {
 	return s.receiver
 }
 
-func NewService(postgresURL string, rabbitmq rabbit.Conn, webhook *webhook.Client, account *account.Client, redisURL string) (rpc.Service, error) {
+func NewService(features SMSFeatures, postgresURL string, rabbitmq rabbit.Conn, webhook *webhook.Client, account *account.Client, redisURL string) (rpc.Service, error) {
 	gob.Register(map[string]interface{}{})
 	db, err := NewDB(postgresURL, rabbitmq, redisURL)
 	if err != nil {
 		return nil, err
 	}
 	service := &Service{
-		receiver: &SMSService{db: db, name: Name, webhookRPC: webhook, accountRPC: account},
+		receiver: &SMSService{db: db, name: Name, webhookRPC: webhook, accountRPC: account, features: features},
 	}
 
 	return service, nil

@@ -99,6 +99,8 @@ services:
       - SMS_ALARIS_URL=http://backend:10006/api
       - SMS_WEBHOOK_RPC_HOST=backend
       - SMS_WEBHOOK_RPC_PORT=10002
+      - OPTOUTLINK_DOMAIN=localhost:10010
+      - TRACKLINK_DOMAIN=localhost:10010
 
       - OPTOUT_RPC_PORT=10011
       - OPTOUT_INBOUND_PORT=10012

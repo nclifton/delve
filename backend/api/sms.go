@@ -29,7 +29,7 @@ func SMSPOST(r *Route) {
 
 	// Check sender against the acconts sender list
 	var validSender bool
-	for _, possibleSender := range account.Sender {
+	for _, possibleSender := range account.SenderSMS {
 		validSender = possibleSender == req.Sender
 	}
 

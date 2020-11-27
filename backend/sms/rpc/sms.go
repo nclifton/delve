@@ -33,6 +33,7 @@ type SendParams struct {
 	AlarisUser string
 	AlarisPass string
 	AlarisURL  string
+	TrackLinks bool
 }
 
 type SendReply struct {
@@ -41,8 +42,30 @@ type SendReply struct {
 
 func (s *SMSService) Send(p SendParams, r *SendReply) error {
 
+	recipientNumber := p.Recipient
+	var country string
+	var err error
+
+	if p.Country != "" {
+		recipientNumber, country, err = biz.ParseMobileCountry(recipientNumber, p.Country)
+		if err != nil {
+			return err
+		}
+	} else {
+		country, err = biz.GetCountryFromPhone(recipientNumber)
+		if err != nil {
+			return err
+		}
+	}
+
+	options := biz.SMSOptions{
+		MaxParts:         4,
+		OptOutLinkDomain: s.features.OptOutLinkDomain,
+		TrackLinkDomain:  s.features.TrackLinkDomain,
+		TrackLink:        p.TrackLinks,
+	}
 	// check the sms size
-	count, err := biz.IsValidSMS(p.Message)
+	count, err := biz.IsValidSMS(p.Message, options)
 	if err != nil {
 		return err
 	}
@@ -53,11 +76,11 @@ func (s *SMSService) Send(p SendParams, r *SendReply) error {
 	newSMS := SMS{
 		AccountID:  p.AccountID,
 		MessageRef: p.MessageRef,
-		Country:    p.Country,
+		Country:    country,
 		Message:    p.Message,
 		SMSCount:   count,
 		GSM:        isGSM,
-		Recipient:  p.Recipient,
+		Recipient:  recipientNumber,
 		Sender:     p.Sender,
 	}
 
