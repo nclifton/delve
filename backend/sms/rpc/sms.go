@@ -5,6 +5,8 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/sms/biz"
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
+	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
+	"github.com/google/uuid"
 )
 
 type SMS struct {
@@ -21,6 +23,7 @@ type SMS struct {
 	GSM        bool
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
+	TrackLinks bool
 }
 
 type SendParams struct {
@@ -41,6 +44,21 @@ type SendReply struct {
 }
 
 func (s *SMSService) Send(p SendParams, r *SendReply) error {
+	uid := uuid.New().String()
+
+	message := p.Message
+	if p.TrackLinks {
+		rsp, err := s.tracklinkRPC.GenerateTrackLinks(tracklink.GenerateTrackLinksParams{
+			AccountID:   p.AccountID,
+			MessageID:   uid,
+			MessageType: Name,
+			Message:     p.Message,
+		})
+		if err != nil {
+			return err
+		}
+		message = rsp.Message
+	}
 
 	recipientNumber := p.Recipient
 	var country string
@@ -74,10 +92,11 @@ func (s *SMSService) Send(p SendParams, r *SendReply) error {
 	isGSM := biz.IsGSMString(p.Message)
 
 	newSMS := SMS{
+		ID:         uid,
 		AccountID:  p.AccountID,
 		MessageRef: p.MessageRef,
 		Country:    country,
-		Message:    p.Message,
+		Message:    message,
 		SMSCount:   count,
 		GSM:        isGSM,
 		Recipient:  recipientNumber,

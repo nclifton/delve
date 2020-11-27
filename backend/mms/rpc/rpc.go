@@ -5,6 +5,7 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
@@ -14,8 +15,13 @@ type webhookSvc interface {
 	PublishMMSStatusUpdate(params webhook.PublishMMSStatusUpdateParams) error
 }
 
+type tracklinkSvc interface {
+	GenerateTrackLinks(p tracklink.GenerateTrackLinksParams) (r *tracklink.GenerateTrackLinksReply, err error)
+}
+
 type ConfigSvc struct {
-	Webhook webhookSvc
+	Webhook   webhookSvc
+	TrackLink tracklinkSvc
 }
 
 type NoParams struct{}

@@ -6,6 +6,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc"
+	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 
 	"github.com/kelseyhightower/envconfig"
@@ -19,6 +20,8 @@ type Env struct {
 	RabbitExchangeType string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	WebhookRPCHost     string `envconfig:"WEBHOOK_RPC_HOST"`
 	WebhookRPCPort     int    `envconfig:"WEBHOOK_RPC_PORT"`
+	TrackLinkRPCHost   string `envconfig:"TRACK_LINK_RPC_HOST"`
+	TrackLinkRPCPort   int    `envconfig:"TRACK_LINK_RPC_PORT"`
 }
 
 func main() {
@@ -41,7 +44,8 @@ func main() {
 	}
 
 	svc := mmsRPC.ConfigSvc{
-		Webhook: webhook.NewClient(env.WebhookRPCHost, env.WebhookRPCPort),
+		Webhook:   webhook.NewClient(env.WebhookRPCHost, env.WebhookRPCPort),
+		TrackLink: tracklink.NewClient(env.TrackLinkRPCHost, env.TrackLinkRPCPort),
 	}
 
 	mmsrpc, err := mmsRPC.NewService(env.PostgresURL, rabbitmq, rabbitOpts, svc)

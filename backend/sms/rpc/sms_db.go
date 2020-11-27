@@ -5,10 +5,11 @@ import "github.com/jackc/pgx/v4"
 func (db *db) InsertSMS(p SMS) (*SMS, error) {
 	var sms SMS
 	err := db.postgres.QueryRow(bg(), `INSERT INTO
-		sms(account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status)
-		values($1, '', NOW(), NOW(), $2, $3, $4, $5, $6, $7, $8, 'pending')
-		RETURNING id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status
+		sms(id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status, track_links)
+		values($1, $2, '', NOW(), NOW(), $3, $4, $5, $6, $7, $8, $9, 'pending', $10)
+		RETURNING id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status, track_links
 		`,
+		p.ID,
 		p.AccountID,
 		p.MessageRef,
 		p.Country,
@@ -17,7 +18,8 @@ func (db *db) InsertSMS(p SMS) (*SMS, error) {
 		p.GSM,
 		p.Recipient,
 		p.Sender,
-	).Scan(&sms.ID, &sms.AccountID, &sms.MessageID, &sms.CreatedAt, &sms.UpdatedAt, &sms.MessageRef, &sms.Country, &sms.Message, &sms.SMSCount, &sms.GSM, &sms.Recipient, &sms.Sender, &sms.Status)
+		p.TrackLinks,
+	).Scan(&sms.ID, &sms.AccountID, &sms.MessageID, &sms.CreatedAt, &sms.UpdatedAt, &sms.MessageRef, &sms.Country, &sms.Message, &sms.SMSCount, &sms.GSM, &sms.Recipient, &sms.Sender, &sms.Status, &sms.TrackLinks)
 	if err != nil {
 		return &SMS{}, err
 	}
@@ -70,11 +72,11 @@ func (db *db) MarkFailed(smsID string) error {
 func (db *db) FindSMSByMessageID(messageID string) (*SMS, error) {
 	var sms SMS
 	err := db.postgres.QueryRow(bg(), `
-		SELECT id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status
+		SELECT id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status, track_links
 		FROM sms
 		WHERE message_id = $1`,
 		messageID,
-	).Scan(&sms.ID, &sms.AccountID, &sms.MessageID, &sms.CreatedAt, &sms.UpdatedAt, &sms.MessageRef, &sms.Country, &sms.Message, &sms.SMSCount, &sms.GSM, &sms.Recipient, &sms.Sender, &sms.Status)
+	).Scan(&sms.ID, &sms.AccountID, &sms.MessageID, &sms.CreatedAt, &sms.UpdatedAt, &sms.MessageRef, &sms.Country, &sms.Message, &sms.SMSCount, &sms.GSM, &sms.Recipient, &sms.Sender, &sms.Status, &sms.TrackLinks)
 	if err != nil {
 		return &SMS{}, err
 	}
@@ -85,7 +87,7 @@ func (db *db) FindSMSByMessageID(messageID string) (*SMS, error) {
 func (db *db) FindSMSRelatedToMO(accountID string, mosender string, morecipient string) (*SMS, error) {
 	var sms SMS
 	err := db.postgres.QueryRow(bg(), `
-		SELECT id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status
+		SELECT id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status, track_links
 		FROM sms
 		WHERE account_id = $1 AND sender = $3 AND recipient = $2
 		AND created_at BETWEEN NOW() - INTERVAL '72 HOURS' AND NOW()
@@ -95,7 +97,7 @@ func (db *db) FindSMSRelatedToMO(accountID string, mosender string, morecipient 
 		accountID,
 		mosender,
 		morecipient,
-	).Scan(&sms.ID, &sms.AccountID, &sms.MessageID, &sms.CreatedAt, &sms.UpdatedAt, &sms.MessageRef, &sms.Country, &sms.Message, &sms.SMSCount, &sms.GSM, &sms.Recipient, &sms.Sender, &sms.Status)
+	).Scan(&sms.ID, &sms.AccountID, &sms.MessageID, &sms.CreatedAt, &sms.UpdatedAt, &sms.MessageRef, &sms.Country, &sms.Message, &sms.SMSCount, &sms.GSM, &sms.Recipient, &sms.Sender, &sms.Status, &sms.TrackLinks)
 	if err != nil && err != pgx.ErrNoRows {
 		return &SMS{}, err
 	}

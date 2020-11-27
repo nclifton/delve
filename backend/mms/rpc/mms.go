@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/mms/worker"
+	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/google/uuid"
 )
 
 type MMS struct {
@@ -23,7 +25,7 @@ type MMS struct {
 	Recipient   string    `json:"recipient"`
 	Sender      string    `json:"sender"`
 	Status      string    `json:"status"`
-	ShortenURLs bool      `json:"shorten_urls"`
+	TrackLinks  bool      `json:"track_links"`
 	Unsub       bool      `json:"unsub"`
 }
 
@@ -36,7 +38,7 @@ type SendParams struct {
 	Country     string
 	MessageRef  string
 	ContentURLs []string
-	ShortenURLs bool
+	TrackLinks  bool
 }
 
 type SendReply struct {
@@ -46,10 +48,27 @@ type SendReply struct {
 func (s *MMSService) Send(p SendParams, r *SendReply) error {
 	ctx := context.Background()
 
+	uid := uuid.New().String()
+
+	msg := p.Message
+	if p.TrackLinks {
+		rsp, err := s.svc.TrackLink.GenerateTrackLinks(tracklink.GenerateTrackLinksParams{
+			AccountID:   p.AccountID,
+			MessageID:   uid,
+			MessageType: Name,
+			Message:     p.Message,
+		})
+		if err != nil {
+			return err
+		}
+		msg = rsp.Message
+	}
+
 	newMMS := MMS{
+		ID:          uid,
 		AccountID:   p.AccountID,
 		Subject:     p.Subject,
-		Message:     p.Message,
+		Message:     msg,
 		Recipient:   p.Recipient,
 		Sender:      p.Sender,
 		Country:     p.Country,

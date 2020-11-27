@@ -29,7 +29,7 @@ func (db *db) FindByID(ctx context.Context, id string) (*MMS, error) {
 	sql := `
 		SELECT id, account_id, created_at, updated_at, provider_key, message_id, message_ref,
 			country, subject, messsage, content_urls, recipient, sender, status,
-			shorten_urls, unsub
+			track_links, unsub
 		FROM mms
 		WHERE id = $1
 	`
@@ -51,7 +51,7 @@ func (db *db) FindByID(ctx context.Context, id string) (*MMS, error) {
 		&mms.Recipient,
 		&mms.Sender,
 		&mms.Status,
-		&mms.ShortenURLs,
+		&mms.TrackLinks,
 		&mms.Unsub,
 	)
 	if err != nil {
@@ -67,7 +67,7 @@ func (db *db) FindByIDAndAccountID(ctx context.Context, id, accountID string) (*
 	sql := `
 		SELECT id, account_id, created_at, updated_at, provider_key, message_id, message_ref,
 			country, subject, messsage, content_urls, recipient, sender, status,
-			shorten_urls, unsub
+			track_links, unsub
 		FROM mms
 		WHERE id = $1 and account_id = $2
 	`
@@ -89,7 +89,7 @@ func (db *db) FindByIDAndAccountID(ctx context.Context, id, accountID string) (*
 		&mms.Recipient,
 		&mms.Sender,
 		&mms.Status,
-		&mms.ShortenURLs,
+		&mms.TrackLinks,
 		&mms.Unsub,
 	)
 	if err != nil {
@@ -101,14 +101,15 @@ func (db *db) FindByIDAndAccountID(ctx context.Context, id, accountID string) (*
 
 func (db *db) InsertMMS(ctx context.Context, mms MMS) (*MMS, error) {
 	sql := `
-		INSERT INTO mms (account_id, created_at, updated_at, provider_key,
+		INSERT INTO mms (id, account_id, created_at, updated_at, provider_key,
 			message_ref, country, subject, message,
-			content_urls, recipient, sender, status, shorten_urls)
-		VALUES ($1, NOW(), NOW(), $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+			content_urls, recipient, sender, status, track_links)
+		VALUES ($1, $2, NOW(), NOW(), $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
 		RETURNING id, created_at, updated_at
 	`
 
 	if err := db.postgres.QueryRow(ctx, sql,
+		mms.ID,
 		mms.AccountID,
 		mms.ProviderKey,
 		mms.MessageRef,
@@ -119,7 +120,7 @@ func (db *db) InsertMMS(ctx context.Context, mms MMS) (*MMS, error) {
 		mms.Recipient,
 		mms.Sender,
 		mms.Status,
-		mms.ShortenURLs,
+		mms.TrackLinks,
 	).Scan(&mms.ID, &mms.CreatedAt, &mms.UpdatedAt); err != nil {
 		return &MMS{}, err
 	}

@@ -1,0 +1,3 @@
+BEGIN;
+ALTER TABLE track_link ADD COLUMN message_type TEXT NOT NULL;
+COMMIT;

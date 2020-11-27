@@ -1,0 +1,3 @@
+BEGIN;
+ALTER TABLE track_link DROP COLUMN IF EXISTS message_type;
+COMMIT;

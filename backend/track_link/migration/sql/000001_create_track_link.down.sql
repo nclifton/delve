@@ -1,0 +1,3 @@
+BEGIN;
+DROP TABLE IF EXISTS track_link;
+COMMIT;
