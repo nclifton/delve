@@ -233,6 +233,7 @@ services:
       SMS_POSTGRES_PASSWORD: example
       SMS_POSTGRES_SSL: disable
       SMS_POSTGRES_NAME: sms
+      sMS_POSTGRES_AUTH_DB: postgres
 
   webhookpostgressetup:
     build:
