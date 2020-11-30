@@ -36,7 +36,7 @@ func main() {
 	})
 
 	opts := inbound.InboundOptions{
-		OptOutClient: rpc.New(env.OptOutHost, env.OptOutPort),
+		OptOutClient: rpc.NewClient(env.OptOutHost, env.OptOutPort),
 		NrApp:        newrelicM,
 	}
 

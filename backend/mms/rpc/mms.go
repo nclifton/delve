@@ -28,7 +28,6 @@ type MMS struct {
 	Sender      string    `json:"sender"`
 	Status      string    `json:"status"`
 	TrackLinks  bool      `json:"track_links"`
-	Unsub       bool      `json:"unsub"`
 }
 
 type SendParams struct {

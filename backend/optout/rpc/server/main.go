@@ -13,11 +13,11 @@ import (
 type Env struct {
 	RPCPort            int    `envconfig:"RPC_PORT"`
 	PostgresURL        string `envconfig:"POSTGRES_URL"`
-	RedisURL           string `envconfig:"REDIS_URL"`
 	RabbitExchange     string `envconfig:"RABBIT_EXCHANGE"`
 	RabbitExchangeType string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	WebhookRPCHost     string `envconfig:"WEBHOOK_RPC_HOST"`
 	WebhookRPCPort     int    `envconfig:"WEBHOOK_RPC_PORT"`
+	TrackHost          string `envconfig:"TRACK_HOST"`
 }
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 
 	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort)
 
-	orpc, err := ooRPC.NewService(env.PostgresURL, wrpc, env.RedisURL)
+	orpc, err := ooRPC.NewService(env.PostgresURL, env.TrackHost, wrpc)
 	if err != nil {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", ooRPC.Name, err)
 	}

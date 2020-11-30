@@ -21,3 +21,12 @@ func (c *Client) OptOutViaLink(params OptOutViaLinkParams) (r *OptOutViaLinkRepl
 	err = c.Call("OptOutViaLink", params, r)
 	return r, err
 }
+
+type GenerateOptoutLinkParams = rpc.GenerateOptoutLinkParams
+type GenerateOptoutLinkReply = rpc.GenerateOptoutLinkReply
+
+func (c *Client) GenerateOptoutLink(params GenerateOptoutLinkParams) (r *GenerateOptoutLinkReply, err error) {
+	r = &GenerateOptoutLinkReply{}
+	err = c.Call("GenerateOptoutLink", params, r)
+	return r, err
+}

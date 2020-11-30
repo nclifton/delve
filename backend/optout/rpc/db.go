@@ -3,38 +3,66 @@ package rpc
 import (
 	"context"
 
-	"github.com/burstsms/mtmo-tp/backend/lib/redis"
-	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type db struct {
 	postgres *pgxpool.Pool
-	redis    *redis.Connection
 }
 
 // New db interface
 
-func NewDB(postgresURL string, redisURL string) (*db, error) {
+func NewDB(postgresURL string) (*db, error) {
 	postgres, err := pgxpool.Connect(context.Background(), postgresURL)
 	if err != nil {
 		return nil, err
 	}
 
-	redis, err := redis.Connect(redisURL)
-	if err != nil {
-		return nil, err
-	}
-
-	return &db{postgres: postgres, redis: redis}, nil
+	return &db{postgres: postgres}, nil
 }
 
-type CommandTag = pgconn.CommandTag
+func (db *db) FindOptOutByLinkID(ctx context.Context, linkID string) (*OptOut, error) {
+	optOut := OptOut{}
 
-func (db *db) Exec(sql string, args ...interface{}) (CommandTag, error) {
-	return db.postgres.Exec(bg(), sql, args...)
+	err := db.postgres.QueryRow(
+		ctx,
+		`SELECT id, account_id, message_id, message_type, link_id, created_at, updated_at
+		FROM opt_out
+		WHERE link_id = $1`,
+		linkID,
+	).Scan(
+		&optOut.ID,
+		&optOut.AccountID,
+		&optOut.MessageID,
+		&optOut.MessageType,
+		&optOut.LinkID,
+		&optOut.CreatedAt,
+		&optOut.UpdatedAt,
+	)
+
+	return &optOut, err
 }
 
-func bg() context.Context {
-	return context.Background()
+func (db *db) InsertOptOut(ctx context.Context, accountID, messageID, messageType string) (*OptOut, error) {
+	optOut := OptOut{}
+
+	err := db.postgres.QueryRow(
+		ctx,
+		`INSERT INTO opt_out(account_id, message_id, message_type, created_at, updated_at)
+		VALUES($1, $2, $3, now(), now())
+		RETURNING id, account_id, message_id, message_type, link_id, created_at, updated_at`,
+		accountID,
+		messageID,
+		messageType,
+	).Scan(
+		&optOut.ID,
+		&optOut.AccountID,
+		&optOut.MessageID,
+		&optOut.MessageType,
+		&optOut.LinkID,
+		&optOut.CreatedAt,
+		&optOut.UpdatedAt,
+	)
+
+	return &optOut, err
 }

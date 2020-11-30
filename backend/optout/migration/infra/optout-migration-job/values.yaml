@@ -1,0 +1,45 @@
+# The subchart contains default values which can be overridden here
+k8sDeploymentJobChart:
+  name: optout-migration-job
+  namespace: sendsei
+  replicas: 1
+
+  image:
+    repository: 410370493805.dkr.ecr.ap-southeast-2.amazonaws.com/optout_migration
+    tag: latest
+
+  podLabels:
+    # env label required for New Relic integration
+    env: sendsei-staging
+
+  # WORKAROUND: Till https://www.pivotaltracker.com/story/show/174031674 is implemented
+  podAnnotations:
+    linkerd.io/inject: disabled
+
+  restartPolicy: Never
+
+  job:
+    command:
+      - /app
+    #parallelism:
+    #args:
+
+  # post-install what defines this resource as a hook. Without this line, the
+  # job is considered part of the release.
+  jobAnnotations:
+    hook: post-install
+    hook-weight: "-5"
+    hook-delete-policy: hook-succeeded
+
+  # Specify all environment variables to be added to the container.
+  # The following two maps, config and secrets, are put into a ConfigMap
+  # and a Secret, respectively.
+  # Both are added to the container environment in podSpec as envFrom source.
+  #env:
+  #  config:
+  #    key1: value1
+  #  secrets:
+  #    key2: value2
+
+  # TODO: Remove this and use defined env vars above
+  existingConfigMapName: service-config

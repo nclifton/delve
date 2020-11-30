@@ -58,6 +58,8 @@ services:
       - MMS_WEBHOOK_RPC_PORT=10002
       - MMS_TRACK_LINK_RPC_HOST=backend
       - MMS_TRACK_LINK_RPC_PORT=10010
+      - MMS_OPT_OUT_RPC_HOST=backend
+      - MMS_OPT_OUT_RPC_PORT=10010
 
       - MM7_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
       - MM7_RABBIT_EXCHANGE=mm7
@@ -103,7 +105,9 @@ services:
       - SMS_WEBHOOK_RPC_HOST=backend
       - SMS_WEBHOOK_RPC_PORT=10002
       - SMS_TRACK_LINK_RPC_HOST=backend
-      - SMS_TRACK_LINK_RPC_PORT=10010 
+      - SMS_TRACK_LINK_RPC_PORT=10011
+      - SMS_OPT_OUT_RPC_HOST=backend
+      - SMS_OPT_OUT_RPC_PORT=10010
       - OPTOUTLINK_DOMAIN=localhost:10010
       - TRACKLINK_DOMAIN=localhost:10010
 
@@ -112,6 +116,7 @@ services:
       - OPTOUT_RPC_HOST=backend
       - OPTOUT_POSTGRES_URL=postgresql://postgres:example@postgres/sms
       - OPTOUT_REDIS_URL=redis:6379
+      - OPTOUT_TRACK_HOST=tracked.url
 
       - TRACK_LINK_RPC_PORT=10010
       - TRACK_LINK_POSTGRES_URL=postgresql://postgres:example@postgres/track_link
@@ -233,7 +238,7 @@ services:
       SMS_POSTGRES_PASSWORD: example
       SMS_POSTGRES_SSL: disable
       SMS_POSTGRES_NAME: sms
-      sMS_POSTGRES_AUTH_DB: postgres
+      SMS_POSTGRES_AUTH_DB: postgres
 
   webhookpostgressetup:
     build:

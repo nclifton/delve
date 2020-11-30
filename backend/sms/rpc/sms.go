@@ -3,6 +3,7 @@ package rpc
 import (
 	"time"
 
+	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/sms/biz"
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
@@ -45,8 +46,8 @@ type SendReply struct {
 
 func (s *SMSService) Send(p SendParams, r *SendReply) error {
 	uid := uuid.New().String()
-
 	message := p.Message
+
 	if p.TrackLinks {
 		rsp, err := s.tracklinkRPC.GenerateTrackLinks(tracklink.GenerateTrackLinksParams{
 			AccountID:   p.AccountID,
@@ -60,9 +61,20 @@ func (s *SMSService) Send(p SendParams, r *SendReply) error {
 		message = rsp.Message
 	}
 
+	generateOptoutLinkReply, err := s.optOutRPC.GenerateOptoutLink(optOut.GenerateOptoutLinkParams{
+		AccountID:   p.AccountID,
+		MessageID:   uid,
+		MessageType: Name,
+		Message:     p.Message,
+	})
+	if err != nil {
+		return err
+	}
+
+	message = generateOptoutLinkReply.Message
+
 	recipientNumber := p.Recipient
 	var country string
-	var err error
 
 	if p.Country != "" {
 		recipientNumber, country, err = biz.ParseMobileCountry(recipientNumber, p.Country)

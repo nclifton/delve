@@ -14,7 +14,7 @@ type Client struct {
 	rpc.Client
 }
 
-func New(host string, port int) *Client {
+func NewClient(host string, port int) *Client {
 	gob.Register(map[string]interface{}{})
 	return &Client{
 		Client: rpc.Client{

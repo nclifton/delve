@@ -1,19 +1,28 @@
 package rpc
 
 import (
+	"context"
+	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc"
 )
 
+const optOutTemplate = "[opt-out-link]"
+
+var optoutRegex = regexp.MustCompile(`\[opt-out-link\]`)
+
 type OptOut struct {
 	ID          string
 	AccountID   string
-	AccountName string
+	MessageID   string
+	MessageType string
 	Sender      string
 	LinkID      string
-	SMSID       string
-	MMSID       string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type FindByLinkIDParams struct {
@@ -25,13 +34,14 @@ type FindByLinkIDReply struct {
 }
 
 func (s *OptOutService) FindByLinkID(p FindByLinkIDParams, r *FindByLinkIDReply) error {
-	r.OptOut = &OptOut{
-		ID:          `FakeOptoutID`,
-		AccountName: `FakeAccountName`,
-		AccountID:   `9b08870c-c6e1-461d-a06f-3f0078fde4fe`,
-		Sender:      `61455678909`,
-		LinkID:      p.LinkID,
+	ctx := context.Background()
+
+	optOut, err := s.db.FindOptOutByLinkID(ctx, p.LinkID)
+	if err != nil {
+		return err
 	}
+
+	r.OptOut = optOut
 	return nil
 }
 
@@ -44,29 +54,53 @@ type OptOutViaLinkReply struct {
 }
 
 func (s *OptOutService) OptOutViaLink(p OptOutViaLinkParams, r *OptOutViaLinkReply) error {
+	ctx := context.Background()
 
-	var err error
-	var optout FindByLinkIDReply
-
-	err = s.FindByLinkID(FindByLinkIDParams{LinkID: p.LinkID}, &optout)
+	optOut, err := s.db.FindOptOutByLinkID(ctx, p.LinkID)
 	if err != nil {
 		return err
 	}
 
-	/*	if optout.SMSID != "" {
-		} else if optout.OptOut.MMSID != "" {
-		}*/
-
-	err = s.webhookRPC.PublishOptOut(rpc.PublishOptOutParams{
+	if err := s.webhookRPC.PublishOptOut(rpc.PublishOptOutParams{
 		Source:    "link_hit",
 		Timestamp: time.Now().UTC(),
-		AccountID: optout.AccountID,
-	})
+		AccountID: optOut.AccountID,
+	}); err != nil {
+		return err
+	}
+
+	r.OptOut = optOut
+	return nil
+}
+
+type GenerateOptoutLinkParams struct {
+	AccountID   string
+	MessageID   string
+	MessageType string
+	Message     string
+}
+
+type GenerateOptoutLinkReply struct {
+	Message string
+}
+
+func (s *OptOutService) GenerateOptoutLink(p GenerateOptoutLinkParams, r *GenerateOptoutLinkReply) error {
+	ctx := context.Background()
+
+	match := optoutRegex.FindAllString(p.Message, -1)
+	if len(match) < 1 {
+		r.Message = p.Message
+		return nil
+	}
+
+	optOut, err := s.db.InsertOptOut(ctx, p.AccountID, p.MessageID, p.MessageType)
 	if err != nil {
 		return err
 	}
 
-	r.OptOut = optout.OptOut
+	optOutURL := fmt.Sprintf("http://%s/%s", s.trackHost, optOut.LinkID)
+	msg := strings.ReplaceAll(p.Message, optOutTemplate, optOutURL)
 
+	r.Message = msg
 	return nil
 }

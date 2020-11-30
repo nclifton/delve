@@ -5,6 +5,7 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
@@ -19,9 +20,14 @@ type tracklinkSvc interface {
 	GenerateTrackLinks(p tracklink.GenerateTrackLinksParams) (r *tracklink.GenerateTrackLinksReply, err error)
 }
 
+type optOutSvc interface {
+	GenerateOptoutLink(params optOut.GenerateOptoutLinkParams) (r *optOut.GenerateOptoutLinkReply, err error)
+}
+
 type ConfigSvc struct {
 	Webhook   webhookSvc
 	TrackLink tracklinkSvc
+	OptOut    optOutSvc
 }
 
 type NoParams struct{}

@@ -6,6 +6,7 @@ import (
 	accountRPC "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	optOutRPC "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	smsRPC "github.com/burstsms/mtmo-tp/backend/sms/rpc"
 	tracklinkRPC "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
@@ -28,6 +29,8 @@ type Env struct {
 	OptOutLinkDomain   string `envconfig:"OPTOUTLINK_DOMAIN"`
 	TrackLinkRPCHost   string `envconfig:"TRACK_LINK_RPC_HOST"`
 	TrackLinkRPCPort   int    `envconfig:"TRACK_LINK_RPC_PORT"`
+	OptOutRPCHost      string `envconfig:"OPT_OUT_RPC_HOST"`
+	OptOutRPCPort      int    `envconfig:"OPT_OUT_RPC_PORT"`
 }
 
 func main() {
@@ -47,13 +50,14 @@ func main() {
 	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort)
 	arpc := accountRPC.New(env.AccountRPCHost, env.AccountRPCPort)
 	tlrpc := tracklinkRPC.NewClient(env.TrackLinkRPCHost, env.TrackLinkRPCPort)
+	orpc := optOutRPC.NewClient(env.OptOutRPCHost, env.OptOutRPCPort)
 
 	features := smsRPC.SMSFeatures{
 		TrackLinkDomain:  env.TrackLinkDomain,
 		OptOutLinkDomain: env.OptOutLinkDomain,
 	}
 
-	srpc, err := smsRPC.NewService(features, env.PostgresURL, rabbitmq, wrpc, arpc, tlrpc, env.RedisURL)
+	srpc, err := smsRPC.NewService(features, env.PostgresURL, rabbitmq, wrpc, arpc, tlrpc, orpc, env.RedisURL)
 	if err != nil {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
 	}
