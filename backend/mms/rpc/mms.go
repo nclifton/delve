@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/number"
@@ -17,7 +18,7 @@ type MMS struct {
 	AccountID   string    `json:"account_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
-	ProviderKey string    `json:"provider_key"`
+	ProviderKey string    `json:"-"`
 	MessageID   string    `json:"message_id"`
 	MessageRef  string    `json:"message_ref"`
 	Country     string    `json:"country"`
@@ -40,6 +41,7 @@ type SendParams struct {
 	MessageRef  string
 	ContentURLs []string
 	TrackLinks  bool
+	ProviderKey string
 }
 
 type SendReply struct {
@@ -103,6 +105,10 @@ func (s *MMSService) Send(p SendParams, r *SendReply) error {
 
 	newMMS.Status = `pending`
 	newMMS.ProviderKey = `fake`
+	if p.ProviderKey != "" {
+		newMMS.ProviderKey = p.ProviderKey
+	}
+	log.Printf("newMMS: %+v, Params: %+v", newMMS, p)
 
 	mms, err := s.db.InsertMMS(ctx, newMMS)
 	if err != nil {

@@ -51,8 +51,6 @@ services:
       - MMS_RABBIT_PREFETCHED_COUNT=1
       - MMS_RPC_HOST=backend
       - MMS_RPC_PORT=10007
-      - MMS_MM7_RPC_HOST=backend
-      - MMS_MM7_RPC_PORT=10003
       - MMS_POSTGRES_URL=postgresql://postgres:example@postgres/mms
       - MMS_WEBHOOK_RPC_HOST=backend
       - MMS_WEBHOOK_RPC_PORT=10002
@@ -68,8 +66,8 @@ services:
       - MM7_RPC_PORT=10003
       - MM7_RPC_HOST=backend
       - MM7_REDIS_URL=redis:6379
-      - MM7_TECLOO_URL=http://backend:7010/v1
-      - MM7_TEMPLATE_PATH=tecloo/templates
+      - MM7_TECLOO_URL=http://backend:10004/v1
+      - MM7_TEMPLATE_PATH=mm7/templates
       - MM7_AWS_REGION=ap-southeast-2
       - MM7_MMS_MEDIA_BUCKET=tp-mms-media
       - MM7_AWS_S3_PUBLIC_URL=http://minio:9000
@@ -78,6 +76,9 @@ services:
       - MM7_AWS_SECRET_KEY=fr0gsn0g
       - MM7_MMS_HOST=backend
       - MM7_MMS_PORT=10007
+      - MM7_OPTUS_URL=http://172.17.0.1:7777/mm7/Mms
+      - MM7_OPTUS_USER=COSTWbur
+      - MM7_OPTUS_PASSWORD=G6VhUrMP
 
       - TECLOO_HTTP_PORT=10004
       - TECLOO_TEMPLATE_PATH=tecloo/templates

@@ -14,6 +14,7 @@ type Account struct {
 	AlarisUsername string    `json:"alaris_username"`
 	AlarisPassword string    `json:"alaris_password"`
 	AlarisURL      string    `json:"alaris_url"`
+	MMSProviderKey string    `json:"mms_provider_key"`
 
 	APIKeys []AccountAPIKey `json:"api_keys" bson:"api_keys"`
 }

@@ -43,6 +43,7 @@ type MMSPOSTRequest struct {
 	MessageRef  string   `json:"message_ref"`
 	ContentURLs []string `json:"content_urls"`
 	TrackLinks  bool     `json:"track_links"`
+	ProviderKey string   `json:"provider_key"`
 }
 
 func MMSPOST(r *Route) {
@@ -63,6 +64,11 @@ func MMSPOST(r *Route) {
 		r.WriteError(fmt.Sprintf("Sender: %s is not valid for account: %s(%s)", req.Sender, account.Name, account.ID), http.StatusBadRequest)
 		return
 	}
+	providerKey := account.MMSProviderKey
+	if providerKey == "" {
+		r.WriteError("failed sending MMS Incorrectly configured provider", http.StatusInternalServerError)
+		return
+	}
 
 	res, err := r.api.mms.Send(mms.SendParams{
 		AccountID:   account.ID,
@@ -73,6 +79,7 @@ func MMSPOST(r *Route) {
 		Country:     req.Country,
 		MessageRef:  req.MessageRef,
 		ContentURLs: req.ContentURLs,
+		ProviderKey: req.ProviderKey, /// This needs to come from account
 		TrackLinks:  req.TrackLinks,
 	})
 	if err != nil {

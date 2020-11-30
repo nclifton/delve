@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap-env:Header>
+        <TransactionID xmlns="http://www.3gpp.org/ftp/Specs/archive/23_series/23.140/schema/REL-5-MM7-1-2">{{.TransactionID}}</TransactionID>
+    </soap-env:Header>
+    <soap-env:Body>
+        <SubmitReq xmlns="http://www.3gpp.org/ftp/Specs/archive/23_series/23.140/schema/REL-5-MM7-1-2">
+            <MM7Version>5.3.0</MM7Version>
+            <SenderIdentification>
+                <VASPID>{{.VASPID}}</VASPID>
+                {{- if .VASID}}
+                <VASID>{{.VASID}}</VASID>
+                {{end}}
+                <SenderAddress>
+                    <Number>{{.Sender}}</Number>
+                </SenderAddress>
+            </SenderIdentification>
+            <Recipients>
+                <To>
+                    <Number>{{.Recipient}}</Number>
+                </To>
+            </Recipients>
+            <Subject>{{.Subject}}</Subject>
+            <ReadReply>false</ReadReply>
+            <Content allowAdaptations="{{.AllowAdaptations}}" href="cid:{{.ContentID}}" />
+        </SubmitReq>
+    </soap-env:Body>
+</soap-env:Envelope>

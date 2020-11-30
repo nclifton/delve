@@ -12,17 +12,17 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-var Name = "mm7-worker-fake-submit"
+var Name = "mms-send"
 
 type Env struct {
 	RabbitURL             string `envconfig:"RABBIT_URL"`
 	RabbitExchange        string `envconfig:"RABBIT_EXCHANGE"`
 	RabbitExchangeType    string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	RabbitPrefetchedCount int    `envconfig:"RABBIT_PREFETCHED_COUNT"`
-	mm7RPCHost            string `envconfig:"MM7_RPC_HOST"`
-	mm7RPCPort            int    `envconfig:"MM7_RPC_PORT"`
-	mmsRPCHost            string `envconfig:"RPC_HOST"`
-	mmsRPCPort            int    `envconfig:"RPC_PORT"`
+	MM7RPCHost            string `envconfig:"MM7_RPC_HOST"`
+	MM7RPCPort            int    `envconfig:"MM7_RPC_PORT"`
+	MMSRPCHost            string `envconfig:"RPC_HOST"`
+	MMSRPCPort            int    `envconfig:"RPC_PORT"`
 }
 
 func main() {
@@ -33,8 +33,6 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to read env vars:", err)
 	}
-
-	log.Printf("ENV: %+v", env)
 
 	rabbitmq, err := rabbit.Connect(env.RabbitURL)
 	if err != nil {
@@ -51,8 +49,8 @@ func main() {
 
 	w := rabbit.NewWorker(Name, rabbitmq, nil)
 
-	mm7cli := mm7c.NewClient(env.mm7RPCHost, env.mm7RPCPort)
-	mmscli := mmsc.New(env.mmsRPCHost, env.mmsRPCPort)
+	mm7cli := mm7c.NewClient(env.MM7RPCHost, env.MM7RPCPort)
+	mmscli := mmsc.New(env.MMSRPCHost, env.MMSRPCPort)
 
 	w.Run(opts, mmsw.NewHandler(mm7cli, mmscli))
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<soap-env:Envelope xmlns:ns1="http://schemas.xmlsoap.org/soap/envelope/" xmlns=
+"http://www.3gpp.org/ftp/Specs/archive/23_series/23.140/schema/REL-6-MM7-1-4">
+<soap-env::Header>
+  <TransactionID soap-env:mustUnderstand="1">{{.TransactionID}}</TransactionID>
+</soap-env::Header>
+<soap-env::Body>
+   <DeliverReq>
+      <MM7Version>6.8.0</MM7Version>
+      <LinkedID>{{.TransactionID}}</LinkedID>
+      <Sender>
+      <Number>{{.Sender}}</Number>
+      </Sender>
+      <Recipients>
+         <To>
+         <Number displayOnly="false">{{.Recipient}}</Number>
+         </To>
+      </Recipients>
+      <TimeStamp>{{.Date}}</TimeStamp>
+      <Priority>{{.Priority}}</Priority>
+      <Content href="cid:{{.ContentID}}" allowAdaptations="{{.AllowAdaptations}}"/>
+   </DeliverReq>
+</soap-env:Body>
+</soap-env:Envelope>

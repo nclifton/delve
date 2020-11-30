@@ -102,7 +102,7 @@ func (db *db) InsertMMS(ctx context.Context, mms MMS) (*MMS, error) {
 		INSERT INTO mms (id, account_id, created_at, updated_at, provider_key,
 			message_ref, country, subject, message,
 			content_urls, recipient, sender, status, track_links)
-		VALUES ($1, $2, NOW(), NOW(), $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+		VALUES ($1, $2, NOW(), NOW(), $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		RETURNING id, created_at, updated_at
 	`
 
@@ -128,7 +128,7 @@ func (db *db) InsertMMS(ctx context.Context, mms MMS) (*MMS, error) {
 
 func (db *db) UpdateStatus(ctx context.Context, id, messageID, status string) error {
 	sql := `
-		UPDATE mms 
+		UPDATE mms
 		SET status = $3, message_id = $2
 		WHERE id = $1
 	`
@@ -144,7 +144,6 @@ func (db *db) Publish(msg interface{}, routeKey string) error {
 	publishOpts := RabbitPublishOptions{
 		Exchange:     db.opts.Exchange,
 		ExchangeType: db.opts.ExchangeType,
-		RouteKey:     routeKey,
 	}
 	return rabbit.Publish(db.rabbit, publishOpts, msg)
 }

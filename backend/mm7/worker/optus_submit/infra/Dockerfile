@@ -28,6 +28,9 @@ COPY --from=builder /user/group /user/passwd /etc/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app /app
 
+# Copy static HTML files in
+COPY --from=builder /src/mm7/templates /mm7/templates
+
 VOLUME ["/config"]
 
 USER nobody:nobody
