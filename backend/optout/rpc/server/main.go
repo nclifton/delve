@@ -5,6 +5,7 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	ooRPC "github.com/burstsms/mtmo-tp/backend/optout/rpc"
+	smsRPC "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 
 	"github.com/kelseyhightower/envconfig"
@@ -17,6 +18,8 @@ type Env struct {
 	RabbitExchangeType string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	WebhookRPCHost     string `envconfig:"WEBHOOK_RPC_HOST"`
 	WebhookRPCPort     int    `envconfig:"WEBHOOK_RPC_PORT"`
+	SMSRPCHost         string `envconfig:"SMS_RPC_HOST"`
+	SMSRPCPort         int    `envconfig:"SMS_RPC_PORT"`
 	TrackHost          string `envconfig:"TRACK_HOST"`
 }
 
@@ -30,8 +33,9 @@ func main() {
 	port := env.RPCPort
 
 	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort)
+	smsrpc := smsRPC.New(env.SMSRPCHost, env.SMSRPCPort)
 
-	orpc, err := ooRPC.NewService(env.PostgresURL, env.TrackHost, wrpc)
+	orpc, err := ooRPC.NewService(env.PostgresURL, env.TrackHost, wrpc, smsrpc)
 	if err != nil {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", ooRPC.Name, err)
 	}

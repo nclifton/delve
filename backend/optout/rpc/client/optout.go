@@ -1,11 +1,11 @@
 package client
 
 import (
-	rpc "github.com/burstsms/mtmo-tp/backend/optout/rpc"
+	"github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
 )
 
-type FindByLinkIDParams = rpc.FindByLinkIDParams
-type FindByLinkIDReply = rpc.FindByLinkIDReply
+type FindByLinkIDParams = types.FindByLinkIDParams
+type FindByLinkIDReply = types.FindByLinkIDReply
 
 func (c *Client) FindByLinkID(params FindByLinkIDParams) (r *FindByLinkIDReply, err error) {
 	r = &FindByLinkIDReply{}
@@ -13,8 +13,8 @@ func (c *Client) FindByLinkID(params FindByLinkIDParams) (r *FindByLinkIDReply, 
 	return r, err
 }
 
-type OptOutViaLinkParams = rpc.OptOutViaLinkParams
-type OptOutViaLinkReply = rpc.OptOutViaLinkReply
+type OptOutViaLinkParams = types.OptOutViaLinkParams
+type OptOutViaLinkReply = types.OptOutViaLinkReply
 
 func (c *Client) OptOutViaLink(params OptOutViaLinkParams) (r *OptOutViaLinkReply, err error) {
 	r = &OptOutViaLinkReply{}
@@ -22,8 +22,8 @@ func (c *Client) OptOutViaLink(params OptOutViaLinkParams) (r *OptOutViaLinkRepl
 	return r, err
 }
 
-type GenerateOptoutLinkParams = rpc.GenerateOptoutLinkParams
-type GenerateOptoutLinkReply = rpc.GenerateOptoutLinkReply
+type GenerateOptoutLinkParams = types.GenerateOptoutLinkParams
+type GenerateOptoutLinkReply = types.GenerateOptoutLinkReply
 
 func (c *Client) GenerateOptoutLink(params GenerateOptoutLinkParams) (r *GenerateOptoutLinkReply, err error) {
 	r = &GenerateOptoutLinkReply{}

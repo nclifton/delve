@@ -7,10 +7,11 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	"github.com/burstsms/mtmo-tp/backend/webhook/db"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
 )
 
 const (
-	Name = "Webhook"
+	Name = types.Name
 
 	WebhookEventUnsubscribe = "unsubscribe"
 	WebhookEventMMSStatus   = "mms_status"
@@ -18,9 +19,6 @@ const (
 	WebhookEventSMSInbound  = "sms_inbound"
 	WebhookEventLinkHit     = "link_hit"
 )
-
-type NoParams struct{}
-type NoReply struct{}
 
 type Webhook struct {
 	db   *db.DB

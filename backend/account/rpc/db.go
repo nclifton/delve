@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 
+	"github.com/burstsms/mtmo-tp/backend/account/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -39,9 +40,9 @@ func (db *db) Exec(sql string, args ...interface{}) (CommandTag, error) {
 	return db.postgres.Exec(bg(), sql, args...)
 }
 
-func (db *db) FindByAPIKey(key string) (*Account, error) {
+func (db *db) FindByAPIKey(key string) (*types.Account, error) {
 
-	var account Account
+	var account types.Account
 
 	sql := `
 SELECT account.id, account.name, account.created_at, account.updated_at, account.sender_sms, account.sender_mms, account.alaris_username, account.alaris_password, account.alaris_url, account.mms_provider_key
@@ -70,17 +71,17 @@ WHERE api_keys.key = $1;
 	return &account, nil
 }
 
-func (db *db) FindBySenderSMS(sender string) (*Account, error) {
+func (db *db) FindBySenderSMS(sender string) (*types.Account, error) {
 
-	var account Account
+	var account types.Account
 
 	sql := `
 SELECT account.id, account.name, account.created_at, account.updated_at, account.sender_sms, account.sender_mms, account.alaris_username, account.alaris_password, account.alaris_url, account.mms_provider_key
 FROM account
-WHERE sender_sms @> '{$1}';
+WHERE sender_sms @> $1;
 	`
 
-	row := db.postgres.QueryRow(bg(), sql, sender)
+	row := db.postgres.QueryRow(bg(), sql, pq.Array([]string{sender}))
 	err := row.Scan(
 		&account.ID,
 		&account.Name,

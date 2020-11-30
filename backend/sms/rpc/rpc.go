@@ -7,14 +7,12 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
-const Name = "SMS"
-
-type NoParams struct{}
-type NoReply struct{}
+const Name = types.Name
 
 type SMSService struct {
 	db           *db
@@ -43,14 +41,31 @@ func (s *Service) Receiver() interface{} {
 	return s.receiver
 }
 
-func NewService(features SMSFeatures, postgresURL string, rabbitmq rabbit.Conn, webhook *webhook.Client, account *account.Client, tracklink *tracklink.Client, optOut *optOut.Client, redisURL string) (rpc.Service, error) {
+func NewService(
+	features SMSFeatures,
+	postgresURL string,
+	rabbitmq rabbit.Conn,
+	webhook *webhook.Client,
+	account *account.Client,
+	tracklink *tracklink.Client,
+	redisURL string,
+	optOut *optOut.Client) (rpc.Service, error) {
+
 	gob.Register(map[string]interface{}{})
 	db, err := NewDB(postgresURL, rabbitmq, redisURL)
 	if err != nil {
 		return nil, err
 	}
 	service := &Service{
-		receiver: &SMSService{db: db, name: Name, webhookRPC: webhook, accountRPC: account, tracklinkRPC: tracklink, optOutRPC: optOut, features: features},
+		receiver: &SMSService{
+			db:           db,
+			name:         Name,
+			webhookRPC:   webhook,
+			accountRPC:   account,
+			tracklinkRPC: tracklink,
+			features:     features,
+			optOutRPC:    optOut,
+		},
 	}
 
 	return service, nil

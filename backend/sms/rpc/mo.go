@@ -7,21 +7,13 @@ import (
 	"strings"
 	"time"
 
+	optOutRPC "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
 	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
-type QueueMOParams struct {
-	MessageID     string
-	Message       string
-	To            string
-	From          string
-	SARID         string
-	SARPartNumber string
-	SARParts      string
-}
-
-func (s *SMSService) QueueMO(p QueueMOParams, r *NoReply) error {
+func (s *SMSService) QueueMO(p types.QueueMOParams, r *types.NoReply) error {
 
 	opts := RabbitPublishOptions{
 		Exchange:     msg.MOMessage.Exchange,
@@ -49,7 +41,7 @@ func (s *SMSService) QueueMO(p QueueMOParams, r *NoReply) error {
 
 var ErrInsufficientParts = errors.New("Insuffcient parts to combine MO")
 
-func (s *SMSService) checkMultiPart(p *ProcessMOParams) error {
+func (s *SMSService) checkMultiPart(p *types.ProcessMOParams) error {
 	// Check for multipart
 	if !strings.Contains(p.SARID, `sarId`) {
 
@@ -84,21 +76,12 @@ func (s *SMSService) checkMultiPart(p *ProcessMOParams) error {
 
 			return nil
 		}
+		return ErrInsufficientParts
 	}
-	return ErrInsufficientParts
+	return nil
 }
 
-type ProcessMOParams struct {
-	MessageID     string
-	Message       string
-	To            string
-	From          string
-	SARID         string
-	SARPartNumber string
-	SARParts      string
-}
-
-func (s *SMSService) ProcessMO(p ProcessMOParams, r *NoReply) error {
+func (s *SMSService) ProcessMO(p types.ProcessMOParams, r *types.NoReply) error {
 
 	// Check for multipart
 	err := s.checkMultiPart(&p)
@@ -112,7 +95,7 @@ func (s *SMSService) ProcessMO(p ProcessMOParams, r *NoReply) error {
 	// Find the account from the sender
 	account, err := s.accountRPC.FindBySender(p.To)
 	if err != nil {
-		log.Printf("[Processing MO] Could not find account for Sender: %s", p.To)
+		log.Printf("[Processing MO] Could not find account for Sender: %s %s", p.To, err)
 		return err
 	}
 
@@ -125,8 +108,20 @@ func (s *SMSService) ProcessMO(p ProcessMOParams, r *NoReply) error {
 
 	log.Printf("[Processing MO] Found Account: %+v Related to: %+v", account, sms)
 
+	// Let the optout service deal with it if its an optout
+	err = s.optOutRPC.OptOutViaMsg(optOutRPC.OptOutViaMsgParams{
+		AccountID:   account.Account.ID,
+		Message:     p.Message,
+		MessageType: `sms`,
+		MessageID:   sms.ID,
+	})
+	if err != nil {
+		log.Printf("[Processing MO] Error checking for OptOut: %s", err.Error())
+		return err
+	}
+
 	var lastMessage *webhookRPC.LastMessage
-	if *sms != (SMS{}) {
+	if *sms != (types.SMS{}) {
 		lastMessage = &webhookRPC.LastMessage{
 			Type:       "sms",
 			ID:         sms.ID,

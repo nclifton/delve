@@ -6,7 +6,7 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/logger"
 	belogger "github.com/burstsms/mtmo-tp/backend/logger"
-	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc"
+	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
 	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/mms/worker"
 )

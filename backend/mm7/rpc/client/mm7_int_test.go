@@ -8,6 +8,7 @@ import (
 
 	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc"
 	"github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/mm7/rpc/types"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -38,12 +39,12 @@ func TestSend(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		sendParams  mm7RPC.MM7SendParams
+		sendParams  types.MM7SendParams
 		expectedErr error
 	}{
 		{
 			name: "test fakesubmit happy path",
-			sendParams: mm7RPC.MM7SendParams{
+			sendParams: types.MM7SendParams{
 				ID:          "msg id",
 				Subject:     "subject",
 				Message:     "message",
@@ -56,7 +57,7 @@ func TestSend(t *testing.T) {
 		},
 		{
 			name: "test fakesubmit happy path with client error",
-			sendParams: mm7RPC.MM7SendParams{
+			sendParams: types.MM7SendParams{
 				ID:          "msg id",
 				Subject:     "subject",
 				Message:     "message",
@@ -69,7 +70,7 @@ func TestSend(t *testing.T) {
 		},
 		{
 			name: "test otpussubmit happy path",
-			sendParams: mm7RPC.MM7SendParams{
+			sendParams: types.MM7SendParams{
 				ID:          "msg id",
 				Subject:     "subject",
 				Message:     "message",
@@ -82,7 +83,7 @@ func TestSend(t *testing.T) {
 		},
 		{
 			name: "test mgagesubmit happy path",
-			sendParams: mm7RPC.MM7SendParams{
+			sendParams: types.MM7SendParams{
 				ID:          "msg id",
 				Subject:     "subject",
 				Message:     "message",

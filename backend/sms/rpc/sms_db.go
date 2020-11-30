@@ -1,9 +1,12 @@
 package rpc
 
-import "github.com/jackc/pgx/v4"
+import (
+	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
+	"github.com/jackc/pgx/v4"
+)
 
-func (db *db) InsertSMS(p SMS) (*SMS, error) {
-	var sms SMS
+func (db *db) InsertSMS(p types.SMS) (*types.SMS, error) {
+	var sms types.SMS
 	err := db.postgres.QueryRow(bg(), `INSERT INTO
 		sms(id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status, track_links)
 		values($1, $2, '', NOW(), NOW(), $3, $4, $5, $6, $7, $8, $9, 'pending', $10)
@@ -21,7 +24,7 @@ func (db *db) InsertSMS(p SMS) (*SMS, error) {
 		p.TrackLinks,
 	).Scan(&sms.ID, &sms.AccountID, &sms.MessageID, &sms.CreatedAt, &sms.UpdatedAt, &sms.MessageRef, &sms.Country, &sms.Message, &sms.SMSCount, &sms.GSM, &sms.Recipient, &sms.Sender, &sms.Status, &sms.TrackLinks)
 	if err != nil {
-		return &SMS{}, err
+		return &types.SMS{}, err
 	}
 
 	return &sms, nil
@@ -69,8 +72,24 @@ func (db *db) MarkFailed(smsID string) error {
 	return nil
 }
 
-func (db *db) FindSMSByMessageID(messageID string) (*SMS, error) {
-	var sms SMS
+func (db *db) FindSMSByID(ID string, AccountID string) (*types.SMS, error) {
+	var sms types.SMS
+	err := db.postgres.QueryRow(bg(), `
+		SELECT id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status, track_links
+		FROM sms
+		WHERE id = $1 AND account_id = $2`,
+		ID,
+		AccountID,
+	).Scan(&sms.ID, &sms.AccountID, &sms.MessageID, &sms.CreatedAt, &sms.UpdatedAt, &sms.MessageRef, &sms.Country, &sms.Message, &sms.SMSCount, &sms.GSM, &sms.Recipient, &sms.Sender, &sms.Status, &sms.TrackLinks)
+	if err != nil {
+		return &types.SMS{}, err
+	}
+
+	return &sms, nil
+}
+
+func (db *db) FindSMSByMessageID(messageID string) (*types.SMS, error) {
+	var sms types.SMS
 	err := db.postgres.QueryRow(bg(), `
 		SELECT id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status, track_links
 		FROM sms
@@ -78,14 +97,14 @@ func (db *db) FindSMSByMessageID(messageID string) (*SMS, error) {
 		messageID,
 	).Scan(&sms.ID, &sms.AccountID, &sms.MessageID, &sms.CreatedAt, &sms.UpdatedAt, &sms.MessageRef, &sms.Country, &sms.Message, &sms.SMSCount, &sms.GSM, &sms.Recipient, &sms.Sender, &sms.Status, &sms.TrackLinks)
 	if err != nil {
-		return &SMS{}, err
+		return &types.SMS{}, err
 	}
 
 	return &sms, nil
 }
 
-func (db *db) FindSMSRelatedToMO(accountID string, mosender string, morecipient string) (*SMS, error) {
-	var sms SMS
+func (db *db) FindSMSRelatedToMO(accountID string, mosender string, morecipient string) (*types.SMS, error) {
+	var sms types.SMS
 	err := db.postgres.QueryRow(bg(), `
 		SELECT id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status, track_links
 		FROM sms
@@ -99,7 +118,7 @@ func (db *db) FindSMSRelatedToMO(accountID string, mosender string, morecipient 
 		morecipient,
 	).Scan(&sms.ID, &sms.AccountID, &sms.MessageID, &sms.CreatedAt, &sms.UpdatedAt, &sms.MessageRef, &sms.Country, &sms.Message, &sms.SMSCount, &sms.GSM, &sms.Recipient, &sms.Sender, &sms.Status, &sms.TrackLinks)
 	if err != nil && err != pgx.ErrNoRows {
-		return &SMS{}, err
+		return &types.SMS{}, err
 	}
 
 	return &sms, nil

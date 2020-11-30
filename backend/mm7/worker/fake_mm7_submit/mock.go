@@ -4,7 +4,7 @@ import (
 	"text/template"
 
 	tcl "github.com/burstsms/mtmo-tp/backend/lib/tecloo/client"
-	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc"
+	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
 )
 
 type mockRPCClient struct {

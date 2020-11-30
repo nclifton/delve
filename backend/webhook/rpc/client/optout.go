@@ -1,7 +1,7 @@
 package client
 
 import (
-	wrpc "github.com/burstsms/mtmo-tp/backend/webhook/rpc"
+	wrpc "github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
 )
 
 type PublishOptOutParams = wrpc.PublishOptOutParams

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	tcl "github.com/burstsms/mtmo-tp/backend/lib/tecloo/client"
-	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc"
+	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/mm7/worker"
 )
 

@@ -1,26 +1,14 @@
 package rpc
 
 import (
-	"time"
-
 	"github.com/burstsms/mtmo-tp/backend/webhook/db"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/webhook/worker/msg"
 )
 
 const eventMMSStatus = "mms_status"
 
-type PublishMMSStatusUpdateParams struct {
-	AccountID         string    `json:"account_id"`
-	MMSID             string    `json:"mms_id"`
-	MessageRef        string    `json:"message_ref"`
-	Recipient         string    `json:"recipient"`
-	Sender            string    `json:"sender"`
-	Status            string    `json:"status"`
-	StatusDescription string    `json:"status_description"`
-	StatusUpdatedAt   time.Time `json:"status_updated_at"`
-}
-
-func (s *Webhook) PublishMMSStatusUpdate(p PublishMMSStatusUpdateParams, r *NoReply) error {
+func (s *Webhook) PublishMMSStatusUpdate(p types.PublishMMSStatusUpdateParams, r *types.NoReply) error {
 	webhooks, err := s.db.FindByEvent(p.AccountID, eventMMSStatus)
 	if err != nil {
 		return err

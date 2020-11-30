@@ -10,32 +10,19 @@ import (
 	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/redis"
+	"github.com/burstsms/mtmo-tp/backend/mm7/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/mm7/worker"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 )
 
 var validMediaRegex = regexp.MustCompile(`^image\/(png|jpeg|gif)`)
 
-type PingResponse struct {
-	Res string
-}
-
-func (s *MM7) Ping(p NoParams, r *PingResponse) error {
+func (s *MM7) Ping(p types.NoParams, r *types.PingResponse) error {
 	r.Res = "PONG"
 	return nil
 }
 
-type MM7SendParams struct {
-	ID          string
-	Subject     string
-	Message     string
-	Sender      string
-	Recipient   string
-	ContentURLs []string
-	ProviderKey string
-}
-
-func (s *MM7) Send(p MM7SendParams, r *NoReply) error {
+func (s *MM7) Send(p types.MM7SendParams, r *types.NoReply) error {
 	msg := worker.SubmitMessage{
 		ID:          p.ID,
 		Subject:     p.Subject,
@@ -53,16 +40,7 @@ func (s *MM7) Send(p MM7SendParams, r *NoReply) error {
 	return s.db.Publish(msg, provider.QueueNameSubmit)
 }
 
-type MM7ProviderSpecParams struct {
-	ProviderKey string
-}
-
-type MM7ProviderSpecReply struct {
-	ProviderKey    string
-	ImageSizeMaxKB int
-}
-
-func (s *MM7) ProviderSpec(p MM7ProviderSpecParams, r *MM7ProviderSpecReply) error {
+func (s *MM7) ProviderSpec(p types.MM7ProviderSpecParams, r *types.MM7ProviderSpecReply) error {
 	provider, err := getProviderDetail(p.ProviderKey)
 	if err != nil {
 		return err
@@ -74,14 +52,7 @@ func (s *MM7) ProviderSpec(p MM7ProviderSpecParams, r *MM7ProviderSpecReply) err
 	return nil
 }
 
-type MM7UpdateStatusParams struct {
-	ID          string
-	MessageID   string
-	Status      string
-	Description string
-}
-
-func (s *MM7) UpdateStatus(p MM7UpdateStatusParams, r *NoReply) error {
+func (s *MM7) UpdateStatus(p types.MM7UpdateStatusParams, r *types.NoReply) error {
 	return s.svc.MMS.UpdateStatus(mms.UpdateStatusParams{
 		ID:          p.ID,
 		MessageID:   p.MessageID,
@@ -90,40 +61,17 @@ func (s *MM7) UpdateStatus(p MM7UpdateStatusParams, r *NoReply) error {
 	})
 }
 
-type MM7DLRParams struct {
-	ID          string
-	Status      string
-	Description string
-}
-
-func (s *MM7) DLR(p MM7DLRParams, r *NoReply) error {
+func (s *MM7) DLR(p types.MM7DLRParams, r *types.NoReply) error {
 	log.Printf("RPC call DLR, params: %+v", p)
 	return nil
 }
 
-type MM7DeliverParams struct {
-	Subject     string
-	Message     string
-	Sender      string
-	Recipient   string
-	ContentURLs []string
-	ProviderKey string
-}
-
-func (s *MM7) Deliver(p MM7DeliverParams, r *NoReply) error {
+func (s *MM7) Deliver(p types.MM7DeliverParams, r *types.NoReply) error {
 	log.Printf("RPC call Deliver, params: %+v", p)
 	return nil
 }
 
-type MM7GetCachedContentParams struct {
-	ContentURL string
-}
-
-type MM7GetCachedContentReply struct {
-	Content []byte
-}
-
-func (s *MM7) GetCachedContent(p MM7GetCachedContentParams, r *MM7GetCachedContentReply) error {
+func (s *MM7) GetCachedContent(p types.MM7GetCachedContentParams, r *types.MM7GetCachedContentReply) error {
 	image, err := s.db.redis.Client.Get(p.ContentURL).Result()
 	if err != nil && err != redis.RedisNil {
 		return err
@@ -159,15 +107,7 @@ func (s *MM7) GetCachedContent(p MM7GetCachedContentParams, r *MM7GetCachedConte
 	return nil
 }
 
-type MM7CheckRateLimitParams struct {
-	ProviderKey string
-}
-
-type MM7CheckRateLimitReply struct {
-	Allow bool
-}
-
-func (s *MM7) CheckRateLimit(p MM7CheckRateLimitParams, r *MM7CheckRateLimitReply) error {
+func (s *MM7) CheckRateLimit(p types.MM7CheckRateLimitParams, r *types.MM7CheckRateLimitReply) error {
 	provider, err := getProviderDetail(p.ProviderKey)
 	if err != nil {
 		return err

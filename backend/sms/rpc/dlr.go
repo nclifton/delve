@@ -4,21 +4,12 @@ import (
 	"log"
 	"time"
 
+	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
 	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
-type QueueDLRParams struct {
-	MessageID  string
-	State      string
-	ReasonCode string
-	To         string
-	Time       time.Time
-	MCC        string
-	MNC        string
-}
-
-func (s *SMSService) QueueDLR(p QueueDLRParams, r *NoReply) error {
+func (s *SMSService) QueueDLR(p types.QueueDLRParams, r *types.NoReply) error {
 
 	opts := RabbitPublishOptions{
 		Exchange:     msg.DLRMessage.Exchange,
@@ -44,17 +35,7 @@ func (s *SMSService) QueueDLR(p QueueDLRParams, r *NoReply) error {
 	return nil
 }
 
-type ProcessDLRParams struct {
-	MessageID  string
-	State      string
-	ReasonCode string
-	To         string
-	Time       time.Time
-	MCC        string
-	MNC        string
-}
-
-func (s *SMSService) ProcessDLR(p ProcessDLRParams, r *NoReply) error {
+func (s *SMSService) ProcessDLR(p types.ProcessDLRParams, r *types.NoReply) error {
 	// find sms by the given dlr messageid
 	sms, err := s.db.FindSMSByMessageID(p.MessageID)
 	if err != nil {

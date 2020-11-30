@@ -1,18 +1,18 @@
 package client
 
 import (
-	mrpc "github.com/burstsms/mtmo-tp/backend/mm7/rpc"
+	"github.com/burstsms/mtmo-tp/backend/mm7/rpc/types"
 )
 
-type PingResponse = mrpc.PingResponse
+type PingResponse = types.PingResponse
 
-func (c *Client) Ping() (r *mrpc.PingResponse, err error) {
+func (c *Client) Ping() (r *types.PingResponse, err error) {
 	r = &PingResponse{}
-	err = c.Call("Ping", mrpc.NoParams{}, r)
+	err = c.Call("Ping", types.NoParams{}, r)
 	return
 }
 
-type MM7SendParams = mrpc.MM7SendParams
+type MM7SendParams = types.MM7SendParams
 
 func (c *Client) Send(p MM7SendParams) (r *NoReply, err error) {
 	r = &NoReply{}
@@ -28,8 +28,8 @@ func (c *Client) Send(p MM7SendParams) (r *NoReply, err error) {
 	return
 }
 
-type MM7ProviderSpecParams = mrpc.MM7ProviderSpecParams
-type MM7ProviderSpecReply = mrpc.MM7ProviderSpecReply
+type MM7ProviderSpecParams = types.MM7ProviderSpecParams
+type MM7ProviderSpecReply = types.MM7ProviderSpecReply
 
 func (c *Client) ProviderSpec(p MM7ProviderSpecParams) (r *MM7ProviderSpecReply, err error) {
 	r = &MM7ProviderSpecReply{}
@@ -39,7 +39,7 @@ func (c *Client) ProviderSpec(p MM7ProviderSpecParams) (r *MM7ProviderSpecReply,
 	return
 }
 
-type MM7UpdateStatusParams = mrpc.MM7UpdateStatusParams
+type MM7UpdateStatusParams = types.MM7UpdateStatusParams
 
 func (c *Client) UpdateStatus(p MM7UpdateStatusParams) error {
 	r := &NoReply{}
@@ -52,7 +52,7 @@ func (c *Client) UpdateStatus(p MM7UpdateStatusParams) error {
 	}, r)
 }
 
-type MM7DLRParams = mrpc.MM7DLRParams
+type MM7DLRParams = types.MM7DLRParams
 
 func (c *Client) DLR(p MM7DLRParams) (r *NoReply, err error) {
 	r = &NoReply{}
@@ -64,7 +64,7 @@ func (c *Client) DLR(p MM7DLRParams) (r *NoReply, err error) {
 	return
 }
 
-type MM7DeliverParams = mrpc.MM7DeliverParams
+type MM7DeliverParams = types.MM7DeliverParams
 
 func (c *Client) Deliver(p MM7DeliverParams) (r *NoReply, err error) {
 	r = &NoReply{}
@@ -79,8 +79,8 @@ func (c *Client) Deliver(p MM7DeliverParams) (r *NoReply, err error) {
 	return
 }
 
-type MM7GetCachedContentParams = mrpc.MM7GetCachedContentParams
-type MM7GetCachedContentReply = mrpc.MM7GetCachedContentReply
+type MM7GetCachedContentParams = types.MM7GetCachedContentParams
+type MM7GetCachedContentReply = types.MM7GetCachedContentReply
 
 func (c *Client) GetCachedContent(p MM7GetCachedContentParams) (r *MM7GetCachedContentReply, err error) {
 	r = &MM7GetCachedContentReply{}
@@ -90,8 +90,8 @@ func (c *Client) GetCachedContent(p MM7GetCachedContentParams) (r *MM7GetCachedC
 	return
 }
 
-type MM7CheckRateLimitParams = mrpc.MM7CheckRateLimitParams
-type MM7CheckRateLimitReply = mrpc.MM7CheckRateLimitReply
+type MM7CheckRateLimitParams = types.MM7CheckRateLimitParams
+type MM7CheckRateLimitReply = types.MM7CheckRateLimitReply
 
 func (c *Client) CheckRateLimit(p MM7CheckRateLimitParams) (r *MM7CheckRateLimitReply, err error) {
 	r = &MM7CheckRateLimitReply{}

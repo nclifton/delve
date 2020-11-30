@@ -57,7 +57,7 @@ func main() {
 		OptOutLinkDomain: env.OptOutLinkDomain,
 	}
 
-	srpc, err := smsRPC.NewService(features, env.PostgresURL, rabbitmq, wrpc, arpc, tlrpc, orpc, env.RedisURL)
+	srpc, err := smsRPC.NewService(features, env.PostgresURL, rabbitmq, wrpc, arpc, tlrpc, env.RedisURL, orpc)
 	if err != nil {
 		log.Fatalf("failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
 	}

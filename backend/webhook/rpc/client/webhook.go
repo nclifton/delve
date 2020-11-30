@@ -1,11 +1,13 @@
 package client
 
 import (
-	wrpc "github.com/burstsms/mtmo-tp/backend/webhook/rpc"
+	wrpc "github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
 )
 
 type FindParams = wrpc.FindParams
 type FindReply = wrpc.FindReply
+
+type SourceMessage = wrpc.SourceMessage
 
 func (c *Client) Find(accountID string) (r *FindReply, err error) {
 	r = &FindReply{}

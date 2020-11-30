@@ -2,41 +2,13 @@ package rpc
 
 import (
 	"time"
+
+	"github.com/burstsms/mtmo-tp/backend/account/rpc/types"
 )
 
-type Account struct {
-	ID             string    `json:"id"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
-	Name           string    `json:"name"`
-	SenderSMS      []string  `json:"sender_sms"`
-	SenderMMS      []string  `json:"sender_mms"`
-	AlarisUsername string    `json:"alaris_username"`
-	AlarisPassword string    `json:"alaris_password"`
-	AlarisURL      string    `json:"alaris_url"`
-	MMSProviderKey string    `json:"mms_provider_key"`
+func (s *AccountService) FindByAPIKey(p types.FindByAPIKeyParams, r *types.FindByAPIKeyReply) error {
 
-	APIKeys []AccountAPIKey `json:"api_keys" bson:"api_keys"`
-}
-
-type AccountAPIKey struct {
-	CreatedAt   time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" bson:"updated_at"`
-	Description string    `json:"description" bson:"description"`
-	Key         string    `json:"key" bson:"key"`
-}
-
-type FindByAPIKeyParams struct {
-	Key string
-}
-
-type FindByAPIKeyReply struct {
-	Account *Account
-}
-
-func (s *AccountService) FindByAPIKey(p FindByAPIKeyParams, r *FindByAPIKeyReply) error {
-
-	var account *Account
+	var account *types.Account
 
 	err := s.db.redis.Cached(
 		"Account.FindByAPIKey:"+p.Key,
@@ -53,16 +25,8 @@ func (s *AccountService) FindByAPIKey(p FindByAPIKeyParams, r *FindByAPIKeyReply
 	return nil
 }
 
-type FindBySenderParams struct {
-	Sender string
-}
-
-type FindBySenderReply struct {
-	Account *Account
-}
-
-func (s *AccountService) FindBySender(p FindBySenderParams, r *FindBySenderReply) error {
-	var account *Account
+func (s *AccountService) FindBySender(p types.FindBySenderParams, r *types.FindBySenderReply) error {
+	var account *types.Account
 
 	err := s.db.redis.Cached(
 		"Account.FindBySender:"+p.Sender,
@@ -75,6 +39,7 @@ func (s *AccountService) FindBySender(p FindBySenderParams, r *FindBySenderReply
 	if err != nil {
 		return err
 	}
+
 	r.Account = account
 	return nil
 }

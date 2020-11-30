@@ -1,7 +1,7 @@
 package fakemm7dldrworker
 
 import (
-	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc"
+	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
 )
 
 type MockRPCClient struct {

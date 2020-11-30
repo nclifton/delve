@@ -1,11 +1,11 @@
 package client
 
 import (
-	mrpc "github.com/burstsms/mtmo-tp/backend/mm7/rpc"
+	"github.com/burstsms/mtmo-tp/backend/mm7/rpc/types"
 )
 
-type MM7MediaStoreParams = mrpc.MM7MediaStoreParams
-type MM7MediaStoreReply = mrpc.MM7MediaStoreReply
+type MM7MediaStoreParams = types.MM7MediaStoreParams
+type MM7MediaStoreReply = types.MM7MediaStoreReply
 
 func (c *Client) Store(p MM7MediaStoreParams) (r *MM7MediaStoreReply, err error) {
 	r = &MM7MediaStoreReply{}

@@ -1,50 +1,15 @@
 package rpc
 
 import (
-	"time"
-
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/sms/biz"
+	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	"github.com/google/uuid"
 )
 
-type SMS struct {
-	ID         string
-	AccountID  string
-	MessageID  string
-	Recipient  string
-	Sender     string
-	Country    string
-	MessageRef string
-	Message    string
-	Status     string
-	SMSCount   int
-	GSM        bool
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	TrackLinks bool
-}
-
-type SendParams struct {
-	AccountID  string
-	Message    string
-	Recipient  string
-	Sender     string
-	Country    string
-	MessageRef string
-	AlarisUser string
-	AlarisPass string
-	AlarisURL  string
-	TrackLinks bool
-}
-
-type SendReply struct {
-	SMS *SMS
-}
-
-func (s *SMSService) Send(p SendParams, r *SendReply) error {
+func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
 	uid := uuid.New().String()
 	message := p.Message
 
@@ -103,7 +68,7 @@ func (s *SMSService) Send(p SendParams, r *SendReply) error {
 	// check if its a GSM compat message
 	isGSM := biz.IsGSMString(p.Message)
 
-	newSMS := SMS{
+	newSMS := types.SMS{
 		ID:         uid,
 		AccountID:  p.AccountID,
 		MessageRef: p.MessageRef,
@@ -146,19 +111,20 @@ func (s *SMSService) Send(p SendParams, r *SendReply) error {
 	return nil
 }
 
-type MarkSentParams struct {
-	ID        string
-	MessageID string
-}
-
-func (s *SMSService) MarkSent(p MarkSentParams, r *NoReply) error {
+func (s *SMSService) MarkSent(p types.MarkSentParams, r *types.NoReply) error {
 	return s.db.MarkSent(p.ID, p.MessageID)
 }
 
-type MarkFailedParams struct {
-	ID string
+func (s *SMSService) MarkFailed(p types.MarkFailedParams, r *types.NoReply) error {
+	return s.db.MarkFailed(p.ID)
 }
 
-func (s *SMSService) MarkFailed(p MarkFailedParams, r *NoReply) error {
-	return s.db.MarkFailed(p.ID)
+func (s *SMSService) FindByID(p types.FindByIDParams, r *types.FindByIDReply) error {
+	sms, err := s.db.FindSMSByID(p.ID, p.AccountID)
+	if err != nil {
+		return err
+	}
+
+	r.SMS = sms
+	return nil
 }

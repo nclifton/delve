@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 
+	types "github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -21,8 +22,8 @@ func NewDB(postgresURL string) (*db, error) {
 	return &db{postgres: postgres}, nil
 }
 
-func (db *db) FindOptOutByLinkID(ctx context.Context, linkID string) (*OptOut, error) {
-	optOut := OptOut{}
+func (db *db) FindOptOutByLinkID(ctx context.Context, linkID string) (*types.OptOut, error) {
+	optOut := types.OptOut{}
 
 	err := db.postgres.QueryRow(
 		ctx,
@@ -43,8 +44,8 @@ func (db *db) FindOptOutByLinkID(ctx context.Context, linkID string) (*OptOut, e
 	return &optOut, err
 }
 
-func (db *db) InsertOptOut(ctx context.Context, accountID, messageID, messageType string) (*OptOut, error) {
-	optOut := OptOut{}
+func (db *db) InsertOptOut(ctx context.Context, accountID, messageID, messageType string) (*types.OptOut, error) {
+	optOut := types.OptOut{}
 
 	err := db.postgres.QueryRow(
 		ctx,

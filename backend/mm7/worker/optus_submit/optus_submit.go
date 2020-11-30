@@ -10,7 +10,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/logger"
 	belogger "github.com/burstsms/mtmo-tp/backend/logger"
-	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc"
+	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/mm7/worker"
 )
 

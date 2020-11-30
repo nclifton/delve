@@ -1,7 +1,7 @@
 package mms_send
 
 import (
-	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc"
+	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
 	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 )
 

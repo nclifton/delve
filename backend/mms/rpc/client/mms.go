@@ -1,11 +1,11 @@
 package client
 
 import (
-	"github.com/burstsms/mtmo-tp/backend/mms/rpc"
+	"github.com/burstsms/mtmo-tp/backend/mms/rpc/types"
 )
 
-type SendParams rpc.SendParams
-type SendReply = rpc.SendReply
+type SendParams types.SendParams
+type SendReply = types.SendReply
 
 func (c *Client) Send(p SendParams) (r *SendReply, err error) {
 	r = &SendReply{}
@@ -13,7 +13,7 @@ func (c *Client) Send(p SendParams) (r *SendReply, err error) {
 	return
 }
 
-type UpdateStatusParams rpc.UpdateStatusParams
+type UpdateStatusParams types.UpdateStatusParams
 
 func (c *Client) UpdateStatus(p UpdateStatusParams) (err error) {
 	return c.Call("UpdateStatus", p, &NoReply{})

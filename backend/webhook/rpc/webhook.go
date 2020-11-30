@@ -1,29 +1,10 @@
 package rpc
 
 import (
-	"time"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
 )
 
-type WebhookRecord struct {
-	ID        int64     `json:"id"`
-	AccountID string    `json:"account_id"`
-	Event     string    `json:"event"`
-	Name      string    `json:"name"`
-	URL       string    `json:"url"`
-	RateLimit int       `json:"rate_limit"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
-type FindParams struct {
-	AccountID string
-}
-
-type FindReply struct {
-	Webhooks []WebhookRecord `json:"webhooks"`
-}
-
-func (s *Webhook) Find(p FindParams, r *FindReply) error {
+func (s *Webhook) Find(p types.FindParams, r *types.FindReply) error {
 	var err error
 
 	results, err := s.db.Find(p.AccountID)
@@ -31,9 +12,9 @@ func (s *Webhook) Find(p FindParams, r *FindReply) error {
 		return err
 	}
 
-	webhooks := []WebhookRecord{}
+	webhooks := []types.WebhookRecord{}
 	for _, w := range results {
-		webhooks = append(webhooks, WebhookRecord{
+		webhooks = append(webhooks, types.WebhookRecord{
 			ID:        w.ID,
 			AccountID: w.AccountID,
 			Event:     w.Event,
@@ -48,21 +29,9 @@ func (s *Webhook) Find(p FindParams, r *FindReply) error {
 	return nil
 }
 
-type InsertParams struct {
-	AccountID string `json:"account_id"`
-	Event     string `json:"event"`
-	Name      string `json:"name"`
-	URL       string `json:"url"`
-	RateLimit int    `json:"rate_limit"`
-}
-
-type InsertReply struct {
-	Webhook WebhookRecord
-}
-
-func (s *Webhook) Insert(p InsertParams, r *InsertReply) error {
+func (s *Webhook) Insert(p types.InsertParams, r *types.InsertReply) error {
 	w, err := s.db.Insert(p.AccountID, p.Event, p.Name, p.URL, p.RateLimit)
-	r.Webhook = WebhookRecord{
+	r.Webhook = types.WebhookRecord{
 		ID:        w.ID,
 		AccountID: w.AccountID,
 		Event:     w.Event,
@@ -76,33 +45,15 @@ func (s *Webhook) Insert(p InsertParams, r *InsertReply) error {
 	return err
 }
 
-type DeleteParams struct {
-	AccountID string `json:"account_id"`
-	ID        string `json:"ids"`
-}
-
-func (s *Webhook) Delete(p DeleteParams, r *NoReply) error {
+func (s *Webhook) Delete(p types.DeleteParams, r *types.NoReply) error {
 	err := s.db.Delete(p.AccountID, p.ID)
 
 	return err
 }
 
-type UpdateParams struct {
-	ID        string `json:"id"`
-	AccountID string `json:"account_id"`
-	Event     string `json:"event"`
-	Name      string `json:"name"`
-	URL       string `json:"url"`
-	RateLimit int    `json:"rate_limit"`
-}
-
-type UpdateReply struct {
-	Webhook WebhookRecord
-}
-
-func (s *Webhook) Update(p UpdateParams, r *UpdateReply) error {
+func (s *Webhook) Update(p types.UpdateParams, r *types.UpdateReply) error {
 	w, err := s.db.Update(p.ID, p.AccountID, p.Event, p.Name, p.URL, p.RateLimit)
-	r.Webhook = WebhookRecord{
+	r.Webhook = types.WebhookRecord{
 		ID:        w.ID,
 		AccountID: w.AccountID,
 		Event:     w.Event,

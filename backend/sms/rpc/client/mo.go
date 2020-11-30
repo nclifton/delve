@@ -1,7 +1,7 @@
 package client
 
 import (
-	rpc "github.com/burstsms/mtmo-tp/backend/sms/rpc"
+	rpc "github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 )
 
 type QueueMOParams = rpc.QueueMOParams

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
+	"github.com/burstsms/mtmo-tp/backend/mms/rpc/types"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -23,8 +24,8 @@ func NewDB(postgresURL string, rabbitmq rabbit.Conn, opts RabbitPublishOptions) 
 	return &db{postgres: postgres, rabbit: rabbitmq, opts: opts}, nil
 }
 
-func (db *db) FindByID(ctx context.Context, id string) (*MMS, error) {
-	var mms MMS
+func (db *db) FindByID(ctx context.Context, id string) (*types.MMS, error) {
+	var mms types.MMS
 
 	sql := `
 		SELECT id, account_id, created_at, updated_at, provider_key, message_id, message_ref,
@@ -60,8 +61,8 @@ func (db *db) FindByID(ctx context.Context, id string) (*MMS, error) {
 	return &mms, nil
 }
 
-func (db *db) FindByIDAndAccountID(ctx context.Context, id, accountID string) (*MMS, error) {
-	var mms MMS
+func (db *db) FindByIDAndAccountID(ctx context.Context, id, accountID string) (*types.MMS, error) {
+	var mms types.MMS
 
 	sql := `
 		SELECT id, account_id, created_at, updated_at, provider_key, message_id, message_ref,
@@ -97,7 +98,7 @@ func (db *db) FindByIDAndAccountID(ctx context.Context, id, accountID string) (*
 	return &mms, nil
 }
 
-func (db *db) InsertMMS(ctx context.Context, mms MMS) (*MMS, error) {
+func (db *db) InsertMMS(ctx context.Context, mms types.MMS) (*types.MMS, error) {
 	sql := `
 		INSERT INTO mms (id, account_id, created_at, updated_at, provider_key,
 			message_ref, country, subject, message,
@@ -120,7 +121,7 @@ func (db *db) InsertMMS(ctx context.Context, mms MMS) (*MMS, error) {
 		mms.Status,
 		mms.TrackLinks,
 	).Scan(&mms.ID, &mms.CreatedAt, &mms.UpdatedAt); err != nil {
-		return &MMS{}, err
+		return &types.MMS{}, err
 	}
 
 	return &mms, nil
