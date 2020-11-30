@@ -29,7 +29,7 @@ func (db *db) FindByID(ctx context.Context, id string) (*types.MMS, error) {
 
 	sql := `
 		SELECT id, account_id, created_at, updated_at, provider_key, message_id, message_ref,
-			country, subject, messsage, content_urls, recipient, sender, status,
+			country, subject, message, content_urls, recipient, sender, status,
 			track_links
 		FROM mms
 		WHERE id = $1
@@ -66,7 +66,7 @@ func (db *db) FindByIDAndAccountID(ctx context.Context, id, accountID string) (*
 
 	sql := `
 		SELECT id, account_id, created_at, updated_at, provider_key, message_id, message_ref,
-			country, subject, messsage, content_urls, recipient, sender, status,
+			country, subject, message, content_urls, recipient, sender, status,
 			track_links
 		FROM mms
 		WHERE id = $1 and account_id = $2
