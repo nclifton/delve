@@ -31,6 +31,11 @@ func NewDB(postgresURL string, redisURL string) (*db, error) {
 		return nil, err
 	}
 
+	err = redis.EnableCache()
+	if err != nil {
+		return nil, err
+	}
+
 	return &db{postgres: postgres, redis: redis}, nil
 }
 
