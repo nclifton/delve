@@ -3,11 +3,10 @@ package rpc
 import (
 	"encoding/gob"
 
-	"github.com/burstsms/mtmo-tp/backend/account/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 )
 
-const Name = types.Name
+const Name = "Account"
 
 type AccountService struct {
 	db   *db

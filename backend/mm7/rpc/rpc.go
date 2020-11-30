@@ -6,11 +6,10 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
-	"github.com/burstsms/mtmo-tp/backend/mm7/rpc/types"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 )
 
-const Name = types.Name
+const Name = "MM7"
 
 type Env struct {
 	AWSRegion          string `envconfig:"AWS_REGION"`

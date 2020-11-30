@@ -25,7 +25,6 @@ func (s *OptOutService) OptOutViaMsg(p types.OptOutViaMsgParams, r *types.NoRepl
 	}
 
 	if optOut {
-
 		var sourceMessage wrpc.SourceMessage
 
 		// Get the linked message

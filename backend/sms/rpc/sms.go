@@ -26,7 +26,7 @@ func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
 		message = rsp.Message
 	}
 
-	generateOptoutLinkReply, err := s.optOutRPC.GenerateOptOutLink(optOut.GenerateOptOutLinkParams{
+	generateOptOutLinkReply, err := s.optOutRPC.GenerateOptOutLink(optOut.GenerateOptOutLinkParams{
 		AccountID:   p.AccountID,
 		MessageID:   uid,
 		MessageType: Name,
@@ -36,7 +36,7 @@ func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
 		return err
 	}
 
-	message = generateOptoutLinkReply.Message
+	message = generateOptOutLinkReply.Message
 
 	recipientNumber := p.Recipient
 	var country string

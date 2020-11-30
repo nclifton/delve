@@ -10,7 +10,7 @@ import (
 	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
-const Name = types.Name
+const Name = "OptOut"
 
 type optOutDB interface {
 	FindOptOutByLinkID(ctx context.Context, linkID string) (*types.OptOut, error)

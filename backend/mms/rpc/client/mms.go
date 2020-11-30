@@ -5,7 +5,7 @@ import (
 )
 
 type SendParams types.SendParams
-type SendReply = types.SendReply
+type SendReply types.SendReply
 
 func (c *Client) Send(p SendParams) (r *SendReply, err error) {
 	r = &SendReply{}

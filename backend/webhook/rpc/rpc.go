@@ -7,11 +7,10 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	"github.com/burstsms/mtmo-tp/backend/webhook/db"
-	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
 )
 
 const (
-	Name = types.Name
+	Name = "Webhook"
 
 	WebhookEventUnsubscribe = "unsubscribe"
 	WebhookEventMMSStatus   = "mms_status"

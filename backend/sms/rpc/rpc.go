@@ -7,12 +7,11 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
-	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
-const Name = types.Name
+const Name = "SMS"
 
 type SMSService struct {
 	db           *db

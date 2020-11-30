@@ -34,7 +34,7 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 		message = rsp.Message
 	}
 
-	generateOptoutLinkReply, err := s.svc.OptOut.GenerateOptOutLink(optOut.GenerateOptOutLinkParams{
+	generateOptOutLinkReply, err := s.svc.OptOut.GenerateOptOutLink(optOut.GenerateOptOutLinkParams{
 		AccountID:   p.AccountID,
 		MessageID:   uid,
 		MessageType: Name,
@@ -44,7 +44,7 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 		return err
 	}
 
-	message = generateOptoutLinkReply.Message
+	message = generateOptOutLinkReply.Message
 
 	if len([]rune(p.Message)) > 1000 {
 		return errors.New("message must be less than 1000 characters")
