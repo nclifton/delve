@@ -95,8 +95,8 @@ func (s *MM7) GetCachedContent(p types.MM7GetCachedContentParams, r *types.MM7Ge
 	}
 	contentType := http.DetectContentType(body)
 
-	if validMediaRegex.FindString(contentType) != "" {
-		return fmt.Errorf("Invalid contentType for %s", p.ContentURL)
+	if validMediaRegex.FindString(contentType) == "" {
+		return fmt.Errorf("Invalid contentType (%s) for %s", contentType, p.ContentURL)
 	}
 
 	if err := s.db.redis.Client.Set(p.ContentURL, body, time.Hour).Err(); err != nil {
