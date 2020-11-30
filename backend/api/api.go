@@ -96,10 +96,9 @@ func New(opts *Options) *API {
 	router.GET("/", NewRoute(api, defaultChain, IndexRoute))
 
 	// ------ authenticated routes
-	router.POST("/v1/sms/message", NewRoute(api, authChain, SMSPOST))
+	router.POST("/v1/sms", NewRoute(api, authChain, SMSPOST))
 
-	router.GET("/v1/mms/:id", NewRoute(api, authChain, MMSGET))
-	router.POST("/v1/mms/message", NewRoute(api, authChain, MMSPOST))
+	router.POST("/v1/mms", NewRoute(api, authChain, MMSPOST))
 
 	return api
 }

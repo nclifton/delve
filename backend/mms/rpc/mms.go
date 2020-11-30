@@ -132,27 +132,6 @@ func (s *MMSService) Send(p SendParams, r *SendReply) error {
 	return err
 }
 
-type FindByIDParams struct {
-	ID        string
-	AccountID string
-}
-
-type FindByIDReply struct {
-	MMS *MMS
-}
-
-func (s *MMSService) FindByID(p FindByIDParams, r *FindByIDReply) error {
-	ctx := context.Background()
-
-	mms, err := s.db.FindByIDAndAccountID(ctx, p.ID, p.AccountID)
-	if err != nil {
-		return err
-	}
-
-	r.MMS = mms
-	return nil
-}
-
 type UpdateStatusParams struct {
 	ID          string
 	MessageID   string
