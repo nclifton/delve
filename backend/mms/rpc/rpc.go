@@ -22,7 +22,7 @@ type tracklinkSvc interface {
 }
 
 type optOutSvc interface {
-	GenerateOptoutLink(params optOut.GenerateOptoutLinkParams) (r *optOut.GenerateOptoutLinkReply, err error)
+	GenerateOptOutLink(params optOut.GenerateOptOutLinkParams) (r *optOut.GenerateOptOutLinkReply, err error)
 }
 
 type ConfigSvc struct {

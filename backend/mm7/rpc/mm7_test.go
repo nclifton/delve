@@ -3,6 +3,8 @@ package rpc
 import (
 	"fmt"
 	"testing"
+
+	"github.com/burstsms/mtmo-tp/backend/mm7/rpc/types"
 )
 
 func TestUpdateStatus(t *testing.T) {
@@ -11,13 +13,13 @@ func TestUpdateStatus(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		params      MM7UpdateStatusParams
+		params      types.MM7UpdateStatusParams
 		mms         mockMMS
 		expectedErr error
 	}{
 		{
 			name: "test happy path",
-			params: MM7UpdateStatusParams{
+			params: types.MM7UpdateStatusParams{
 				ID:          "123",
 				MessageID:   "msg_123",
 				Status:      "sent",
@@ -28,7 +30,7 @@ func TestUpdateStatus(t *testing.T) {
 		},
 		{
 			name: "test with mms error",
-			params: MM7UpdateStatusParams{
+			params: types.MM7UpdateStatusParams{
 				ID:          "123",
 				MessageID:   "msg_123",
 				Status:      "sent",
@@ -49,7 +51,7 @@ func TestUpdateStatus(t *testing.T) {
 				},
 			}
 
-			r := &NoReply{}
+			r := &types.NoReply{}
 			err := mm7.UpdateStatus(test.params, r)
 			if err != test.expectedErr {
 				t.Errorf("unexpected error %+v", err)

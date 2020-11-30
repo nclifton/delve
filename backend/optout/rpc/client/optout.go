@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/burstsms/mtmo-tp/backend/optout/rpc"
 	"github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
 )
 
@@ -22,11 +23,11 @@ func (c *Client) OptOutViaLink(params OptOutViaLinkParams) (r *OptOutViaLinkRepl
 	return r, err
 }
 
-type GenerateOptoutLinkParams = types.GenerateOptoutLinkParams
-type GenerateOptoutLinkReply = types.GenerateOptoutLinkReply
+type GenerateOptOutLinkParams = rpc.GenerateOptOutLinkParams
+type GenerateOptOutLinkReply = rpc.GenerateOptOutLinkReply
 
-func (c *Client) GenerateOptoutLink(params GenerateOptoutLinkParams) (r *GenerateOptoutLinkReply, err error) {
-	r = &GenerateOptoutLinkReply{}
-	err = c.Call("GenerateOptoutLink", params, r)
+func (c *Client) GenerateOptOutLink(params GenerateOptOutLinkParams) (r *GenerateOptOutLinkReply, err error) {
+	r = &GenerateOptOutLinkReply{}
+	err = c.Call("GenerateOptOutLink", params, r)
 	return r, err
 }

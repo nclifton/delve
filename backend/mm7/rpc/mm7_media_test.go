@@ -3,6 +3,8 @@ package rpc
 import (
 	"fmt"
 	"testing"
+
+	"github.com/burstsms/mtmo-tp/backend/mm7/rpc/types"
 )
 
 func TestStore(t *testing.T) {
@@ -11,14 +13,14 @@ func TestStore(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		params      MM7MediaStoreParams
+		params      types.MM7MediaStoreParams
 		s3          mockS3
 		expectedURL string
 		expectedErr error
 	}{
 		{
 			name: "test happy path",
-			params: MM7MediaStoreParams{
+			params: types.MM7MediaStoreParams{
 				FileName:    "123",
 				ProviderKey: "fake",
 				Extension:   ".png",
@@ -29,7 +31,7 @@ func TestStore(t *testing.T) {
 		},
 		{
 			name: "test with s3 error",
-			params: MM7MediaStoreParams{
+			params: types.MM7MediaStoreParams{
 				FileName:    "123",
 				ProviderKey: "fake",
 				Extension:   ".png",
@@ -54,7 +56,7 @@ func TestStore(t *testing.T) {
 				},
 			}
 
-			r := &MM7MediaStoreReply{}
+			r := &types.MM7MediaStoreReply{}
 			err := mm7.Store(test.params, r)
 			if err != test.expectedErr {
 				t.Errorf("unexpected error %+v", err)

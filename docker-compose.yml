@@ -57,7 +57,7 @@ services:
       - MMS_TRACK_LINK_RPC_HOST=backend
       - MMS_TRACK_LINK_RPC_PORT=10010
       - MMS_OPT_OUT_RPC_HOST=backend
-      - MMS_OPT_OUT_RPC_PORT=10010
+      - MMS_OPT_OUT_RPC_PORT=10011
 
       - MM7_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
       - MM7_RABBIT_EXCHANGE=mm7
@@ -108,14 +108,14 @@ services:
       - SMS_TRACK_LINK_RPC_HOST=backend
       - SMS_TRACK_LINK_RPC_PORT=10011
       - SMS_OPT_OUT_RPC_HOST=backend
-      - SMS_OPT_OUT_RPC_PORT=10010
+      - SMS_OPT_OUT_RPC_PORT=10011
       - OPTOUTLINK_DOMAIN=localhost:10010
       - TRACKLINK_DOMAIN=localhost:10010
 
       - OPTOUT_RPC_PORT=10011
       - OPTOUT_INBOUND_PORT=10012
       - OPTOUT_RPC_HOST=backend
-      - OPTOUT_POSTGRES_URL=postgresql://postgres:example@postgres/sms
+      - OPTOUT_POSTGRES_URL=postgresql://postgres:example@postgres/optout
       - OPTOUT_REDIS_URL=redis:6379
       - OPTOUT_TRACK_HOST=tracked.url
 
@@ -270,6 +270,21 @@ services:
       TRACK_LINK_POSTGRES_PASSWORD: example
       TRACK_LINK_POSTGRES_SSL: disable
       TRACK_LINK_POSTGRES_NAME: track_link
+
+  optoutpostgressetup:
+    build:
+      context: .
+      dockerfile: backend/optout/migration/infra/Dockerfile
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/backend
+    environment:
+      OPTOUT_POSTGRES_HOST: postgres
+      OPTOUT_POSTGRES_USER: postgres
+      OPTOUT_POSTGRES_PASSWORD: example
+      OPTOUT_POSTGRES_SSL: disable
+      OPTOUT_POSTGRES_NAME: optout
 
 volumes:
   redis_data:

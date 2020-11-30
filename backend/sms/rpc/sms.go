@@ -26,11 +26,11 @@ func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
 		message = rsp.Message
 	}
 
-	generateOptoutLinkReply, err := s.optOutRPC.GenerateOptoutLink(optOut.GenerateOptoutLinkParams{
+	generateOptoutLinkReply, err := s.optOutRPC.GenerateOptOutLink(optOut.GenerateOptOutLinkParams{
 		AccountID:   p.AccountID,
 		MessageID:   uid,
 		MessageType: Name,
-		Message:     p.Message,
+		Message:     message,
 	})
 	if err != nil {
 		return err

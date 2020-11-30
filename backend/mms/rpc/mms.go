@@ -9,6 +9,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/number"
 	"github.com/burstsms/mtmo-tp/backend/mms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/mms/worker"
+	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 	"github.com/google/uuid"
@@ -19,7 +20,7 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 
 	uid := uuid.New().String()
 
-	msg := p.Message
+	message := p.Message
 	if p.TrackLinks {
 		rsp, err := s.svc.TrackLink.GenerateTrackLinks(tracklink.GenerateTrackLinksParams{
 			AccountID:   p.AccountID,
@@ -30,8 +31,20 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 		if err != nil {
 			return err
 		}
-		msg = rsp.Message
+		message = rsp.Message
 	}
+
+	generateOptoutLinkReply, err := s.svc.OptOut.GenerateOptOutLink(optOut.GenerateOptOutLinkParams{
+		AccountID:   p.AccountID,
+		MessageID:   uid,
+		MessageType: Name,
+		Message:     message,
+	})
+	if err != nil {
+		return err
+	}
+
+	message = generateOptoutLinkReply.Message
 
 	if len([]rune(p.Message)) > 1000 {
 		return errors.New("message must be less than 1000 characters")
@@ -43,7 +56,6 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 
 	recipientNumber := p.Recipient
 	var country string
-	var err error
 
 	if p.Country != "" {
 		recipientNumber, country, err = number.ParseMobileCountry(recipientNumber, p.Country)
@@ -61,7 +73,7 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 		ID:          uid,
 		AccountID:   p.AccountID,
 		Subject:     p.Subject,
-		Message:     msg,
+		Message:     message,
 		Recipient:   recipientNumber,
 		Sender:      p.Sender,
 		Country:     country,

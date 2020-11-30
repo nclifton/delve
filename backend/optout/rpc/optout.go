@@ -48,7 +48,18 @@ func (s *OptOutService) OptOutViaLink(p types.OptOutViaLinkParams, r *types.OptO
 	return nil
 }
 
-func (s *OptOutService) GenerateOptoutLink(p types.GenerateOptoutLinkParams, r *types.GenerateOptoutLinkReply) error {
+type GenerateOptOutLinkParams struct {
+	AccountID   string
+	MessageID   string
+	MessageType string
+	Message     string
+}
+
+type GenerateOptOutLinkReply struct {
+	Message string
+}
+
+func (s *OptOutService) GenerateOptOutLink(p GenerateOptOutLinkParams, r *GenerateOptOutLinkReply) error {
 	ctx := context.Background()
 
 	match := optoutRegex.FindAllString(p.Message, -1)
