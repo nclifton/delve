@@ -8,8 +8,6 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
 )
 
-type NoReply = types.NoReply
-
 type Client struct {
 	rpc.Client
 }

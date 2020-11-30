@@ -13,14 +13,14 @@ func TestGenerateOptOutLink(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		params          GenerateOptOutLinkParams
+		params          types.GenerateOptOutLinkParams
 		db              mockDB
 		expectedMessage string
 		expectedErr     error
 	}{
 		{
 			name: "test happy path with tag",
-			params: GenerateOptOutLinkParams{
+			params: types.GenerateOptOutLinkParams{
 				AccountID:   "123",
 				MessageID:   "msg_123",
 				MessageType: "SMS",
@@ -36,7 +36,7 @@ func TestGenerateOptOutLink(t *testing.T) {
 		},
 		{
 			name: "test happy path without OptOut tag",
-			params: GenerateOptOutLinkParams{
+			params: types.GenerateOptOutLinkParams{
 				AccountID:   "123",
 				MessageID:   "msg_123",
 				MessageType: "SMS",
@@ -47,7 +47,7 @@ func TestGenerateOptOutLink(t *testing.T) {
 		},
 		{
 			name: "test with db error",
-			params: GenerateOptOutLinkParams{
+			params: types.GenerateOptOutLinkParams{
 				AccountID:   "123",
 				MessageID:   "msg_123",
 				MessageType: "SMS",
@@ -67,7 +67,7 @@ func TestGenerateOptOutLink(t *testing.T) {
 				db:        test.db,
 			}
 
-			r := &GenerateOptOutLinkReply{}
+			r := &types.GenerateOptOutLinkReply{}
 			err := optOut.GenerateOptOutLink(test.params, r)
 			if err != test.expectedErr {
 				t.Errorf("unexpected error %+v", err)
