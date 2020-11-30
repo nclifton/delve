@@ -13,6 +13,7 @@ type SMSPOSTRequest struct {
 	Recipient  string `json:"recipient" valid:"required"`
 	Sender     string `json:"sender" valid:"required"`
 	Country    string `json:"country"`
+	TrackLinks bool   `json:"track_links"`
 }
 
 func SMSPOST(r *Route) {
@@ -48,6 +49,7 @@ func SMSPOST(r *Route) {
 		AlarisUser: account.AlarisUsername,
 		AlarisPass: account.AlarisPassword,
 		AlarisURL:  account.AlarisURL,
+		TrackLinks: req.TrackLinks,
 	})
 	if err != nil {
 		// handler rpc error

@@ -26,7 +26,7 @@ func (db *db) InsertTrackLink(ctx context.Context, accountID, messageID, message
 		ctx,
 		`INSERT INTO track_link(account_id, message_id, message_type, created_at, updated_at, url)
 		VALUES($1, $2, $3, now(), now(), $4)
-		RETURNING id, account_id, message_id, message_type, created_at, updated_at, url`,
+		RETURNING id, account_id, message_id, message_type, track_link_id, created_at, updated_at, url, hits`,
 		accountID,
 		messageID,
 		messageType,

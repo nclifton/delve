@@ -42,6 +42,7 @@ type MMSPOSTRequest struct {
 	Country     string   `json:"country"`
 	MessageRef  string   `json:"message_ref"`
 	ContentURLs []string `json:"content_urls"`
+	TrackLinks  bool     `json:"track_links"`
 }
 
 func MMSPOST(r *Route) {
@@ -66,6 +67,7 @@ func MMSPOST(r *Route) {
 		Country:     req.Country,
 		MessageRef:  req.MessageRef,
 		ContentURLs: req.ContentURLs,
+		TrackLinks:  req.TrackLinks,
 	})
 	if err != nil {
 		r.WriteError("failed sending MMS", http.StatusInternalServerError)

@@ -9,7 +9,7 @@ type GenerateTrackLinksReply = rpc.GenerateTrackLinksReply
 
 func (c *Client) GenerateTrackLinks(p GenerateTrackLinksParams) (r *GenerateTrackLinksReply, err error) {
 	r = &GenerateTrackLinksReply{}
-	err = c.Call("CreateTrackLinksForMessage", p, r)
+	err = c.Call("GenerateTrackLinks", p, r)
 	return r, err
 }
 
