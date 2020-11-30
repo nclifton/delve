@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
@@ -56,7 +57,8 @@ func MMSPOST(r *Route) {
 		TrackLinks:  req.TrackLinks,
 	})
 	if err != nil {
-		r.WriteError(fmt.Sprintf("failed sending MMS: %s", err), http.StatusInternalServerError)
+		log.Printf("Failed sending MMS: %s", err)
+		r.WriteError("failed sending MMS", http.StatusInternalServerError)
 		return
 	}
 

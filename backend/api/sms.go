@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
@@ -48,7 +49,8 @@ func SMSPOST(r *Route) {
 	})
 	if err != nil {
 		// handler rpc error
-		r.WriteError(fmt.Sprintf("Could not process sms: %s", err.Error()), http.StatusInternalServerError)
+		log.Printf("Could not send SMS: %s", err.Error())
+		r.WriteError("Could not process sms", http.StatusInternalServerError)
 		return
 	}
 
