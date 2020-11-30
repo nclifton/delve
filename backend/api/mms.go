@@ -58,6 +58,12 @@ func MMSPOST(r *Route) {
 		return
 	}
 
+	validSender := checkValidSender(req.Sender, account.SenderMMS)
+	if !validSender {
+		r.WriteError(fmt.Sprintf("Sender: %s is not valid for account: %s(%s)", req.Sender, account.Name, account.ID), http.StatusBadRequest)
+		return
+	}
+
 	res, err := r.api.mms.Send(mms.SendParams{
 		AccountID:   account.ID,
 		Subject:     req.Subject,
@@ -70,7 +76,7 @@ func MMSPOST(r *Route) {
 		TrackLinks:  req.TrackLinks,
 	})
 	if err != nil {
-		r.WriteError("failed sending MMS", http.StatusInternalServerError)
+		r.WriteError(fmt.Sprintf("failed sending MMS: %s", err), http.StatusInternalServerError)
 		return
 	}
 

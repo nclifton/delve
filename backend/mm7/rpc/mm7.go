@@ -2,15 +2,19 @@ package rpc
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/burstsms/mtmo-tp/backend/mm7/worker"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 )
+
+var validMediaRegex = regexp.MustCompile(`^image\/(png|jpeg|gif)`)
 
 type PingResponse struct {
 	Res string
@@ -140,6 +144,11 @@ func (s *MM7) GetCachedContent(p MM7GetCachedContentParams, r *MM7GetCachedConte
 	body, err := ioutil.ReadAll(imageRes.Body)
 	if err != nil {
 		return err
+	}
+	contentType := http.DetectContentType(body)
+
+	if validMediaRegex.FindString(contentType) != "" {
+		return fmt.Errorf("Invalid contentType for %s", p.ContentURL)
 	}
 
 	if err := s.db.redis.Client.Set(p.ContentURL, body, time.Hour).Err(); err != nil {

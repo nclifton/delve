@@ -2,8 +2,10 @@ package rpc
 
 import (
 	"context"
+	"errors"
 	"time"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/number"
 	"github.com/burstsms/mtmo-tp/backend/mms/worker"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
@@ -64,14 +66,38 @@ func (s *MMSService) Send(p SendParams, r *SendReply) error {
 		msg = rsp.Message
 	}
 
+	if len([]rune(p.Message)) > 1000 {
+		return errors.New("message must be less than 1000 characters")
+	}
+
+	if len(p.ContentURLs) > 4 {
+		return errors.New("you must provide no more then 4 content_urls")
+	}
+
+	recipientNumber := p.Recipient
+	var country string
+	var err error
+
+	if p.Country != "" {
+		recipientNumber, country, err = number.ParseMobileCountry(recipientNumber, p.Country)
+		if err != nil {
+			return err
+		}
+	} else {
+		country, err = number.GetCountryFromPhone(recipientNumber)
+		if err != nil {
+			return err
+		}
+	}
+
 	newMMS := MMS{
 		ID:          uid,
 		AccountID:   p.AccountID,
 		Subject:     p.Subject,
 		Message:     msg,
-		Recipient:   p.Recipient,
+		Recipient:   recipientNumber,
 		Sender:      p.Sender,
-		Country:     p.Country,
+		Country:     country,
 		MessageRef:  p.MessageRef,
 		ContentURLs: p.ContentURLs,
 	}

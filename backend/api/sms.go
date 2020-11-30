@@ -28,12 +28,7 @@ func SMSPOST(r *Route) {
 		return
 	}
 
-	// Check sender against the acconts sender list
-	var validSender bool
-	for _, possibleSender := range account.SenderSMS {
-		validSender = possibleSender == req.Sender
-	}
-
+	validSender := checkValidSender(req.Sender, account.SenderSMS)
 	if !validSender {
 		r.WriteError(fmt.Sprintf("Sender: %s is not valid for account: %s(%s)", req.Sender, account.Name, account.ID), http.StatusBadRequest)
 		return
