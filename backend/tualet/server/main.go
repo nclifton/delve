@@ -11,13 +11,12 @@ import (
 )
 
 type Env struct {
-	HTTPPort     int    `envconfig:"HTTP_PORT"`
-	TemplatePath string `envconfig:"TEMPLATE_PATH"`
-	DLREndpoint  string `envconfig:"DLR_ENDPOINT"`
-	MOEndpoint   string `envconfig:"MO_ENDPOINT"`
-	NRName       string `envconfig:"NR_NAME"`
-	NRLicense    string `envconfig:"NR_LICENSE"`
-	NRTracing    bool   `envconfig:"NR_TRACING"`
+	HTTPPort    int    `envconfig:"HTTP_PORT"`
+	DLREndpoint string `envconfig:"DLR_ENDPOINT"`
+	MOEndpoint  string `envconfig:"MO_ENDPOINT"`
+	NRName      string `envconfig:"NR_NAME"`
+	NRLicense   string `envconfig:"NR_LICENSE"`
+	NRTracing   bool   `envconfig:"NR_TRACING"`
 }
 
 func main() {
@@ -36,10 +35,9 @@ func main() {
 	})
 
 	opts := tualet.TualetAPIOptions{
-		NrApp:        newrelicM,
-		TemplatePath: env.TemplatePath,
-		DLREndpoint:  env.DLREndpoint,
-		MOEndpoint:   env.MOEndpoint,
+		NrApp:       newrelicM,
+		DLREndpoint: env.DLREndpoint,
+		MOEndpoint:  env.MOEndpoint,
 	}
 
 	server := tualet.NewTualetAPI(&opts)

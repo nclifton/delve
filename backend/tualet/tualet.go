@@ -11,23 +11,18 @@ import (
 )
 
 type TualetAPIOptions struct {
-	NrApp        func(http.Handler) http.Handler
-	TemplatePath string
-	DLREndpoint  string
-	MOEndpoint   string
-	Client       *http.Client
-}
-
-type TualetTemplates struct {
+	NrApp       func(http.Handler) http.Handler
+	DLREndpoint string
+	MOEndpoint  string
+	Client      *http.Client
 }
 
 // API wraps an instance of our api app
 type TualetAPI struct {
-	opts      *TualetAPIOptions
-	router    *httprouter.Router
-	log       *belogger.StandardLogger
-	templates *TualetTemplates
-	client    *http.Client
+	opts   *TualetAPIOptions
+	router *httprouter.Router
+	log    *belogger.StandardLogger
+	client *http.Client
 }
 
 // Handler exposes the router
@@ -38,18 +33,15 @@ func (a *TualetAPI) Handler() http.Handler {
 // New creates our api "app", i.e. the http handler
 func NewTualetAPI(opts *TualetAPIOptions) *TualetAPI {
 
-	templates := &TualetTemplates{}
-
 	client := opts.Client
 	if client == nil {
 		client = http.DefaultClient
 	}
 
 	api := &TualetAPI{
-		opts:      opts,
-		log:       belogger.NewLogger(),
-		templates: templates,
-		client:    client,
+		opts:   opts,
+		log:    belogger.NewLogger(),
+		client: client,
 	}
 
 	loggerM := logger.New(&logger.Options{
