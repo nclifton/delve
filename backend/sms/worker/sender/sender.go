@@ -48,7 +48,7 @@ func (h *SenderHandler) OnFinalFailure(body []byte) error {
 	}
 
 	// update sms status
-	err = h.smsRPC.MarkFailed(rpc.MarkFailedParams{ID: jobdata.ID})
+	err = h.smsRPC.MarkFailed(rpc.MarkFailedParams{ID: jobdata.ID, AccountID: jobdata.AccountID})
 	if err != nil {
 		log.Printf("[SMS Send] error marking %s as failed: %s", jobdata.ID, err)
 		return err
@@ -93,7 +93,7 @@ func (h *SenderHandler) Handle(body []byte, headers map[string]interface{}) erro
 	log.Printf("[SMS Send] sent msg to alaris SMSID:(%s), MessageID:(%s)", jobdata.ID, messageID)
 
 	// update sms status
-	err = h.smsRPC.MarkSent(rpc.MarkSentParams{ID: jobdata.ID, MessageID: messageID})
+	err = h.smsRPC.MarkSent(rpc.MarkSentParams{ID: jobdata.ID, MessageID: messageID, AccountID: jobdata.AccountID})
 	if err != nil {
 		log.Printf("[SMS Send] error marking %s as sent: %s", jobdata.ID, err)
 		return err

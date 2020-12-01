@@ -1,11 +1,15 @@
 package rpc
 
 import (
+	"log"
+	"time"
+
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/sms/biz"
 	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
+	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 	"github.com/google/uuid"
 )
 
@@ -112,11 +116,66 @@ func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
 }
 
 func (s *SMSService) MarkSent(p types.MarkSentParams, r *types.NoReply) error {
-	return s.db.MarkSent(p.ID, p.MessageID)
+
+	err := s.db.MarkSent(p.ID, p.MessageID)
+	if err != nil {
+		log.Printf("[Processing SMS] Could not mark sent SMS with ID: %s", p.ID)
+		return err
+	}
+
+	// find sms by the given dlr messageid
+	sms, err := s.db.FindSMSByID(p.ID, p.AccountID)
+	if err != nil {
+		log.Printf("[Processing SMS] SMS Not Found with ID: %s", p.ID)
+		return err
+	}
+
+	// if it exists call the webhook service to send any status event webhooks
+	err = s.webhookRPC.PublishSMSStatusUpdate(webhookRPC.PublishSMSStatusUpdateParams{
+		AccountID:       sms.AccountID,
+		SMSID:           sms.ID,
+		MessageRef:      sms.MessageRef,
+		Recipient:       sms.Recipient,
+		Sender:          sms.Sender,
+		Status:          `sent`,
+		StatusUpdatedAt: time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *SMSService) MarkFailed(p types.MarkFailedParams, r *types.NoReply) error {
-	return s.db.MarkFailed(p.ID)
+	err := s.db.MarkFailed(p.ID)
+	if err != nil {
+		log.Printf("[Processing SMS] Could not mark failed SMS with ID: %s", p.ID)
+		return err
+	}
+
+	// find sms by the given dlr messageid
+	sms, err := s.db.FindSMSByID(p.ID, p.AccountID)
+	if err != nil {
+		log.Printf("[Processing SMS] SMS Not Found with ID: %s", p.ID)
+		return err
+	}
+
+	// if it exists call the webhook service to send any status event webhooks
+	err = s.webhookRPC.PublishSMSStatusUpdate(webhookRPC.PublishSMSStatusUpdateParams{
+		AccountID:       sms.AccountID,
+		SMSID:           sms.ID,
+		MessageRef:      sms.MessageRef,
+		Recipient:       sms.Recipient,
+		Sender:          sms.Sender,
+		Status:          `failed`,
+		StatusUpdatedAt: time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *SMSService) FindByID(p types.FindByIDParams, r *types.FindByIDReply) error {

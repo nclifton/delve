@@ -37,11 +37,13 @@ type SendReply struct {
 }
 type MarkSentParams struct {
 	ID        string
+	AccountID string
 	MessageID string
 }
 
 type MarkFailedParams struct {
-	ID string
+	AccountID string
+	ID        string
 }
 
 type FindByIDParams struct {
