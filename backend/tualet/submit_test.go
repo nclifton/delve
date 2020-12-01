@@ -59,7 +59,7 @@ func TestSubmit(t *testing.T) {
 		},
 	}
 
-	api := NewTualetAPI(&TualetAPIOptions{TemplatePath: `templates`})
+	api := NewTualetAPI(&TualetAPIOptions{})
 	loghook := test.NewLocal(api.log.Logger)
 	req, err := http.NewRequest("GET", "/api", nil)
 	if err != nil {

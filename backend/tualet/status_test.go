@@ -9,7 +9,7 @@ import (
 
 func TestStatus(t *testing.T) {
 
-	api := NewTualetAPI(&TualetAPIOptions{TemplatePath: `templates`})
+	api := NewTualetAPI(&TualetAPIOptions{})
 	req, err := http.NewRequest("GET", "/v1/status", nil)
 	if err != nil {
 		t.Fatal(err)
