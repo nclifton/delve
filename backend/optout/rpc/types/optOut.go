@@ -18,8 +18,6 @@ type OptOut struct {
 	UpdatedAt   time.Time
 }
 
-const FindByLinkID = "FindByLinkID"
-
 type FindByLinkIDParams struct {
 	LinkID string
 }
@@ -28,8 +26,6 @@ type FindByLinkIDReply struct {
 	*OptOut
 }
 
-const OptOutViaLink = "OptOutViaLink"
-
 type OptOutViaLinkParams struct {
 	LinkID string
 }
@@ -37,8 +33,6 @@ type OptOutViaLinkParams struct {
 type OptOutViaLinkReply struct {
 	*OptOut
 }
-
-const GenerateOptOutLink = "GenerateOptOutLink"
 
 type GenerateOptOutLinkParams struct {
 	AccountID   string
@@ -50,8 +44,6 @@ type GenerateOptOutLinkParams struct {
 type GenerateOptOutLinkReply struct {
 	Message string
 }
-
-const OptOutViaMsg = "OptOutViaMsg"
 
 type OptOutViaMsgParams struct {
 	Message     string

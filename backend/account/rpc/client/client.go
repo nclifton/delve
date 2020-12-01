@@ -8,8 +8,6 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 )
 
-type NoReply = types.NoReply
-
 type Client struct {
 	rpc.Client
 }

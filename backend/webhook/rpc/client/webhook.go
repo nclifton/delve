@@ -1,13 +1,11 @@
 package client
 
-import (
-	wrpc "github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
-)
+import "github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
 
-type FindParams = wrpc.FindParams
-type FindReply = wrpc.FindReply
+type FindParams = types.FindParams
+type FindReply = types.FindReply
 
-type SourceMessage = wrpc.SourceMessage
+type SourceMessage = types.SourceMessage
 
 func (c *Client) Find(accountID string) (r *FindReply, err error) {
 	r = &FindReply{}
@@ -15,8 +13,8 @@ func (c *Client) Find(accountID string) (r *FindReply, err error) {
 	return
 }
 
-type InsertParams = wrpc.InsertParams
-type InsertReply = wrpc.InsertReply
+type InsertParams = types.InsertParams
+type InsertReply = types.InsertReply
 
 func (c *Client) Insert(accountID, event, name, url string, rateLimit int) (r *InsertReply, err error) {
 	r = &InsertReply{}
@@ -30,8 +28,8 @@ func (c *Client) Insert(accountID, event, name, url string, rateLimit int) (r *I
 	return
 }
 
-type DeleteParams = wrpc.DeleteParams
-type DeleteReply = wrpc.NoReply
+type DeleteParams = types.DeleteParams
+type DeleteReply = types.NoReply
 
 func (c *Client) Delete(accountID, id string) (r *DeleteReply, err error) {
 	r = &DeleteReply{}
@@ -42,8 +40,8 @@ func (c *Client) Delete(accountID, id string) (r *DeleteReply, err error) {
 	return
 }
 
-type UpdateParams = wrpc.UpdateParams
-type UpdateReply = wrpc.UpdateReply
+type UpdateParams = types.UpdateParams
+type UpdateReply = types.UpdateReply
 
 func (c *Client) Update(id, accountID, event, name, url string, rateLimit int) (r *UpdateReply, err error) {
 	r = &UpdateReply{}

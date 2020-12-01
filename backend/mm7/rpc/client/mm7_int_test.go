@@ -21,18 +21,6 @@ func initClient() *client.Client {
 
 	return client.NewClient(env.RPCHost, env.RPCPort)
 }
-func TestPing(t *testing.T) {
-	cli := initClient()
-
-	r, err := cli.Ping()
-	if err != nil {
-		log.Fatal("failed to call ping:", err)
-	}
-
-	if r.Res != "PONG" {
-		log.Fatal("failed wrong response:", r)
-	}
-}
 
 func TestSend(t *testing.T) {
 	cli := initClient()

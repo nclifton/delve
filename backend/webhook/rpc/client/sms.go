@@ -1,19 +1,16 @@
 package client
 
-import (
-	wrpc "github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
-)
+import "github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
 
-type PublishSMSStatusUpdateParams = wrpc.PublishSMSStatusUpdateParams
+type PublishSMSStatusUpdateParams = types.PublishSMSStatusUpdateParams
 
 func (c *Client) PublishSMSStatusUpdate(params PublishSMSStatusUpdateParams) error {
-	return c.Call("PublishSMSStatusUpdate", params, &NoReply{})
+	return c.Call("PublishSMSStatusUpdate", params, &types.NoReply{})
 }
 
-type PublishMOParams = wrpc.PublishMOParams
-type LastMessage = wrpc.LastMessage
+type PublishMOParams = types.PublishMOParams
+type LastMessage = types.LastMessage
 
 func (c *Client) PublishMO(params PublishMOParams) error {
-	err := c.Call("PublishMO", params, &NoReply{})
-	return err
+	return c.Call("PublishMO", params, &types.NoReply{})
 }

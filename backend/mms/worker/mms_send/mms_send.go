@@ -20,7 +20,7 @@ const (
 )
 
 type mm7RPCClient interface {
-	Send(p mm7RPC.SendParams) (r *mm7RPC.NoReply, err error)
+	Send(p mm7RPC.SendParams) error
 }
 
 type mmsRPCClient interface {
@@ -53,7 +53,7 @@ func (h *MMSSendHandler) Handle(body []byte, headers map[string]interface{}) err
 	}
 
 	// send to mm7 service
-	_, err := h.mm7RPC.Send(mm7RPC.SendParams{
+	if err := h.mm7RPC.Send(mm7RPC.SendParams{
 		ID:          msg.ID,
 		Subject:     msg.Subject,
 		Message:     msg.Message,
@@ -61,8 +61,7 @@ func (h *MMSSendHandler) Handle(body []byte, headers map[string]interface{}) err
 		Recipient:   msg.Recipient,
 		ContentURLs: msg.ContentURLs,
 		ProviderKey: msg.ProviderKey,
-	})
-	if err != nil {
+	}); err != nil {
 		h.logError(msg, MMSStatusFailed, err.Error(), "Problem sending to mm7")
 
 		return h.mmsRPC.UpdateStatus(mmsRPC.UpdateStatusParams{

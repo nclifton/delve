@@ -15,8 +15,8 @@ func (c *Client) Send(p SendParams) (r *SendReply, err error) {
 
 type UpdateStatusParams = types.UpdateStatusParams
 
-func (c *Client) UpdateStatus(p UpdateStatusParams) (err error) {
-	return c.Call("UpdateStatus", p, &NoReply{})
+func (c *Client) UpdateStatus(p UpdateStatusParams) error {
+	return c.Call("UpdateStatus", p, &types.NoReply{})
 }
 
 type FindByIDParams = types.FindByIDParams

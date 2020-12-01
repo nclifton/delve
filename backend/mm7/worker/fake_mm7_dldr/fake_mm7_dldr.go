@@ -39,8 +39,8 @@ var (
 
 type MM7RPCClient interface {
 	Store(params mm7RPC.MediaStoreParams) (r *mm7RPC.MediaStoreReply, err error)
-	DLR(params mm7RPC.DLRParams) (r *mm7RPC.NoReply, err error)
-	Deliver(params mm7RPC.DeliverParams) (r *mm7RPC.NoReply, err error)
+	DLR(params mm7RPC.DLRParams) error
+	Deliver(params mm7RPC.DeliverParams) error
 }
 
 type FakeMM7DLDRHandler struct {
@@ -141,13 +141,11 @@ func getRequestAction(body string) (string, error) {
 }
 
 func (h *FakeMM7DLDRHandler) processDeliveryReport(body string) error {
-	_, err := h.mm7RPC.DLR(mm7RPC.DLRParams{
+	return h.mm7RPC.DLR(mm7RPC.DLRParams{
 		ID:          mm7utils.ExtractEntity(*drMessageIDRegex, body),
 		Status:      mm7utils.ExtractEntity(*drStatusRegex, body),
 		Description: mm7utils.ExtractEntity(*drDescriptionRegex, body),
 	})
-
-	return err
 }
 
 func (h *FakeMM7DLDRHandler) processDeliver(body string, parts []*mm7utils.MMSPart) error {
@@ -182,10 +180,5 @@ func (h *FakeMM7DLDRHandler) processDeliver(body string, parts []*mm7utils.MMSPa
 		}
 	}
 
-	_, err := h.mm7RPC.Deliver(params)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return h.mm7RPC.Deliver(params)
 }

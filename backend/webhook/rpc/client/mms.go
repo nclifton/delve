@@ -1,11 +1,11 @@
 package client
 
 import (
-	wrpc "github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
 )
 
-type PublishMMSStatusUpdateParams = wrpc.PublishMMSStatusUpdateParams
+type PublishMMSStatusUpdateParams = types.PublishMMSStatusUpdateParams
 
-func (c *Client) PublishMMSStatusUpdate(params PublishMMSStatusUpdateParams) error {
-	return c.Call("PublishMMSStatusUpdate", params, &NoReply{})
+func (c *Client) PublishMMSStatusUpdate(p PublishMMSStatusUpdateParams) error {
+	return c.Call("PublishMMSStatusUpdate", p, &types.NoReply{})
 }
