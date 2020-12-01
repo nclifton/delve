@@ -82,6 +82,7 @@ func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
 		GSM:        isGSM,
 		Recipient:  recipientNumber,
 		Sender:     p.Sender,
+		TrackLinks: p.TrackLinks,
 	}
 
 	sms, err := s.db.InsertSMS(newSMS)

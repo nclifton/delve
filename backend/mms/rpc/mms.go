@@ -79,6 +79,7 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 		Country:     country,
 		MessageRef:  p.MessageRef,
 		ContentURLs: p.ContentURLs,
+		TrackLinks:  p.TrackLinks,
 	}
 
 	newMMS.Status = `pending`
@@ -132,4 +133,16 @@ func (s *MMSService) UpdateStatus(p types.UpdateStatusParams, r *types.NoReply) 
 		StatusDescription: p.Description,
 		StatusUpdatedAt:   time.Now(),
 	})
+}
+
+func (s *MMSService) FindByID(p types.FindByIDParams, r *types.FindByIDReply) error {
+	ctx := context.Background()
+
+	mms, err := s.db.FindByID(ctx, p.ID)
+	if err != nil {
+		return err
+	}
+
+	r.MMS = mms
+	return nil
 }

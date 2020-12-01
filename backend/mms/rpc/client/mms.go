@@ -13,8 +13,17 @@ func (c *Client) Send(p SendParams) (r *SendReply, err error) {
 	return
 }
 
-type UpdateStatusParams types.UpdateStatusParams
+type UpdateStatusParams = types.UpdateStatusParams
 
 func (c *Client) UpdateStatus(p UpdateStatusParams) (err error) {
 	return c.Call("UpdateStatus", p, &NoReply{})
+}
+
+type FindByIDParams = types.FindByIDParams
+type FindByIDReply = types.FindByIDReply
+
+func (c *Client) FindByID(p FindByIDParams) (r *FindByIDReply, err error) {
+	r = &FindByIDReply{}
+	err = c.Call("FindByID", p, r)
+	return
 }

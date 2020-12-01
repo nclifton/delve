@@ -5,35 +5,17 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	mmstypes "github.com/burstsms/mtmo-tp/backend/mms/rpc/types"
+	smstypes "github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
+	"github.com/burstsms/mtmo-tp/backend/track_link/rpc/types"
+	wtypes "github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
 )
 
 // URLRegex for detecting URLs in a string
 var URLRegex = regexp.MustCompile(`(?:^|[\s]{1})(http(s?):\/\/)[^\s]+[^.;:(.\s)\s]`)
 
-type TrackLink struct {
-	ID          string
-	AccountID   string
-	MessageID   string
-	MessageType string
-	TrackLinkID string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	URL         string
-	Hits        int
-}
-
-type GenerateTrackLinksParams struct {
-	AccountID   string
-	MessageID   string
-	MessageType string
-	Message     string
-}
-
-type GenerateTrackLinksReply struct {
-	Message string
-}
-
-func (s *TrackLinkService) GenerateTrackLinks(p GenerateTrackLinksParams, r *GenerateTrackLinksReply) error {
+func (s *TrackLinkService) GenerateTrackLinks(p types.GenerateTrackLinksParams, r *types.GenerateTrackLinksReply) error {
 	ctx := context.Background()
 
 	msg := p.Message
@@ -52,19 +34,10 @@ func (s *TrackLinkService) GenerateTrackLinks(p GenerateTrackLinksParams, r *Gen
 	return nil
 }
 
-type FindTrackLinkByTrackLinkIDParams struct {
-	AccountID   string
-	TrackLinkID string
-}
-
-type FindTrackLinkByTrackLinkIDReply struct {
-	TrackLink *TrackLink
-}
-
-func (s *TrackLinkService) FindTrackLinkByTrackLinkID(p FindTrackLinkByTrackLinkIDParams, r *FindTrackLinkByTrackLinkIDReply) error {
+func (s *TrackLinkService) FindTrackLinkByTrackLinkID(p types.FindTrackLinkByTrackLinkIDParams, r *types.FindTrackLinkByTrackLinkIDReply) error {
 	ctx := context.Background()
 
-	tracklink, err := s.db.FindTrackLinkByTrackLinkID(ctx, p.AccountID, p.TrackLinkID)
+	tracklink, err := s.db.FindTrackLinkByTrackLinkID(ctx, p.TrackLinkID)
 	if err != nil {
 		return err
 	}
@@ -73,23 +46,59 @@ func (s *TrackLinkService) FindTrackLinkByTrackLinkID(p FindTrackLinkByTrackLink
 	return nil
 }
 
-type LinkHitParams struct {
-	AccountID   string
-	TrackLinkID string
-}
-
-type LinkHitReply struct {
-	TrackLink *TrackLink
-}
-
-func (s *TrackLinkService) LinkHit(p LinkHitParams, r *LinkHitReply) error {
+func (s *TrackLinkService) LinkHit(p types.LinkHitParams, r *types.LinkHitReply) error {
 	ctx := context.Background()
 
-	tracklink, err := s.db.IncrementTrackLinkHits(ctx, p.AccountID, p.TrackLinkID)
+	tracklink, err := s.db.IncrementTrackLinkHits(ctx, p.TrackLinkID)
 	if err != nil {
 		return err
 	}
 
 	r.TrackLink = tracklink
-	return nil
+
+	var recipient, sender, message, messageref, subject string
+	var contenturls []string
+	// retrieve source msg
+	switch tracklink.MessageType {
+	case mmstypes.Name:
+		msg, err := s.mmsRPC.FindByID(mmstypes.FindByIDParams{ID: tracklink.MessageID})
+		if err != nil {
+			return err
+		}
+		recipient = msg.MMS.Recipient
+		sender = msg.MMS.Sender
+		message = msg.MMS.Message
+		messageref = msg.MMS.MessageRef
+		subject = msg.MMS.Subject
+		contenturls = msg.MMS.ContentURLs
+	case smstypes.Name:
+		msg, err := s.smsRPC.FindByID(smstypes.FindByIDParams{ID: tracklink.MessageID, AccountID: tracklink.AccountID})
+		if err != nil {
+			return err
+		}
+		recipient = msg.SMS.Recipient
+		sender = msg.SMS.Sender
+		message = msg.SMS.Message
+		messageref = msg.SMS.MessageRef
+	}
+
+	sourcemsg := wtypes.SourceMessage{
+		Type:        tracklink.MessageType,
+		ID:          tracklink.MessageID,
+		Recipient:   recipient,
+		Sender:      sender,
+		Message:     message,
+		MessageRef:  messageref,
+		Subject:     subject,
+		ContentURLS: contenturls,
+	}
+
+	err = s.webhookRPC.PublishLinkHit(wtypes.PublishLinkHitParams{
+		URL:           tracklink.URL,
+		Hits:          tracklink.Hits,
+		Timestamp:     time.Now().UTC(),
+		SourceMessage: &sourcemsg,
+		AccountID:     tracklink.AccountID,
+	})
+	return err
 }

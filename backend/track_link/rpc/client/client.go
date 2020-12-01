@@ -5,10 +5,8 @@ import (
 	"strconv"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
-	tlrpc "github.com/burstsms/mtmo-tp/backend/track_link/rpc"
+	"github.com/burstsms/mtmo-tp/backend/track_link/rpc/types"
 )
-
-type NoReply = tlrpc.NoReply
 
 type Client struct {
 	rpc.Client
@@ -19,7 +17,7 @@ func NewClient(host string, port int) *Client {
 	return &Client{
 		Client: rpc.Client{
 			ServiceAddress: host + ":" + strconv.Itoa(port),
-			ServiceName:    tlrpc.Name,
+			ServiceName:    types.Name,
 		},
 	}
 }

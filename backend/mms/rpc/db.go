@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/mms/rpc/types"
@@ -27,7 +28,7 @@ func NewDB(postgresURL string, rabbitmq rabbit.Conn, opts RabbitPublishOptions) 
 func (db *db) FindByID(ctx context.Context, id string) (*types.MMS, error) {
 	var mms types.MMS
 
-	sql := `
+	query := `
 		SELECT id, account_id, created_at, updated_at, provider_key, message_id, message_ref,
 			country, subject, message, content_urls, recipient, sender, status,
 			track_links
@@ -35,7 +36,9 @@ func (db *db) FindByID(ctx context.Context, id string) (*types.MMS, error) {
 		WHERE id = $1
 	`
 
-	row := db.postgres.QueryRow(ctx, sql, id)
+	row := db.postgres.QueryRow(ctx, query, id)
+
+	var msgID sql.NullString
 
 	err := row.Scan(
 		&mms.ID,
@@ -43,7 +46,7 @@ func (db *db) FindByID(ctx context.Context, id string) (*types.MMS, error) {
 		&mms.CreatedAt,
 		&mms.UpdatedAt,
 		&mms.ProviderKey,
-		&mms.MessageID,
+		&msgID,
 		&mms.MessageRef,
 		&mms.Country,
 		&mms.Subject,
@@ -57,6 +60,8 @@ func (db *db) FindByID(ctx context.Context, id string) (*types.MMS, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	mms.MessageID = msgID.String
 
 	return &mms, nil
 }

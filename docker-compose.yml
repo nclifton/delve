@@ -19,6 +19,7 @@ services:
       - "10007:10007"
       - "10010:10010"
       - "10012:10012"
+      - "10013:10013"
     environment:
       - DISABLE_NEW_RELIC=true
       - NR_NAME=TP Local
@@ -106,7 +107,7 @@ services:
       - SMS_WEBHOOK_RPC_HOST=backend
       - SMS_WEBHOOK_RPC_PORT=10002
       - SMS_TRACK_LINK_RPC_HOST=backend
-      - SMS_TRACK_LINK_RPC_PORT=10011
+      - SMS_TRACK_LINK_RPC_PORT=10010
       - SMS_OPT_OUT_RPC_HOST=backend
       - SMS_OPT_OUT_RPC_PORT=10011
       - OPTOUTLINK_DOMAIN=localhost:10010
@@ -120,8 +121,12 @@ services:
       - OPTOUT_TRACK_HOST=tracked.url
 
       - TRACK_LINK_RPC_PORT=10010
+      - TRACK_LINK_RPC_HOST=backend
+      - TRACK_LINK_INBOUND_PORT=10013
       - TRACK_LINK_POSTGRES_URL=postgresql://postgres:example@postgres/track_link
       - TRACK_LINK_TRACK_HOST=tracked.url
+      - TRACK_LINK_WEBHOOK_RPC_HOST=backend
+      - TRACK_LINK_WEBHOOK_RPC_PORT=10002
 
     deploy:
       resources:

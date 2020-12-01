@@ -1,11 +1,11 @@
 package client
 
 import (
-	"github.com/burstsms/mtmo-tp/backend/track_link/rpc"
+	"github.com/burstsms/mtmo-tp/backend/track_link/rpc/types"
 )
 
-type GenerateTrackLinksParams = rpc.GenerateTrackLinksParams
-type GenerateTrackLinksReply = rpc.GenerateTrackLinksReply
+type GenerateTrackLinksParams = types.GenerateTrackLinksParams
+type GenerateTrackLinksReply = types.GenerateTrackLinksReply
 
 func (c *Client) GenerateTrackLinks(p GenerateTrackLinksParams) (r *GenerateTrackLinksReply, err error) {
 	r = &GenerateTrackLinksReply{}
@@ -13,8 +13,8 @@ func (c *Client) GenerateTrackLinks(p GenerateTrackLinksParams) (r *GenerateTrac
 	return r, err
 }
 
-type FindTrackLinkByTrackLinkIDParams = rpc.FindTrackLinkByTrackLinkIDParams
-type FindTrackLinkByTrackLinkIDReply = rpc.FindTrackLinkByTrackLinkIDReply
+type FindTrackLinkByTrackLinkIDParams = types.FindTrackLinkByTrackLinkIDParams
+type FindTrackLinkByTrackLinkIDReply = types.FindTrackLinkByTrackLinkIDReply
 
 func (c *Client) FindTrackLinkByTrackLinkID(p FindTrackLinkByTrackLinkIDParams) (r *FindTrackLinkByTrackLinkIDReply, err error) {
 	r = &FindTrackLinkByTrackLinkIDReply{}
@@ -22,11 +22,11 @@ func (c *Client) FindTrackLinkByTrackLinkID(p FindTrackLinkByTrackLinkIDParams) 
 	return r, err
 }
 
-type LinkHitParams = rpc.LinkHitParams
-type LinkHitReply = rpc.LinkHitReply
+type LinkHitParams = types.LinkHitParams
+type LinkHitReply = types.LinkHitReply
 
 func (c *Client) LinkHit(p LinkHitParams) (r *LinkHitReply, err error) {
 	r = &LinkHitReply{}
-	err = c.Call("IncrementTrackLinkHits", p, r)
+	err = c.Call("LinkHit", p, r)
 	return r, err
 }

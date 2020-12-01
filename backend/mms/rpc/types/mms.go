@@ -43,3 +43,11 @@ type UpdateStatusParams struct {
 	Status      string
 	Description string
 }
+
+type FindByIDParams struct {
+	ID string
+}
+
+type FindByIDReply struct {
+	MMS *MMS
+}
