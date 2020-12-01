@@ -24,6 +24,30 @@ func (api *TualetAPI) sendDLRRequest(params *DLRParams) {
 	rand.Seed(time.Now().UnixNano())
 
 	if api.opts.DLREndpoint != "" {
+
+		status := "DELIVRD"
+		// Check for special overrides on number suffix
+		number := params.To[len(params.To)-4:]
+		// Check for spoofing a submission error
+		switch number {
+		case "1500":
+			status = "ENROUTE"
+		case "1507":
+			status = "SENT"
+		case "1501":
+			status = "DELIVRD"
+		case "1502":
+			status = "EXPIRED"
+		case "1503":
+			status = "DELETED"
+		case "1504":
+			status = "UNDELIV"
+		case "1505":
+			status = "REJECTD"
+		case "1506":
+			status = "UNKNOWN"
+		}
+
 		go func() {
 			// Introduce some random time between dlrs, so they can come out of sequence and not before they
 			// have been marked sent
@@ -31,7 +55,7 @@ func (api *TualetAPI) sendDLRRequest(params *DLRParams) {
 			time.Sleep(time.Duration((delay + 1)) * time.Second)
 			data := url.Values{}
 			data.Set("msgid", params.MessageID)
-			data.Set("state", params.Status)
+			data.Set("state", status)
 			data.Set("reasoncode", params.ReasonCode)
 			data.Set("to", params.To)
 			data.Set("time", time.Now().UTC().Format(time.RFC3339))
