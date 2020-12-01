@@ -39,12 +39,12 @@ func TestSend(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		sendParams  types.MM7SendParams
+		sendParams  types.SendParams
 		expectedErr error
 	}{
 		{
 			name: "test fakesubmit happy path",
-			sendParams: types.MM7SendParams{
+			sendParams: types.SendParams{
 				ID:          "msg id",
 				Subject:     "subject",
 				Message:     "message",
@@ -57,7 +57,7 @@ func TestSend(t *testing.T) {
 		},
 		{
 			name: "test fakesubmit happy path with client error",
-			sendParams: types.MM7SendParams{
+			sendParams: types.SendParams{
 				ID:          "msg id",
 				Subject:     "subject",
 				Message:     "message",
@@ -70,7 +70,7 @@ func TestSend(t *testing.T) {
 		},
 		{
 			name: "test otpussubmit happy path",
-			sendParams: types.MM7SendParams{
+			sendParams: types.SendParams{
 				ID:          "msg id",
 				Subject:     "subject",
 				Message:     "message",
@@ -83,7 +83,7 @@ func TestSend(t *testing.T) {
 		},
 		{
 			name: "test mgagesubmit happy path",
-			sendParams: types.MM7SendParams{
+			sendParams: types.SendParams{
 				ID:          "msg id",
 				Subject:     "subject",
 				Message:     "message",

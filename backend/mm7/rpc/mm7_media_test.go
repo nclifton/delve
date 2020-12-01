@@ -13,14 +13,14 @@ func TestStore(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		params      types.MM7MediaStoreParams
+		params      types.MediaStoreParams
 		s3          mockS3
 		expectedURL string
 		expectedErr error
 	}{
 		{
 			name: "test happy path",
-			params: types.MM7MediaStoreParams{
+			params: types.MediaStoreParams{
 				FileName:    "123",
 				ProviderKey: "fake",
 				Extension:   ".png",
@@ -31,7 +31,7 @@ func TestStore(t *testing.T) {
 		},
 		{
 			name: "test with s3 error",
-			params: types.MM7MediaStoreParams{
+			params: types.MediaStoreParams{
 				FileName:    "123",
 				ProviderKey: "fake",
 				Extension:   ".png",
@@ -56,7 +56,7 @@ func TestStore(t *testing.T) {
 				},
 			}
 
-			r := &types.MM7MediaStoreReply{}
+			r := &types.MediaStoreReply{}
 			err := mm7.Store(test.params, r)
 			if err != test.expectedErr {
 				t.Errorf("unexpected error %+v", err)

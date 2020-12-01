@@ -15,9 +15,9 @@ import (
 )
 
 type mm7RPCClient interface {
-	UpdateStatus(p mm7RPC.MM7UpdateStatusParams) error
-	CheckRateLimit(p mm7RPC.MM7CheckRateLimitParams) (r *mm7RPC.MM7CheckRateLimitReply, err error)
-	GetCachedContent(p mm7RPC.MM7GetCachedContentParams) (r *mm7RPC.MM7GetCachedContentReply, err error)
+	UpdateStatus(p mm7RPC.UpdateStatusParams) error
+	CheckRateLimit(p mm7RPC.CheckRateLimitParams) (r *mm7RPC.CheckRateLimitReply, err error)
+	GetCachedContent(p mm7RPC.GetCachedContentParams) (r *mm7RPC.GetCachedContentReply, err error)
 }
 
 type optusClient interface {
@@ -56,7 +56,7 @@ func (h *OptusSubmitHandler) Handle(body []byte, headers map[string]interface{})
 		return err
 	}
 
-	r, err := h.mm7RPC.CheckRateLimit(mm7RPC.MM7CheckRateLimitParams{ProviderKey: worker.FakeProviderKey})
+	r, err := h.mm7RPC.CheckRateLimit(mm7RPC.CheckRateLimitParams{ProviderKey: worker.FakeProviderKey})
 	if err != nil {
 		h.logError(msg, "", err.Error(), "Unexpected mm7RPC.CheckRateLimit response")
 		return err
@@ -68,7 +68,7 @@ func (h *OptusSubmitHandler) Handle(body []byte, headers map[string]interface{})
 
 	var images [][]byte
 	for _, url := range msg.ContentURLs {
-		r, err := h.mm7RPC.GetCachedContent(mm7RPC.MM7GetCachedContentParams{
+		r, err := h.mm7RPC.GetCachedContent(mm7RPC.GetCachedContentParams{
 			ContentURL: url,
 		})
 		if err != nil {
@@ -114,7 +114,7 @@ func (h *OptusSubmitHandler) Handle(body []byte, headers map[string]interface{})
 }
 
 func (h *OptusSubmitHandler) updateStatus(id, status, description string) error {
-	err := h.mm7RPC.UpdateStatus(mm7RPC.MM7UpdateStatusParams{
+	err := h.mm7RPC.UpdateStatus(mm7RPC.UpdateStatusParams{
 		ID:          id,
 		Status:      status,
 		Description: description,

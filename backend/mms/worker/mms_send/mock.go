@@ -9,7 +9,7 @@ type mockMM7RPCClient struct {
 	err error
 }
 
-func (m mockMM7RPCClient) Send(p mm7RPC.MM7SendParams) (r *mm7RPC.NoReply, err error) {
+func (m mockMM7RPCClient) Send(p mm7RPC.SendParams) (r *mm7RPC.NoReply, err error) {
 	return nil, m.err
 }
 

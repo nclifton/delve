@@ -6,7 +6,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/mm7/rpc/types"
 )
 
-func (s *MM7) Store(p types.MM7MediaStoreParams, r *types.MM7MediaStoreReply) error {
+func (s *MM7) Store(p types.MediaStoreParams, r *types.MediaStoreReply) error {
 	key := fmt.Sprintf("%s_%s%s", p.ProviderKey, p.FileName, p.Extension)
 
 	if err := s.svc.S3.PutS3Content(p.Data, s.configVar.MMSMediaBucket, key); err != nil {

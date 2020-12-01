@@ -17,12 +17,7 @@ import (
 
 var validMediaRegex = regexp.MustCompile(`^image\/(png|jpeg|gif)`)
 
-func (s *MM7) Ping(p types.NoParams, r *types.PingResponse) error {
-	r.Res = "PONG"
-	return nil
-}
-
-func (s *MM7) Send(p types.MM7SendParams, r *types.NoReply) error {
+func (s *MM7) Send(p types.SendParams, r *types.NoReply) error {
 	msg := worker.SubmitMessage{
 		ID:          p.ID,
 		Subject:     p.Subject,
@@ -40,7 +35,7 @@ func (s *MM7) Send(p types.MM7SendParams, r *types.NoReply) error {
 	return s.db.Publish(msg, provider.QueueNameSubmit)
 }
 
-func (s *MM7) ProviderSpec(p types.MM7ProviderSpecParams, r *types.MM7ProviderSpecReply) error {
+func (s *MM7) ProviderSpec(p types.ProviderSpecParams, r *types.ProviderSpecReply) error {
 	provider, err := getProviderDetail(p.ProviderKey)
 	if err != nil {
 		return err
@@ -52,7 +47,7 @@ func (s *MM7) ProviderSpec(p types.MM7ProviderSpecParams, r *types.MM7ProviderSp
 	return nil
 }
 
-func (s *MM7) UpdateStatus(p types.MM7UpdateStatusParams, r *types.NoReply) error {
+func (s *MM7) UpdateStatus(p types.UpdateStatusParams, r *types.NoReply) error {
 	return s.svc.MMS.UpdateStatus(mms.UpdateStatusParams{
 		ID:          p.ID,
 		MessageID:   p.MessageID,
@@ -61,17 +56,17 @@ func (s *MM7) UpdateStatus(p types.MM7UpdateStatusParams, r *types.NoReply) erro
 	})
 }
 
-func (s *MM7) DLR(p types.MM7DLRParams, r *types.NoReply) error {
+func (s *MM7) DLR(p types.DLRParams, r *types.NoReply) error {
 	log.Printf("RPC call DLR, params: %+v", p)
 	return nil
 }
 
-func (s *MM7) Deliver(p types.MM7DeliverParams, r *types.NoReply) error {
+func (s *MM7) Deliver(p types.DeliverParams, r *types.NoReply) error {
 	log.Printf("RPC call Deliver, params: %+v", p)
 	return nil
 }
 
-func (s *MM7) GetCachedContent(p types.MM7GetCachedContentParams, r *types.MM7GetCachedContentReply) error {
+func (s *MM7) GetCachedContent(p types.GetCachedContentParams, r *types.GetCachedContentReply) error {
 	image, err := s.db.redis.Client.Get(p.ContentURL).Result()
 	if err != nil && err != redis.RedisNil {
 		return err
@@ -107,7 +102,7 @@ func (s *MM7) GetCachedContent(p types.MM7GetCachedContentParams, r *types.MM7Ge
 	return nil
 }
 
-func (s *MM7) CheckRateLimit(p types.MM7CheckRateLimitParams, r *types.MM7CheckRateLimitReply) error {
+func (s *MM7) CheckRateLimit(p types.CheckRateLimitParams, r *types.CheckRateLimitReply) error {
 	provider, err := getProviderDetail(p.ProviderKey)
 	if err != nil {
 		return err

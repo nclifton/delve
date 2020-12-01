@@ -2,7 +2,7 @@
 
 Request
 ```
-type MM7MediaStoreParams struct {
+type MediaStoreParams struct {
 	FileName   string
 	ProviderKey string
 	Extension   string
@@ -12,7 +12,7 @@ type MM7MediaStoreParams struct {
 
 Reply
 ```
-type MM7MediaStoreReply struct {
+type MediaStoreReply struct {
 	URL	string
 }
 ```

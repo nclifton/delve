@@ -3,7 +3,7 @@
 Request
 
 ```
-type MM7SendParams struct {
+type SendParams struct {
 	ID					string
 	Subject 		string
 	Message 		string
@@ -19,7 +19,7 @@ type MM7SendParams struct {
 Request
 
 ```
-type MM7ProviderSpecParams struct {
+type ProviderSpecParams struct {
 	ProviderKey	string
 }
 ```
@@ -27,7 +27,7 @@ type MM7ProviderSpecParams struct {
 Reply
 
 ```
-type MM7ProviderSpecReply struct {
+type ProviderSpecReply struct {
 	ProviderKey			string
 	ImageSizeMaxKB	int
 }
@@ -38,7 +38,7 @@ type MM7ProviderSpecReply struct {
 Request
 
 ```
-type MM7UpdateStatusParams struct {
+type UpdateStatusParams struct {
 	ID 					string
 	Status			string
 	Description	string
@@ -56,7 +56,7 @@ No reply.
 Request
 
 ```
-type MM7DLRParams struct {
+type DLRParams struct {
 	ID 					string
 	Status			string
 	Description	string
@@ -74,7 +74,7 @@ No reply.
 Request
 
 ```
-type MM7DeliverParams struct {
+type DeliverParams struct {
 	Subject 		string
 	Message 		string
 	Sender			string
@@ -95,7 +95,7 @@ No reply.
 Request
 
 ```
-type MM7GetCachedContentParams struct {
+type GetCachedContentParams struct {
 	ContentURL	string
 }
 ```
@@ -103,7 +103,7 @@ type MM7GetCachedContentParams struct {
 Reply
 
 ```
-type MM7GetCachedContentReply struct {
+type GetCachedContentReply struct {
 	Content    []byte
 }
 ```
@@ -113,7 +113,7 @@ type MM7GetCachedContentReply struct {
 Request
 
 ```
-type MM7CheckRateLimitParams struct {
+type CheckRateLimitParams struct {
 	ProviderKey	string
 }
 ```
@@ -121,7 +121,7 @@ type MM7CheckRateLimitParams struct {
 Reply
 
 ```
-type MM7CheckRateLimitReply struct {
+type CheckRateLimitReply struct {
 	Allow    bool
 }
 ```

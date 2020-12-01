@@ -15,10 +15,10 @@ import (
 )
 
 type mm7RPCClient interface {
-	UpdateStatus(p mm7RPC.MM7UpdateStatusParams) error
-	ProviderSpec(p mm7RPC.MM7ProviderSpecParams) (r *mm7RPC.MM7ProviderSpecReply, err error)
-	CheckRateLimit(p mm7RPC.MM7CheckRateLimitParams) (r *mm7RPC.MM7CheckRateLimitReply, err error)
-	GetCachedContent(p mm7RPC.MM7GetCachedContentParams) (r *mm7RPC.MM7GetCachedContentReply, err error)
+	UpdateStatus(p mm7RPC.UpdateStatusParams) error
+	ProviderSpec(p mm7RPC.ProviderSpecParams) (r *mm7RPC.ProviderSpecReply, err error)
+	CheckRateLimit(p mm7RPC.CheckRateLimitParams) (r *mm7RPC.CheckRateLimitReply, err error)
+	GetCachedContent(p mm7RPC.GetCachedContentParams) (r *mm7RPC.GetCachedContentReply, err error)
 }
 
 type teclooSvc interface {
@@ -57,7 +57,7 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 		return err
 	}
 
-	r, err := h.mm7RPC.CheckRateLimit(mm7RPC.MM7CheckRateLimitParams{ProviderKey: worker.FakeProviderKey})
+	r, err := h.mm7RPC.CheckRateLimit(mm7RPC.CheckRateLimitParams{ProviderKey: worker.FakeProviderKey})
 	if err != nil {
 		h.logError(msg, "", err.Error(), "Unexpected mm7RPC.CheckRateLimit response")
 		return err
@@ -67,7 +67,7 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 		return rabbit.NewErrRetryWorkerMessage(fmt.Sprintf("Failed sending message id: %s Error: rate limit reached", msg.ID))
 	}
 
-	psReply, err := h.mm7RPC.ProviderSpec(mm7RPC.MM7ProviderSpecParams{
+	psReply, err := h.mm7RPC.ProviderSpec(mm7RPC.ProviderSpecParams{
 		ProviderKey: worker.FakeProviderKey,
 	})
 	if err != nil {
@@ -77,7 +77,7 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 
 	var images [][]byte
 	for _, url := range msg.ContentURLs {
-		r, err := h.mm7RPC.GetCachedContent(mm7RPC.MM7GetCachedContentParams{
+		r, err := h.mm7RPC.GetCachedContent(mm7RPC.GetCachedContentParams{
 			ContentURL: url,
 		})
 		if err != nil {
@@ -130,7 +130,7 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 }
 
 func (h *FakeMM7SubmitHandler) updateStatus(id, messageID, status, description string) error {
-	return h.mm7RPC.UpdateStatus(mm7RPC.MM7UpdateStatusParams{
+	return h.mm7RPC.UpdateStatus(mm7RPC.UpdateStatusParams{
 		ID:          id,
 		MessageID:   messageID,
 		Status:      status,

@@ -8,20 +8,20 @@ import (
 )
 
 type mockRPCClient struct {
-	rateLimitReply     mm7RPC.MM7CheckRateLimitReply
-	cachedContentReply mm7RPC.MM7GetCachedContentReply
+	rateLimitReply     mm7RPC.CheckRateLimitReply
+	cachedContentReply mm7RPC.GetCachedContentReply
 	err                error
 }
 
-func (m mockRPCClient) UpdateStatus(p mm7RPC.MM7UpdateStatusParams) (err error) {
+func (m mockRPCClient) UpdateStatus(p mm7RPC.UpdateStatusParams) (err error) {
 	return m.err
 }
 
-func (m mockRPCClient) CheckRateLimit(p mm7RPC.MM7CheckRateLimitParams) (r *mm7RPC.MM7CheckRateLimitReply, err error) {
+func (m mockRPCClient) CheckRateLimit(p mm7RPC.CheckRateLimitParams) (r *mm7RPC.CheckRateLimitReply, err error) {
 	return &m.rateLimitReply, m.err
 }
 
-func (m mockRPCClient) GetCachedContent(p mm7RPC.MM7GetCachedContentParams) (r *mm7RPC.MM7GetCachedContentReply, err error) {
+func (m mockRPCClient) GetCachedContent(p mm7RPC.GetCachedContentParams) (r *mm7RPC.GetCachedContentReply, err error) {
 	return &m.cachedContentReply, m.err
 }
 

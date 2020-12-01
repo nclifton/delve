@@ -23,7 +23,7 @@ func TestHandle(t *testing.T) {
 		"success": {
 			body: b,
 			rpcClient: mockRPCClient{
-				rateLimitReply: mm7RPC.MM7CheckRateLimitReply{
+				rateLimitReply: mm7RPC.CheckRateLimitReply{
 					Allow: true,
 				},
 			},
@@ -44,7 +44,7 @@ func TestHandle(t *testing.T) {
 		"rate limit": {
 			body: b,
 			rpcClient: mockRPCClient{
-				rateLimitReply: mm7RPC.MM7CheckRateLimitReply{
+				rateLimitReply: mm7RPC.CheckRateLimitReply{
 					Allow: false,
 				},
 			},

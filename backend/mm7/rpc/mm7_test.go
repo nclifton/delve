@@ -13,13 +13,13 @@ func TestUpdateStatus(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		params      types.MM7UpdateStatusParams
+		params      types.UpdateStatusParams
 		mms         mockMMS
 		expectedErr error
 	}{
 		{
 			name: "test happy path",
-			params: types.MM7UpdateStatusParams{
+			params: types.UpdateStatusParams{
 				ID:          "123",
 				MessageID:   "msg_123",
 				Status:      "sent",
@@ -30,7 +30,7 @@ func TestUpdateStatus(t *testing.T) {
 		},
 		{
 			name: "test with mms error",
-			params: types.MM7UpdateStatusParams{
+			params: types.UpdateStatusParams{
 				ID:          "123",
 				MessageID:   "msg_123",
 				Status:      "sent",
