@@ -9,6 +9,25 @@ import (
 	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
+const (
+	DLRStatusDelivered   = "delivered"
+	DLRStatusSoftBounce  = "soft_bounce"
+	DLRStatusHardBounce  = "hard_bounce"
+	DLRStatusAccepted    = "accepted"
+	DLRStatusNotAccepted = "not_accepted"
+	DLRStatusPending     = "pending"
+
+	dlrCodeDelivered     = "DELIVRD"
+	dlrCodeAccepted      = "ACCEPTD"
+	dlrCodeExpired       = "EXPIRED"
+	dlrCodeDeleted       = "DELETED"
+	dlrCodeUndelivered   = "UNDELIV"
+	dlrCodeRejected      = "REJECTD"
+	dlrCodeSystemExpired = "EXPIRED"
+	dlrCodeEnroute       = "ENROUTE"
+	dlrCodeSent          = "SENT"
+)
+
 func (s *SMSService) QueueDLR(p types.QueueDLRParams, r *types.NoReply) error {
 
 	opts := RabbitPublishOptions{
@@ -45,8 +64,31 @@ func (s *SMSService) ProcessDLR(p types.ProcessDLRParams, r *types.NoReply) erro
 
 	log.Printf("[Processing DLR] Found SMS: %+v", sms)
 
+	var status string
+
+	switch p.State {
+	case dlrCodeDelivered:
+		status = DLRStatusDelivered
+	case dlrCodeExpired:
+		fallthrough
+	case dlrCodeDeleted:
+		fallthrough
+	case dlrCodeRejected:
+		fallthrough
+	case dlrCodeUndelivered:
+		status = DLRStatusHardBounce
+	case dlrCodeEnroute:
+		fallthrough
+	case dlrCodeAccepted:
+		fallthrough
+	case dlrCodeSent:
+		status = DLRStatusAccepted
+	default:
+		status = p.State
+	}
+
 	// update the sms status with the dlr status
-	err = s.db.MarkStatus(sms.ID, p.State)
+	err = s.db.MarkStatus(sms.ID, status)
 	if err != nil {
 		return err
 	}
@@ -58,7 +100,7 @@ func (s *SMSService) ProcessDLR(p types.ProcessDLRParams, r *types.NoReply) erro
 		MessageRef:      sms.MessageRef,
 		Recipient:       sms.Recipient,
 		Sender:          sms.Sender,
-		Status:          p.State,
+		Status:          status,
 		StatusUpdatedAt: time.Now(),
 	})
 	if err != nil {
