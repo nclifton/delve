@@ -1,6 +1,6 @@
 dependencies:
 - name: k8sDeploymentJobChart
-  repository: file://../../../../../../ops/helm_charts/k8sDeploymentJobChart
+  repository: file://../../../../../ops/helm_charts/k8sDeploymentJobChart
   version: 0.1.0
-digest: sha256:ba8cd646e2b0a6befb2b4118e182673c703cf770211050c9474e502cb399a625
-generated: "2020-11-14T19:03:58.3189782+11:00"
+digest: sha256:8ba437ebf5d4cefc5afc6dda52b2bba7f9b7931d6cd0cf13b158dbbdb1d15a55
+generated: "2020-11-30T11:04:10.7723617+11:00"

@@ -29,7 +29,7 @@ func (t *TestUtil) resetMigration() {
 		t.postgresURL,
 	)
 	if err != nil {
-		log.Fatalf("failed to initialise golang-migrate connection: %s\n", err)
+		log.Fatalf("Failed to initialise golang-migrate connection: %s\n", err)
 	}
 	t.migrate = m
 }
@@ -39,14 +39,14 @@ func (t *TestUtil) Setup() {
 
 	// clear db
 	if err := t.migrate.Drop(); err != nil {
-		log.Fatalf("failed to drop db: %s\n", err)
+		log.Fatalf("Failed to drop db: %s\n", err)
 	}
 
 	t.resetMigration()
 
 	// apply migrations
 	if err := t.migrate.Up(); err != nil {
-		log.Fatalf("failed to run migrations: %s\n", err)
+		log.Fatalf("Failed to run migrations: %s\n", err)
 	}
 }
 
@@ -54,11 +54,11 @@ func (t *TestUtil) TearDown() {
 	t.postgres.Close()
 	err := t.migrate.Drop()
 	if err != nil {
-		log.Fatalf("failed to drop test db: %s\n", err)
+		log.Fatalf("Failed to drop test db: %s\n", err)
 	}
 	err = t.rabbitServer.Stop()
 	if err != nil {
-		log.Fatalf("failed to stop test rabbit server: %s\n", err)
+		log.Fatalf("Failed to stop test rabbit server: %s\n", err)
 	}
 }
 
@@ -75,17 +75,17 @@ func NewTestUtil(postgresURL, migrationsURL string) *TestUtil {
 
 	testPostgres, err := pgxpool.Connect(context.Background(), postgresURL)
 	if err != nil {
-		log.Fatalf("failed to initialise postgres conn: %s\n", err)
+		log.Fatalf("Failed to initialise postgres conn: %s\n", err)
 	}
 
 	testRabbitServer := amqptestServer.NewServer("amqp://localhost:5672/%2f")
 	err = testRabbitServer.Start()
 	if err != nil {
-		log.Fatalf("failed to start fake rabbit server: %s\n", err)
+		log.Fatalf("Failed to start fake rabbit server: %s\n", err)
 	}
 	testRabbit, err := amqptest.Dial("amqp://localhost:5672/%2f")
 	if err != nil {
-		log.Fatalf("failed to initialise fake rabbit client: %s\n", err)
+		log.Fatalf("Failed to initialise fake rabbit client: %s\n", err)
 	}
 
 	return &TestUtil{

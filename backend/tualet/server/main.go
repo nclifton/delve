@@ -14,17 +14,22 @@ type Env struct {
 	HTTPPort    int    `envconfig:"HTTP_PORT"`
 	DLREndpoint string `envconfig:"DLR_ENDPOINT"`
 	MOEndpoint  string `envconfig:"MO_ENDPOINT"`
-	NRName      string `envconfig:"NR_NAME"`
-	NRLicense   string `envconfig:"NR_LICENSE"`
-	NRTracing   bool   `envconfig:"NR_TRACING"`
+
+	NRName    string `envconfig:"NR_NAME"`
+	NRLicense string `envconfig:"NR_LICENSE"`
+	NRTracing bool   `envconfig:"NR_TRACING"`
 }
 
 func main() {
+	log.Println("Starting service...")
+
 	var env Env
 	err := envconfig.Process("tualet", &env)
 	if err != nil {
-		log.Fatal("failed to read env vars:", err)
+		log.Fatal("Failed to read env vars:", err)
 	}
+
+	log.Printf("ENV: %+v", env)
 
 	port := strconv.Itoa(env.HTTPPort)
 
@@ -42,11 +47,9 @@ func main() {
 
 	server := tualet.NewTualetAPI(&opts)
 	if err != nil {
-		log.Fatalf("failed to initialise service: %s reason: %s\n", "tualet api http", err)
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", "tualet", err)
 	}
 
-	log.Printf("%s service initialised and available on port %s", "tualet api http", port)
-	log.Println("Tualet API: listening on", port)
+	log.Printf("%s service initialised and available on port %s", "tualet", port)
 	log.Fatal(http.ListenAndServe(":"+port, server.Handler()))
-
 }

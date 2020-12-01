@@ -25,8 +25,12 @@ type Env struct {
 	RPCPort            int    `envconfig:"RPC_PORT"`
 	RedisURL           string `envconfig:"REDIS_URL"`
 
-	MMSHost string `envconfig:"MMS_HOST"`
-	MMSPort int    `envconfig:"MMS_PORT"`
+	MMSHost string `envconfig:"MMS_RPC_HOST"`
+	MMSPort int    `envconfig:"MMS_RPC_PORT"`
+
+	NRName    string `envconfig:"NR_NAME"`
+	NRLicense string `envconfig:"NR_LICENSE"`
+	NRTracing bool   `envconfig:"NR_TRACING"`
 }
 
 type s3Svc interface {

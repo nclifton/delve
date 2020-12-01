@@ -17,7 +17,7 @@ RUN apk add --no-cache ca-certificates
 
 # Set the working directory outside $GOPATH to enable the support for modules
 WORKDIR /src
-COPY ./backend /src/
+COPY ./backend .
 
 RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/mms/migration
 

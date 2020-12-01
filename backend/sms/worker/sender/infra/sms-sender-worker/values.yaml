@@ -3,16 +3,16 @@ k8sServiceChart:
   name: sms-sender-worker
   # Component is the group of services (domain) the service belongs to
   component: sms
-  namespace: sendsei
-  replicas: 1
+  namespace: tp
+  replicas: 2
 
   image:
-    repository: 410370493805.dkr.ecr.ap-southeast-2.amazonaws.com/service_sms_worker_sender
-    tag: latest
+    repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/sms_worker_sender
+    tag: ${artifact.metadata.tag}
 
   podLabels:
     # env label required for New Relic integration
-    env: sendsei-staging
+    env: ${env.name}
 
   #podAnnotations:
 
@@ -26,7 +26,7 @@ k8sServiceChart:
 
   # HorizontalPodAutoscaler
   hpa:
-    enabled: true
+    enabled: false
     minReplicas: 2
     maxReplicas: 12
     cpuTargetAverageUtilization: 80
@@ -63,23 +63,15 @@ k8sServiceChart:
     timeoutSeconds: 1
 
   # Specify all environment variables to be added to the container.
-  # The following two maps, config and secrets, are put into a ConfigMap
-  # and a Secret, respectively.
-  # Both are added to the container environment in podSpec as envFrom source.
-  #env:
-  #  config:
-  #    key1: value1
-  #  secrets:
-  #    key2: value2
-
-  # TODO: Remove this and use defined env vars above
-  #existingConfigMapName: service-config
-  existingSecretName: staging
-
-  # Old configuration to support config toml files (optional)
-  # All new services can delete this as they use env vars defined above
-  config:
-    name: backend-config
-    key: config
-    mountPath: /config
-    filename: config.toml
+  env:
+    config:
+      NR_NAME: "${env.name}"
+      NR_LICENSE: "3289b893db560c39096d3c222d4a33037c24f943"
+      NR_TRACING: "true"
+      SMS_RPC_HOST: "sms-rpc-service"
+      SMS_RPC_PORT: "10009"
+      CLIENT_TIMEOUT: "3"
+      REDIS_URL: "redis-master.redis:6379"
+      ALARIS_URL: "api.mtmo.io"
+    secrets:
+      RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/%2f"

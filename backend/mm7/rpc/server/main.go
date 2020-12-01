@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/s3"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
@@ -14,25 +15,36 @@ import (
 )
 
 func main() {
+	log.Println("Starting service...")
+
 	var env mm7RPC.Env
 	err := envconfig.Process("mm7", &env)
 	if err != nil {
-		log.Fatal("failed to read env vars:", err)
+		log.Fatal("Failed to read env vars:", err)
 	}
+
+	log.Printf("ENV: %+v", env)
+
+	// Register service with New Relic
+	nr.CreateApp(&nr.Options{
+		AppName:                  env.NRName,
+		NewRelicLicense:          env.NRLicense,
+		DistributedTracerEnabled: env.NRTracing,
+	})
 
 	rabbitmq, err := rabbit.Connect(env.RabbitURL)
 	if err != nil {
-		log.Fatalf("failed to initialise rabbitmq: %s reason: %s\n", mm7RPC.Name, err)
+		log.Fatalf("Failed to initialise rabbitmq: %s reason: %s\n", mm7RPC.Name, err)
 	}
 
 	redisCon, err := redis.Connect(env.RedisURL)
 	if err != nil {
-		log.Fatalf("failed to initialise redis: %s reason: %s\n", mm7RPC.Name, err)
+		log.Fatalf("Failed to initialise redis: %s reason: %s\n", mm7RPC.Name, err)
 	}
 
 	limiter, err := redis.NewLimiter(env.RedisURL)
 	if err != nil {
-		log.Fatalf("failed to initialise redis: %s reason: %s\n", mm7RPC.Name, err)
+		log.Fatalf("Failed to initialise redis: %s reason: %s\n", mm7RPC.Name, err)
 	}
 
 	s3ServiceParams := s3.AWSServiceS3Params{
@@ -45,7 +57,7 @@ func main() {
 
 	s3Svc, err := s3.NewService(s3ServiceParams)
 	if err != nil {
-		log.Fatalf("failed to initialise s3: %s reason: %s\n", mm7RPC.Name, err)
+		log.Fatalf("Failed to initialise s3: %s reason: %s\n", mm7RPC.Name, err)
 	}
 
 	port := env.RPCPort
@@ -67,7 +79,7 @@ func main() {
 
 	server, err := rpc.NewServer(mm7RPC.NewService(rabbitmq, rabbitOpts, redisCon, limiter, svc, configVar), port)
 	if err != nil {
-		log.Fatalf("failed to initialise service: %s reason: %s\n", mm7RPC.Name, err)
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", mm7RPC.Name, err)
 	}
 
 	log.Printf("%s service initialised and available on port %d", mm7RPC.Name, port)

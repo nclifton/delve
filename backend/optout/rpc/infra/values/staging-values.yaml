@@ -5,4 +5,4 @@
 k8sServiceChart:
   env:
     secrets:
-      POSTGRES_URL: "postgresql://foo:barbut8chars@tp-staging.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com"
+      POSTGRES_URL: "postgresql://foo:barbut8chars@tp-staging.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/optout"

@@ -8,7 +8,7 @@ replicas: 1
 
 # TODO: Only use ${artifact.metadata.image} here once we move to Harness completely
 image: 
-  repository: 410370493805.dkr.ecr.ap-southeast-2.amazonaws.com/service-name
+  repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/service-name
   tag: latest
 
 # TODO: Comment back in once we mve to Harness completely
@@ -89,15 +89,3 @@ env: {}
 #    key1: value1
 #  secrets:
 #    key2: value2
-
-# TODO: Remove this and use defined env vars above
-#existingConfigMapName: service-config
-#existingSecretName: staging
-
-# Old configuration to support config toml files (optional)
-# All new services can delete this as they use env vars defined above
-#config:
-#  name: backend-config
-#  key: config
-#  mountPath: /config
-#  filename: config.toml

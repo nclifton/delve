@@ -28,7 +28,5 @@ COPY --from=builder /user/group /user/passwd /etc/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app /app
 
-VOLUME ["/config"]
-
 USER nobody:nobody
-ENTRYPOINT ["/app", "/config/config.toml"]
+ENTRYPOINT ["/app"]

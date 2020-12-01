@@ -16,26 +16,29 @@ var workerName = "processdlr"
 
 type Env struct {
 	RabbitURL string `envconfig:"RABBIT_URL"`
+	SMSHost   string `envconfig:"SMS_HOST"`
+	SMSPort   int    `envconfig:"SMS_RPC_PORT"`
+
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
 	NRTracing bool   `envconfig:"NR_TRACING"`
-	SMSHost   string `envconfig:"SMS_HOST"`
-	SMSPort   int    `envconfig:"SMS_RPC_PORT"`
 }
 
 func main() {
+	log.Println("Starting service...")
+
 	var env Env
 	err := envconfig.Process("sms", &env)
 	if err != nil {
-		log.Fatal("failed to read env vars:", err)
+		log.Fatal("Failed to read env vars:", err)
 	}
 
-	log.Printf("starting worker: %s", workerName)
+	log.Printf("ENV: %+v", env)
 
 	// TODO service/worker level config for this url
 	rabbitmq, err := rabbit.Connect(env.RabbitURL)
 	if err != nil {
-		log.Fatalf("failed to initialise rabbit worker: %s reason: %s\n", workerName, err)
+		log.Fatalf("Failed to initialise rabbit worker: %s reason: %s\n", workerName, err)
 	}
 
 	// TODO put this data in config
@@ -58,5 +61,6 @@ func main() {
 
 	client := rpc.New(env.SMSHost, env.SMSPort)
 
+	log.Println("Service started")
 	worker.Run(opts, processdlr.NewHandler(client))
 }

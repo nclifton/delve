@@ -19,7 +19,7 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /src
 COPY ./backend .
 
-RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/tecloo/server
+RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/tualet/server
 
 # Final stage: the running container
 FROM scratch
@@ -27,9 +27,6 @@ FROM scratch
 COPY --from=builder /user/group /user/passwd /etc/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app /app
-
-# Copy static HTML files in
-COPY --from=builder /src/tecloo/templates /tecloo/templates
 
 USER nobody:nobody
 ENTRYPOINT ["/app"]

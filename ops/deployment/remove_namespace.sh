@@ -32,7 +32,7 @@ fi
 
 NAMESPACE=$2
 if [ -z "${NAMESPACE}" ]; then
-	NAMESPACE=sendsei
+	NAMESPACE=tp
 fi
 
 kube_config="${SCRIPTDIR}/${ENV}/connection_config.yaml"

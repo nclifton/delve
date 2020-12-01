@@ -1,6 +1,6 @@
 dependencies:
 - name: k8sServiceChart
-  repository: file://../../../../../../ops/helm_charts/k8sServiceChart
+  repository: file://../../../../../ops/helm_charts/k8sServiceChart
   version: 0.1.0
-digest: sha256:490a0a38c8e145c4d7768d8f798d5f46dee86b7398d516fefa093ba5ce517cf4
-generated: "2020-11-14T19:04:00.1753214+11:00"
+digest: sha256:118d981be2a108a4c0d544219ea99fbb1088a7100213f6b0373b3f4ed18a5200
+generated: "2020-11-30T11:04:35.1949443+11:00"

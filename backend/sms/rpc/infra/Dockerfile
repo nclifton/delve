@@ -19,7 +19,7 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /src
 COPY ./backend .
 
-RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/service/event/rpc/server
+RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/sms/rpc/server
 
 # Final stage: the running container
 FROM scratch
@@ -28,7 +28,5 @@ COPY --from=builder /user/group /user/passwd /etc/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app /app
 
-VOLUME ["/config"]
-
 USER nobody:nobody
-ENTRYPOINT ["/app", "/config/config.toml"]
+ENTRYPOINT ["/app"]

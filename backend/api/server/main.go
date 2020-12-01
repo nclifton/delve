@@ -16,7 +16,7 @@ import (
 var gitref = "unset" // set with go linker in build script
 
 type Env struct {
-	Port string `envconfig:"PORT"`
+	Port string `envconfig:"API_PORT"`
 
 	AccountHost string `envconfig:"ACCOUNT_HOST"`
 	AccountPort int    `envconfig:"ACCOUNT_PORT"`
@@ -33,11 +33,15 @@ type Env struct {
 }
 
 func main() {
+	log.Println("Starting service...")
+
 	var env Env
 	err := envconfig.Process("API", &env)
 	if err != nil {
-		log.Fatal("failed to read env vars:", err)
+		log.Fatal("Failed to read env vars:", err)
 	}
+
+	log.Printf("ENV: %+v", env)
 
 	newrelicM := nr.New(&nr.Options{
 		AppName:                  env.NRName,
@@ -53,6 +57,6 @@ func main() {
 		NrApp:         newrelicM,
 	})
 
-	log.Println("API: listening on", env.Port)
+	log.Printf("%s service initialised and available on port %s", "api", env.Port)
 	log.Fatal(http.ListenAndServe(":"+env.Port, app.Handler()))
 }

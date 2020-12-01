@@ -12,20 +12,25 @@ import (
 )
 
 type Env struct {
-	NRName            string `envconfig:"NR_NAME"`
-	NRLicense         string `envconfig:"NR_LICENSE"`
-	NRTracing         bool   `envconfig:"NR_TRACING"`
 	OptOutHost        string `envconfig:"RPC_HOST"`
 	OptOutPort        int    `envconfig:"RPC_PORT"`
 	OptOutInboundPort int    `envconfig:"INBOUND_PORT"`
+
+	NRName    string `envconfig:"NR_NAME"`
+	NRLicense string `envconfig:"NR_LICENSE"`
+	NRTracing bool   `envconfig:"NR_TRACING"`
 }
 
 func main() {
+	log.Println("Starting service...")
+
 	var env Env
 	err := envconfig.Process("optout", &env)
 	if err != nil {
-		log.Fatal("failed to read env vars:", err)
+		log.Fatal("Failed to read env vars:", err)
 	}
+
+	log.Printf("ENV: %+v", env)
 
 	port := strconv.Itoa(env.OptOutInboundPort)
 
@@ -42,10 +47,9 @@ func main() {
 
 	server := inbound.NewInboundAPI(&opts)
 	if err != nil {
-		log.Fatalf("failed to initialise service: %s reason: %s\n", "sms inbound http", err)
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", "sms inbound http", err)
 	}
 
 	log.Printf("%s service initialised and available on port %s", "sms inbound http", port)
-	log.Println("SMS Inbound HTTP API: listening on", port)
 	log.Fatal(http.ListenAndServe(":"+port, server.Handler()))
 }

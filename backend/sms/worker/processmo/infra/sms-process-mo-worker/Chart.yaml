@@ -1,0 +1,10 @@
+apiVersion: v2
+description: A Helm chart for Kubernetes
+icon: https://raw.githubusercontent.com/jenkins-x/jenkins-x-platform/d273e09/images/go.png
+name: sms-process-mo-worker
+version: 1.0.0
+# Use common chart from ops/helm_charts
+dependencies:
+    - name: k8sServiceChart
+      version: 0.1.0
+      repository: file://../../../../../../ops/helm_charts/k8sServiceChart

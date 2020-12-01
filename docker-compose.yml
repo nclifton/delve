@@ -75,7 +75,8 @@ services:
       - MM7_AWS_S3_PATH_STYLE=true
       - MM7_AWS_ACCESS_KEY=sendsei
       - MM7_AWS_SECRET_KEY=fr0gsn0g
-      - MM7_MMS_HOST=backend
+
+      - MM7_MMS_RPC_HOST=backend
       - MM7_MMS_PORT=10007
       - MM7_OPTUS_URL=http://172.17.0.1:7777/mm7/Mms
       - MM7_OPTUS_USER=COSTWbur
@@ -98,7 +99,7 @@ services:
 
       - SMS_RPC_PORT=10009
       - SMS_INBOUND_PORT=10008
-      - SMS_HOST=backend
+      - SMS_RPC_HOST=backend
       - SMS_POSTGRES_URL=postgresql://postgres:example@postgres/sms
       - SMS_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/sms
       - SMS_CLIENT_TIMEOUT=3
@@ -118,13 +119,13 @@ services:
       - OPTOUT_RPC_HOST=backend
       - OPTOUT_POSTGRES_URL=postgresql://postgres:example@postgres/optout
       - OPTOUT_REDIS_URL=redis:6379
-      - OPTOUT_TRACK_HOST=tracked.url
+      - OPTOUT_TRACK_RPC_HOST=backend
 
       - TRACK_LINK_RPC_PORT=10010
       - TRACK_LINK_RPC_HOST=backend
       - TRACK_LINK_INBOUND_PORT=10013
       - TRACK_LINK_POSTGRES_URL=postgresql://postgres:example@postgres/track_link
-      - TRACK_LINK_TRACK_HOST=tracked.url
+      - TRACK_LINK_TRACK_RPC_HOST=backend
       - TRACK_LINK_WEBHOOK_RPC_HOST=backend
       - TRACK_LINK_WEBHOOK_RPC_PORT=10002
 

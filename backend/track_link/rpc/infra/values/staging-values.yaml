@@ -1,0 +1,8 @@
+# This file can be used to override environment specific config.
+# Any value in the default values.yaml file can be overridden here.
+# For example, you can set environment specific variables here 
+# or set the number of replicas for a specific environment only.
+k8sServiceChart:
+  env:
+    secrets:
+      POSTGRES_URL: "postgresql://foo:barbut8chars@tp-staging.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/track_link"

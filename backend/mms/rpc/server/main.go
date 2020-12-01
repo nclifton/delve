@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc"
@@ -25,20 +26,35 @@ type Env struct {
 	TrackLinkRPCPort   int    `envconfig:"TRACK_LINK_RPC_PORT"`
 	OptOutRPCHost      string `envconfig:"OPT_OUT_RPC_HOST"`
 	OptOutRPCPort      int    `envconfig:"OPT_OUT_RPC_PORT"`
+
+	NRName    string `envconfig:"NR_NAME"`
+	NRLicense string `envconfig:"NR_LICENSE"`
+	NRTracing bool   `envconfig:"NR_TRACING"`
 }
 
 func main() {
+	log.Println("Starting service...")
+
 	var env Env
 	err := envconfig.Process("mms", &env)
 	if err != nil {
-		log.Fatal("failed to read env vars:", err)
+		log.Fatal("Failed to read env vars:", err)
 	}
+
+	log.Printf("ENV: %+v", env)
+
+	// Register service with New Relic
+	nr.CreateApp(&nr.Options{
+		AppName:                  env.NRName,
+		NewRelicLicense:          env.NRLicense,
+		DistributedTracerEnabled: env.NRTracing,
+	})
 
 	port := env.RPCPort
 
 	rabbitmq, err := rabbit.Connect(env.RabbitURL)
 	if err != nil {
-		log.Fatalf("failed to initialise service: %s reason: %s\n", mmsRPC.Name, err)
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", mmsRPC.Name, err)
 	}
 
 	rabbitOpts := rabbit.PublishOptions{
@@ -54,12 +70,12 @@ func main() {
 
 	mmsrpc, err := mmsRPC.NewService(env.PostgresURL, rabbitmq, rabbitOpts, svc)
 	if err != nil {
-		log.Fatalf("failed to initialise service: %s reason: %s\n", mmsRPC.Name, err)
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", mmsRPC.Name, err)
 	}
 
 	server, err := rpc.NewServer(mmsrpc, port)
 	if err != nil {
-		log.Fatalf("failed to initialise service: %s reason: %s\n", mmsRPC.Name, err)
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", mmsRPC.Name, err)
 	}
 
 	log.Printf("%s service initialised and available on port %d", mmsRPC.Name, port)

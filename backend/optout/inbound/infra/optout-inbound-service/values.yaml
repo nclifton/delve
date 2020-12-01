@@ -3,7 +3,7 @@ k8sServiceChart:
   name: optout-inbound-service
   # Component is the group of services (domain) the service belongs to
   component: sms
-  namespace: sendsei
+  namespace: tp
   replicas: 2
 
   image:
@@ -17,12 +17,20 @@ k8sServiceChart:
   #podAnnotations:
 
   # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
-  serviceType: LoadBalancer
+  serviceType: NodePort
   servicePort: 10012
   serviceTargetPort: 10012
   # For Headless Services (e.g. RabbitMQ Consumers) 
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   #serviceClusterIP: None
+
+  # Cluster Ingress
+  ingress:
+    enabled: true
+    # Add ingress rules (cluster ingress endpoints) as a list below
+    rules:
+      - host: "optout.${environmentVariable.dns}"
+        path: /*
 
   # HorizontalPodAutoscaler
   hpa:

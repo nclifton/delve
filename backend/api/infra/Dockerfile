@@ -17,7 +17,7 @@ RUN apk add --no-cache ca-certificates
 
 # Set the working directory outside $GOPATH to enable the support for modules
 WORKDIR /src
-COPY ./backend/api ./backend/lib .
+COPY ./backend .
 
 RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/api/server
 
@@ -27,8 +27,6 @@ FROM scratch
 COPY --from=builder /user/group /user/passwd /etc/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app /app
-
-EXPOSE 7000
 
 USER nobody:nobody
 ENTRYPOINT ["/app"]

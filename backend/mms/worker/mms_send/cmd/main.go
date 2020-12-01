@@ -6,6 +6,7 @@ import (
 	mm7c "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
 	mmsc "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/mms/worker"
 	mmsw "github.com/burstsms/mtmo-tp/backend/mms/worker/mms_send"
@@ -23,20 +24,33 @@ type Env struct {
 	MM7RPCPort            int    `envconfig:"MM7_RPC_PORT"`
 	MMSRPCHost            string `envconfig:"RPC_HOST"`
 	MMSRPCPort            int    `envconfig:"RPC_PORT"`
+
+	NRName    string `envconfig:"NR_NAME"`
+	NRLicense string `envconfig:"NR_LICENSE"`
+	NRTracing bool   `envconfig:"NR_TRACING"`
 }
 
 func main() {
-	log.Printf("starting worker: %s", Name)
+	log.Println("Starting service...")
 
 	var env Env
 	err := envconfig.Process("mms", &env)
 	if err != nil {
-		log.Fatal("failed to read env vars:", err)
+		log.Fatal("Failed to read env vars:", err)
 	}
+
+	log.Printf("ENV: %+v", env)
+
+	// Register service with New Relic
+	nr.CreateApp(&nr.Options{
+		AppName:                  env.NRName,
+		NewRelicLicense:          env.NRLicense,
+		DistributedTracerEnabled: env.NRTracing,
+	})
 
 	rabbitmq, err := rabbit.Connect(env.RabbitURL)
 	if err != nil {
-		log.Fatalf("failed to initialise rabbit: %s reason: %s\n", Name, err)
+		log.Fatalf("Failed to initialise rabbit: %s reason: %s\n", Name, err)
 	}
 
 	opts := rabbit.ConsumeOptions{
@@ -52,5 +66,6 @@ func main() {
 	mm7cli := mm7c.NewClient(env.MM7RPCHost, env.MM7RPCPort)
 	mmscli := mmsc.New(env.MMSRPCHost, env.MMSRPCPort)
 
+	log.Println("Service started")
 	w.Run(opts, mmsw.NewHandler(mm7cli, mmscli))
 }

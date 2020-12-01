@@ -16,7 +16,7 @@ func initClient() *client.Client {
 	var env mm7RPC.Env
 	err := envconfig.Process("mm7", &env)
 	if err != nil {
-		log.Fatal("failed to read env vars:", err)
+		log.Fatal("Failed to read env vars:", err)
 	}
 
 	return client.NewClient(env.RPCHost, env.RPCPort)

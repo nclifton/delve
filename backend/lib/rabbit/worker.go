@@ -39,7 +39,7 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 
 	messages, done, err := Consume(w.con, opts)
 	if err != nil {
-		log.Fatalf("failed to consume from queue: %s", err)
+		log.Fatalf("Failed to consume from queue: %s", err)
 	}
 
 	// listen for termination signals so we can cleanly close consumer

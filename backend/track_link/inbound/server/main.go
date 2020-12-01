@@ -12,20 +12,25 @@ import (
 )
 
 type Env struct {
-	NRName               string `envconfig:"NR_NAME"`
-	NRLicense            string `envconfig:"NR_LICENSE"`
-	NRTracing            bool   `envconfig:"NR_TRACING"`
 	TrackLinkHost        string `envconfig:"RPC_HOST"`
 	TrackLinkPort        int    `envconfig:"RPC_PORT"`
 	TrackLinkInboundPort int    `envconfig:"INBOUND_PORT"`
+
+	NRName    string `envconfig:"NR_NAME"`
+	NRLicense string `envconfig:"NR_LICENSE"`
+	NRTracing bool   `envconfig:"NR_TRACING"`
 }
 
 func main() {
+	log.Println("Starting service...")
+
 	var env Env
 	err := envconfig.Process("track_link", &env)
 	if err != nil {
-		log.Fatal("failed to read env vars:", err)
+		log.Fatal("Failed to read env vars:", err)
 	}
+
+	log.Printf("ENV: %+v", env)
 
 	port := strconv.Itoa(env.TrackLinkInboundPort)
 
@@ -42,10 +47,9 @@ func main() {
 
 	server := inbound.NewTrackLinkAPI(&opts)
 	if err != nil {
-		log.Fatalf("failed to initialise service: %s reason: %s\n", "track link inbound http", err)
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", "track link inbound http", err)
 	}
 
 	log.Printf("%s service initialised and available on port %s", "track link inbound http", port)
-	log.Println("Track Link Inbound HTTP API: listening on", port)
 	log.Fatal(http.ListenAndServe(":"+port, server.Handler()))
 }

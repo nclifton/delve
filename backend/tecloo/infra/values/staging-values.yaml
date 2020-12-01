@@ -3,6 +3,6 @@
 # For example, you can set environment specific variables here 
 # or set the number of replicas for a specific environment only.
 k8sServiceChart:
-  podLabels:
-    env: sendsei-staging
-
+  env:
+    config:
+      TECLOO_DR_ENDPOINT: "https://tecloo.mm7.sendseistaging.com/v1/mms/inbound"

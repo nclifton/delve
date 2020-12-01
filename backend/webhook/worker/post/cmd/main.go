@@ -20,18 +20,32 @@ type WebhookEnv struct {
 	ClientTimeout   int    `envconfig:"CLIENT_TIMEOUT"`
 	WorkerQueueName string `envconfig:"WORKER_QUEUE_NAME"`
 	RedisURL        string `envconfig:"REDIS_URL"`
+
+	NRName    string `envconfig:"NR_NAME"`
+	NRLicense string `envconfig:"NR_LICENSE"`
+	NRTracing bool   `envconfig:"NR_TRACING"`
 }
 
 func main() {
+	log.Println("Starting service...")
+
 	var env WebhookEnv
 	err := envconfig.Process("webhook", &env)
 	if err != nil {
-		log.Fatal("failed to read env vars:", err)
+		log.Fatal("Failed to read env vars:", err)
+	}
+
+	log.Printf("ENV: %+v", env)
+
+	nrOpts := &agent.Options{
+		AppName:                  env.NRName,
+		NewRelicLicense:          env.NRLicense,
+		DistributedTracerEnabled: env.NRTracing,
 	}
 
 	rabbitmq, err := rabbit.Connect(env.RabbitURL)
 	if err != nil {
-		log.Fatalf("failed to initialise rabbit worker: %s reason: %s\n", env.WorkerQueueName, err)
+		log.Fatalf("Failed to initialise rabbit worker: %s reason: %s\n", env.WorkerQueueName, err)
 	}
 
 	client := &http.Client{
@@ -40,7 +54,7 @@ func main() {
 
 	limiter, err := redis.NewLimiter(env.RedisURL)
 	if err != nil {
-		log.Fatalf("failed to initialise rabbit worker: %s reason: %s\n", env.WorkerQueueName, err)
+		log.Fatalf("Failed to initialise rabbit worker: %s reason: %s\n", env.WorkerQueueName, err)
 	}
 
 	wHandler := handler.NewHandler(client, limiter)
@@ -54,6 +68,8 @@ func main() {
 		RetryScale:    rabbit.RetryScale,
 	}
 
-	worker := rabbit.NewWorker(opts.QueueName, rabbitmq, &agent.Options{})
+	worker := rabbit.NewWorker(opts.QueueName, rabbitmq, nrOpts)
+
+	log.Println("Service started")
 	worker.Run(opts, wHandler)
 }

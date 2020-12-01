@@ -89,3 +89,7 @@ module "rabbitmq" {
 module "keda" {
   source = "./modules/keda"
 }
+
+module "harness" {
+    source = "./modules/harness"
+}

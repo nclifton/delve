@@ -3,30 +3,38 @@ k8sServiceChart:
   name: api
   # Component is the group of services (domain) the service belongs to
   component: api
-  namespace: sendsei
-  replicas: 1
+  namespace: tp
+  replicas: 2
 
   image:
-    repository: 410370493805.dkr.ecr.ap-southeast-2.amazonaws.com/api
-    tag: latest
+    repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/api
+    tag: ${artifact.metadata.tag}
 
   podLabels:
     # env label required for New Relic integration
-    env: sendsei-staging
+    env: ${env.name}
 
   #podAnnotations:
 
   # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
   serviceType: NodePort
-  servicePort: 7000
-  serviceTargetPort: 7000
+  servicePort: 10000
+  serviceTargetPort: 10000
   # For Headless Services (e.g. RabbitMQ Consumers) 
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   #serviceClusterIP: None
 
+  # Cluster Ingress
+  ingress:
+    enabled: true
+    # Add ingress rules (cluster ingress endpoints) as a list below
+    rules:
+      - host: "api.${environmentVariable.dns}"
+        path: /*
+
   # HorizontalPodAutoscaler
   hpa:
-    enabled: true
+    enabled: false
     minReplicas: 6
     maxReplicas: 12
     cpuTargetAverageUtilization: 80
@@ -63,23 +71,15 @@ k8sServiceChart:
     timeoutSeconds: 1
 
   # Specify all environment variables to be added to the container.
-  # The following two maps, config and secrets, are put into a ConfigMap
-  # and a Secret, respectively.
-  # Both are added to the container environment in podSpec as envFrom source.
-  #env:
-  #  config:
-  #    key1: value1
-  #  secrets:
-  #    key2: value2
-
-  # TODO: Remove this and use defined env vars above
-  #existingConfigMapName: service-config
-  existingSecretName: staging
-
-  # Old configuration to support config toml files (optional)
-  # All new services can delete this as they use env vars defined above
-  config:
-    name: backend-config
-    key: config
-    mountPath: /config
-    filename: config.toml
+  env:
+    config:
+      NR_NAME: "${env.name}"
+      NR_LICENSE: "3289b893db560c39096d3c222d4a33037c24f943"
+      NR_TRACING: "true"
+      API_PORT: "10000"
+      ACCOUNT_HOST: "account-rpc-service"
+      ACCOUNT_PORT: "10001"
+      SMS_HOST: "sms-rpc-service"
+      SMS_PORT: "10009"
+      MMS_HOST: "mms-rpc-service"
+      MMS_PORT: "10007"
