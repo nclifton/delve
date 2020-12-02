@@ -32,6 +32,7 @@ func (s *Service) Receiver() interface{} {
 	return s.receiver
 }
 
+// A silly comment
 func NewService(postgresURL, trackHost string, mms *mms.Client, sms *sms.Client, webhook *webhook.Client) (rpc.Service, error) {
 	gob.Register(map[string]interface{}{})
 	db, err := NewDB(postgresURL)
