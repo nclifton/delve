@@ -19,10 +19,10 @@ k8sServiceChart:
     linkerd.io/inject: disabled
 
   # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
-  #serviceType: 
-  #servicePort: 
-  #serviceTargetPort: 
-  # For Headless Services (e.g. RabbitMQ Consumers) 
+  #serviceType:
+  #servicePort:
+  #serviceTargetPort:
+  # For Headless Services (e.g. RabbitMQ Consumers)
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   serviceClusterIP: None
 
@@ -74,6 +74,6 @@ k8sServiceChart:
       RABBIT_EXCHANGE_TYPE: "direct"
       RABBIT_PREFETCHED_COUNT: "1"
       RPC_HOST: "mm7-rpc-service"
-      RPC_PORT: "7009"
+      RPC_PORT: "10003"
     secrets:
       RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/mm7"
