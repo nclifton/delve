@@ -20,7 +20,7 @@ k8sServiceChart:
   serviceType: ClusterIP
   servicePort: 10007
   serviceTargetPort: 10007
-  # For Headless Services (e.g. RabbitMQ Consumers) 
+  # For Headless Services (e.g. RabbitMQ Consumers)
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   #serviceClusterIP: None
 
@@ -76,4 +76,4 @@ k8sServiceChart:
       RPC_HOST: "mms-rpc-service"
       RPC_PORT: "10007"
     secrets:
-      RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/%2f"
+      RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/mms"

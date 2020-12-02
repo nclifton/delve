@@ -17,10 +17,10 @@ k8sServiceChart:
   #podAnnotations:
 
   # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
-  #serviceType: 
-  #servicePort: 
-  #serviceTargetPort: 
-  # For Headless Services (e.g. RabbitMQ Consumers) 
+  #serviceType:
+  #servicePort:
+  #serviceTargetPort:
+  # For Headless Services (e.g. RabbitMQ Consumers)
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   serviceClusterIP: None
 
@@ -71,4 +71,4 @@ k8sServiceChart:
       SMS_RPC_HOST: "sms-rpc-service"
       SMS_RPC_PORT: "10009"
     secrets:
-      RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/%2f"
+      RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/sms"

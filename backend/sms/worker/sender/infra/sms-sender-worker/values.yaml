@@ -74,4 +74,4 @@ k8sServiceChart:
       REDIS_URL: "redis-master.redis:6379"
       ALARIS_URL: "http://tualet:10006/api"
     secrets:
-      RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/%2f"
+      RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/sms"

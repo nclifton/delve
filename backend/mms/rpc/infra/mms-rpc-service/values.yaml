@@ -20,7 +20,7 @@ k8sServiceChart:
   serviceType: ClusterIP
   servicePort: 10007
   serviceTargetPort: 10007
-  # For Headless Services (e.g. RabbitMQ Consumers) 
+  # For Headless Services (e.g. RabbitMQ Consumers)
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   #serviceClusterIP: None
 
@@ -78,4 +78,4 @@ k8sServiceChart:
       OPT_OUT_RPC_HOST: "optout-rpc-service"
       OPT_OUT_RPC_PORT: "10011"
     secrets:
-      RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/mm7"
+      RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/mms"

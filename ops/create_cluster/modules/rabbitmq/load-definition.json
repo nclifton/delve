@@ -7,21 +7,11 @@
     }
   ],
   "vhosts": [
-    {
-      "name": "/"
-    },
-    {
-      "name": "event"
-    },
-    {
-      "name": "conversation"
-    },
-    {
-      "name": "webhook"
-    },
-    {
-      "name": "mm7"
-    }
+    { "name": "/" }
+    { "name": "mms" },
+    { "name": "mm7" },
+    { "name": "sms" },
+    { "name": "webhook" }
   ],
   "permissions": [
     {
@@ -33,14 +23,7 @@
     },
     {
       "user": "burstsms",
-      "vhost": "event",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    },
-    {
-      "user": "burstsms",
-      "vhost": "conversation",
+      "vhost": "sms",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
@@ -48,6 +31,13 @@
     {
       "user": "burstsms",
       "vhost": "webhook",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "burstsms",
+      "vhost": "mms",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
