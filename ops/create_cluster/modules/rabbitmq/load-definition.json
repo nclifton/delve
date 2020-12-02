@@ -1,55 +1,65 @@
 {
-  "users": [
-    {
-      "name": "burstsms",
-      "password": "9ur686m6",
-      "tags": "administrator"
-    }
-  ],
-  "vhosts": [
-    { "name": "/" }
-    { "name": "mms" },
-    { "name": "mm7" },
-    { "name": "sms" },
-    { "name": "webhook" }
-  ],
-  "permissions": [
-    {
-      "user": "burstsms",
-      "vhost": "/",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    },
-    {
-      "user": "burstsms",
-      "vhost": "sms",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    },
-    {
-      "user": "burstsms",
-      "vhost": "webhook",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    },
-    {
-      "user": "burstsms",
-      "vhost": "mms",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    },
-    {
-      "user": "burstsms",
-      "vhost": "mm7",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    }
-  ],
-  "parameters": [],
-  "policies": []
+    "users": [
+        {
+            "name": "burstsms",
+            "password": "9ur686m6",
+            "tags": "administrator"
+        }
+    ],
+    "vhosts": [
+        {
+            "name": "/"
+        },
+        {
+            "name": "mms"
+        },
+        {
+            "name": "mm7"
+        },
+        {
+            "name": "sms"
+        },
+        {
+            "name": "webhook"
+        }
+    ],
+    "permissions": [
+        {
+            "user": "burstsms",
+            "vhost": "/",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        },
+        {
+            "user": "burstsms",
+            "vhost": "sms",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        },
+        {
+            "user": "burstsms",
+            "vhost": "webhook",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        },
+        {
+            "user": "burstsms",
+            "vhost": "mms",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        },
+        {
+            "user": "burstsms",
+            "vhost": "mm7",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        }
+    ],
+    "parameters": [],
+    "policies": []
 }
