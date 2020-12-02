@@ -22,7 +22,7 @@ k8sServiceChart:
   serviceType: ClusterIP
   servicePort: 10006
   serviceTargetPort: 10006
-  # For Headless Services (e.g. RabbitMQ Consumers) 
+  # For Headless Services (e.g. RabbitMQ Consumers)
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   #serviceClusterIP: None
 
@@ -71,5 +71,5 @@ k8sServiceChart:
       NR_LICENSE: "3289b893db560c39096d3c222d4a33037c24f943"
       NR_TRACING: "true"
       HTTP_PORT: "10006"
-      DLR_ENDPOINT: "http://sms-inbound-worker:10008/v1/sms/dlr"
-      MO_ENDPOINT: "http://sms-inbound-worker:10008/v1/sms/mo"
+      DLR_ENDPOINT: "http://sms-inbound-service:10008/v1/sms/dlr"
+      MO_ENDPOINT: "http://sms-inbound-service:10008/v1/sms/mo"
