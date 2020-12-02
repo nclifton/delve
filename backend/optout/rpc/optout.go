@@ -62,7 +62,7 @@ func (s *OptOutService) GenerateOptOutLink(p types.GenerateOptOutLinkParams, r *
 		return err
 	}
 
-	optOutURL := fmt.Sprintf("http://%s/%s", s.trackHost, optOut.LinkID)
+	optOutURL := fmt.Sprintf("http://%s/%s", s.optOutDomain, optOut.LinkID)
 	msg := strings.ReplaceAll(p.Message, optOutTemplate, optOutURL)
 
 	r.Message = msg

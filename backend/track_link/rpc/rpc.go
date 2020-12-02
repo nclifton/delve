@@ -12,12 +12,12 @@ import (
 const Name = "TrackLink"
 
 type TrackLinkService struct {
-	db         *db
-	name       string
-	trackHost  string
-	mmsRPC     *mms.Client
-	smsRPC     *sms.Client
-	webhookRPC *webhook.Client
+	db          *db
+	name        string
+	trackDomain string
+	mmsRPC      *mms.Client
+	smsRPC      *sms.Client
+	webhookRPC  *webhook.Client
 }
 
 type Service struct {
@@ -33,7 +33,7 @@ func (s *Service) Receiver() interface{} {
 }
 
 // A silly comment
-func NewService(postgresURL, trackHost string, mms *mms.Client, sms *sms.Client, webhook *webhook.Client) (rpc.Service, error) {
+func NewService(postgresURL, trackDomain string, mms *mms.Client, sms *sms.Client, webhook *webhook.Client) (rpc.Service, error) {
 	gob.Register(map[string]interface{}{})
 	db, err := NewDB(postgresURL)
 	if err != nil {
@@ -41,12 +41,12 @@ func NewService(postgresURL, trackHost string, mms *mms.Client, sms *sms.Client,
 	}
 	service := &Service{
 		receiver: &TrackLinkService{
-			db:         db,
-			name:       Name,
-			trackHost:  trackHost,
-			mmsRPC:     mms,
-			smsRPC:     sms,
-			webhookRPC: webhook},
+			db:          db,
+			name:        Name,
+			trackDomain: trackDomain,
+			mmsRPC:      mms,
+			smsRPC:      sms,
+			webhookRPC:  webhook},
 	}
 
 	return service, nil

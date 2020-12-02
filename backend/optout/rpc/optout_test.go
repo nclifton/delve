@@ -63,8 +63,8 @@ func TestGenerateOptOutLink(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			optOut := OptOutService{
-				trackHost: "host",
-				db:        test.db,
+				optOutDomain: "host",
+				db:           test.db,
 			}
 
 			r := &types.GenerateOptOutLinkReply{}

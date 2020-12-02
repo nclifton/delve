@@ -18,11 +18,11 @@ type optOutDB interface {
 }
 
 type OptOutService struct {
-	db         optOutDB
-	webhookRPC *webhook.Client
-	smsRPC     *sms.Client
-	name       string
-	trackHost  string
+	db           optOutDB
+	webhookRPC   *webhook.Client
+	smsRPC       *sms.Client
+	name         string
+	optOutDomain string
 }
 
 type Service struct {
@@ -37,7 +37,7 @@ func (s *Service) Receiver() interface{} {
 	return s.receiver
 }
 
-func NewService(postgresURL, trackHost string, webhook *webhook.Client, sms *sms.Client) (rpc.Service, error) {
+func NewService(postgresURL, optOutDomain string, webhook *webhook.Client, sms *sms.Client) (rpc.Service, error) {
 	gob.Register(map[string]interface{}{})
 	db, err := NewDB(postgresURL)
 	if err != nil {
@@ -45,11 +45,11 @@ func NewService(postgresURL, trackHost string, webhook *webhook.Client, sms *sms
 	}
 	service := &Service{
 		receiver: &OptOutService{
-			db:         db,
-			name:       Name,
-			trackHost:  trackHost,
-			webhookRPC: webhook,
-			smsRPC:     sms,
+			db:           db,
+			name:         Name,
+			optOutDomain: optOutDomain,
+			webhookRPC:   webhook,
+			smsRPC:       sms,
 		},
 	}
 

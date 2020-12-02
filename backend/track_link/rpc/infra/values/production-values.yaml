@@ -4,5 +4,7 @@
 # or set the number of replicas for a specific environment only.
 k8sServiceChart:
   env:
+    config:
+      TRACKLINK_DOMAIN: "clckme.info"
     secrets:
       POSTGRES_URL: "postgresql://foo:barbut8chars@tp-production.cluster-cfxjlakpdgu3.ap-southeast-2.rds.amazonaws.com/track_link"

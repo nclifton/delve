@@ -16,7 +16,7 @@ import (
 type Env struct {
 	RPCPort        int    `envconfig:"RPC_PORT"`
 	PostgresURL    string `envconfig:"POSTGRES_URL"`
-	TrackHost      string `envconfig:"TRACK_RPC_HOST"`
+	TrackDomain    string `envconfig:"TRACKLINK_DOMAIN"`
 	MMSRPCHost     string `envconfig:"MMS_RPC_HOST"`
 	MMSRPCPort     int    `envconfig:"MMS_RPC_PORT"`
 	SMSRPCHost     string `envconfig:"SMS_RPC_HOST"`
@@ -53,7 +53,7 @@ func main() {
 	smsrpc := smsRPC.New(env.SMSRPCHost, env.SMSRPCPort)
 	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort)
 
-	srpc, err := tlrpc.NewService(env.PostgresURL, env.TrackHost, mmsrpc, smsrpc, wrpc)
+	srpc, err := tlrpc.NewService(env.PostgresURL, env.TrackDomain, mmsrpc, smsrpc, wrpc)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", tlrpc.Name, err)
 	}

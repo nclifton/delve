@@ -71,6 +71,6 @@ k8sServiceChart:
       RPC_PORT: "10011"
       WEBHOOK_RPC_HOST: "webhook-rpc-service"
       WEBHOOK_RPC_PORT: "10002"
-      TRACK_RPC_HOST: "track-link-rpc-service"
+      OPTOUTLINK_DOMAIN: "optout.${environmentVariable.dns}"
       SMS_RPC_HOST: "sms-rpc-service"
       SMS_RPC_PORT: "10009"

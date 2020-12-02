@@ -26,7 +26,7 @@ func (s *TrackLinkService) GenerateTrackLinks(p types.GenerateTrackLinksParams, 
 		if err != nil {
 			return err
 		}
-		trackurl := "http://" + s.trackHost + "/" + tracklink.TrackLinkID
+		trackurl := "http://" + s.trackDomain + "/" + tracklink.TrackLinkID
 		msg = strings.ReplaceAll(msg, url, trackurl)
 	}
 
