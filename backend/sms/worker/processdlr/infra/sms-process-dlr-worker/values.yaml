@@ -4,7 +4,7 @@ k8sServiceChart:
   # Component is the group of services (domain) the service belongs to
   component: sms
   namespace: tp
-  replicas: 2
+  replicas: 6
 
   image:
     repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/sms_worker_processdlr
