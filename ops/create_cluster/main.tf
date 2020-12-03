@@ -93,3 +93,8 @@ module "keda" {
 module "harness" {
     source = "./modules/harness"
 }
+
+module "optus_peering" {
+    source = "./modules/optus_peering"
+    mtmo_prod_aws_profile = var.mtmo_prod_aws_profile
+}
