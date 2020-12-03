@@ -17,12 +17,12 @@ k8sServiceChart:
   #podAnnotations:
 
   # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
-  serviceType: ClusterIP
-  servicePort: 10007
-  serviceTargetPort: 10007
+  #serviceType: 
+  #servicePort: 
+  #serviceTargetPort: 
   # For Headless Services (e.g. RabbitMQ Consumers)
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
-  #serviceClusterIP: None
+  serviceClusterIP: None
 
   # HorizontalPodAutoscaler
   hpa:
