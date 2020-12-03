@@ -77,6 +77,5 @@ func TestGenerateOptOutLink(t *testing.T) {
 				t.Errorf("expected Message %s, \nbut got %s", test.expectedMessage, r.Message)
 			}
 		})
-
 	}
 }

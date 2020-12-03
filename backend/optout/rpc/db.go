@@ -2,8 +2,11 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/errors"
 	types "github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -25,7 +28,7 @@ func NewDB(postgresURL string) (*db, error) {
 func (db *db) FindOptOutByLinkID(ctx context.Context, linkID string) (*types.OptOut, error) {
 	optOut := types.OptOut{}
 
-	err := db.postgres.QueryRow(
+	if err := db.postgres.QueryRow(
 		ctx,
 		`SELECT id, account_id, message_id, message_type, link_id, created_at, updated_at
 		FROM opt_out
@@ -39,9 +42,14 @@ func (db *db) FindOptOutByLinkID(ctx context.Context, linkID string) (*types.Opt
 		&optOut.LinkID,
 		&optOut.CreatedAt,
 		&optOut.UpdatedAt,
-	)
+	); err != nil {
+		if err == pgx.ErrNoRows {
+			return &types.OptOut{}, errors.NotFoundErr{Err: fmt.Errorf("optOut not found")}
+		}
+		return &types.OptOut{}, err
+	}
 
-	return &optOut, err
+	return &optOut, nil
 }
 
 func (db *db) InsertOptOut(ctx context.Context, accountID, messageID, messageType string) (*types.OptOut, error) {
