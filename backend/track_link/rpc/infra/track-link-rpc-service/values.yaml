@@ -71,7 +71,7 @@ k8sServiceChart:
       RPC_PORT: "10010"
       TRACKLINK_DOMAIN: "track.${environmentVariable.dns}"
       MMS_RPC_HOST: "mms-rpc-service"
-      MMS_RPC_HOST: "10007"
+      MMS_RPC_PORT: "10007"
       SMS_RPC_HOST: "sms-rpc-service"
       SMS_RPC_PORT: "10009"
       WEBHOOK_RPC_HOST: "webhook-rpc-service"
