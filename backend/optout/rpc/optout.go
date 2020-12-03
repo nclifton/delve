@@ -57,7 +57,7 @@ func (s *OptOutService) GenerateOptOutLink(p types.GenerateOptOutLinkParams, r *
 		return nil
 	}
 
-	optOut, err := s.db.InsertOptOut(ctx, p.AccountID, p.MessageID, p.MessageType)
+	optOut, err := s.db.InsertOptOut(ctx, p.AccountID, p.MessageID, p.MessageType, p.Sender)
 	if err != nil {
 		return err
 	}

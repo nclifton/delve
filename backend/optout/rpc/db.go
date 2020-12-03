@@ -30,7 +30,7 @@ func (db *db) FindOptOutByLinkID(ctx context.Context, linkID string) (*types.Opt
 
 	if err := db.postgres.QueryRow(
 		ctx,
-		`SELECT id, account_id, message_id, message_type, link_id, created_at, updated_at
+		`SELECT id, account_id, message_id, message_type, link_id, sender, created_at, updated_at
 		FROM opt_out
 		WHERE link_id = $1`,
 		linkID,
@@ -40,6 +40,7 @@ func (db *db) FindOptOutByLinkID(ctx context.Context, linkID string) (*types.Opt
 		&optOut.MessageID,
 		&optOut.MessageType,
 		&optOut.LinkID,
+		&optOut.Sender,
 		&optOut.CreatedAt,
 		&optOut.UpdatedAt,
 	); err != nil {
@@ -52,22 +53,24 @@ func (db *db) FindOptOutByLinkID(ctx context.Context, linkID string) (*types.Opt
 	return &optOut, nil
 }
 
-func (db *db) InsertOptOut(ctx context.Context, accountID, messageID, messageType string) (*types.OptOut, error) {
+func (db *db) InsertOptOut(ctx context.Context, accountID, messageID, messageType, sender string) (*types.OptOut, error) {
 	optOut := types.OptOut{}
 
 	err := db.postgres.QueryRow(
 		ctx,
-		`INSERT INTO opt_out(account_id, message_id, message_type, created_at, updated_at)
-		VALUES($1, $2, $3, now(), now())
-		RETURNING id, account_id, message_id, message_type, link_id, created_at, updated_at`,
+		`INSERT INTO opt_out(account_id, message_id, message_type, sender, created_at, updated_at)
+		VALUES($1, $2, $3, $4, now(), now())
+		RETURNING id, account_id, message_id, message_type, sender, link_id, created_at, updated_at`,
 		accountID,
 		messageID,
 		messageType,
+		sender,
 	).Scan(
 		&optOut.ID,
 		&optOut.AccountID,
 		&optOut.MessageID,
 		&optOut.MessageType,
+		&optOut.Sender,
 		&optOut.LinkID,
 		&optOut.CreatedAt,
 		&optOut.UpdatedAt,

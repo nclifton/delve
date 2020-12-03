@@ -14,12 +14,16 @@ const Name = "OptOut"
 
 type optOutDB interface {
 	FindOptOutByLinkID(ctx context.Context, linkID string) (*types.OptOut, error)
-	InsertOptOut(ctx context.Context, accountID, messageID, messageType string) (*types.OptOut, error)
+	InsertOptOut(ctx context.Context, accountID, messageID, messageType, sender string) (*types.OptOut, error)
+}
+
+type webhookRPC interface {
+	PublishOptOut(p webhook.PublishOptOutParams) error
 }
 
 type OptOutService struct {
 	db           optOutDB
-	webhookRPC   *webhook.Client
+	webhookRPC   webhookRPC
 	smsRPC       *sms.Client
 	name         string
 	optOutDomain string

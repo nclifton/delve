@@ -15,7 +15,7 @@ type OptOut struct {
 	AccountID   string
 	MessageID   string
 	MessageType string
-	Sender      string // TODO: need to be added to the DB?
+	Sender      string
 	LinkID      string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
@@ -39,6 +39,11 @@ func OptOutEqual(expected, actual OptOut) bool {
 
 	if expected.MessageType != actual.MessageType {
 		fmt.Println("detected OptOut not equal due to change in MessageType")
+		return false
+	}
+
+	if expected.Sender != actual.Sender {
+		fmt.Println("detected OptOut not equal due to change in Sender")
 		return false
 	}
 
@@ -71,6 +76,7 @@ type GenerateOptOutLinkParams struct {
 	MessageID   string
 	MessageType string
 	Message     string
+	Sender      string
 }
 
 type GenerateOptOutLinkReply struct {

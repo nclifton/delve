@@ -24,7 +24,7 @@ func Test_DB_FindOptOutByLinkID(t *testing.T) {
 	db := initDB(t)
 
 	testOptOuts := []types.OptOut{
-		types.OptOut{ID: "11111111-1111-1111-1111-111111111111", AccountID: "11111111-1111-1111-1111-111111111112", MessageID: "11111111-1111-1111-1111-111111111113", MessageType: "SMS", LinkID: "dVYHEhq6"},
+		types.OptOut{ID: "11111111-1111-1111-1111-111111111111", AccountID: "11111111-1111-1111-1111-111111111112", MessageID: "11111111-1111-1111-1111-111111111113", MessageType: "SMS", LinkID: "dVYHEhq6", Sender: "1701"},
 	}
 
 	tests := []struct {
@@ -72,7 +72,7 @@ func Test_DB_InsertOptOut(t *testing.T) {
 	db := initDB(t)
 
 	testOptOuts := []types.OptOut{
-		types.OptOut{ID: "11111111-1111-1111-1111-111111111111", AccountID: "11111111-1111-1111-1111-111111111112", MessageID: "11111111-1111-1111-1111-111111111113", MessageType: "SMS", LinkID: "dVYHEhq6"},
+		types.OptOut{ID: "11111111-1111-1111-1111-111111111111", AccountID: "11111111-1111-1111-1111-111111111112", MessageID: "11111111-1111-1111-1111-111111111113", MessageType: "SMS", LinkID: "dVYHEhq6", Sender: "1701"},
 	}
 
 	tests := []struct {
@@ -80,6 +80,7 @@ func Test_DB_InsertOptOut(t *testing.T) {
 		accountID      string
 		messageID      string
 		messageType    string
+		sender         string
 		expectedOptOut types.OptOut
 		expectedErr    error
 	}{
@@ -88,7 +89,8 @@ func Test_DB_InsertOptOut(t *testing.T) {
 			accountID:      "11111111-1111-1111-1111-111111111122",
 			messageID:      "11111111-1111-1111-1111-111111111133",
 			messageType:    "SMS",
-			expectedOptOut: types.OptOut{AccountID: "11111111-1111-1111-1111-111111111122", MessageID: "11111111-1111-1111-1111-111111111133", MessageType: "SMS"},
+			sender:         "1701",
+			expectedOptOut: types.OptOut{AccountID: "11111111-1111-1111-1111-111111111122", MessageID: "11111111-1111-1111-1111-111111111133", MessageType: "SMS", Sender: "1701"},
 			expectedErr:    nil,
 		},
 		{
@@ -105,7 +107,7 @@ func Test_DB_InsertOptOut(t *testing.T) {
 		insertOptOuts(t, db, testOptOuts)
 
 		t.Run(test.name, func(t *testing.T) {
-			res, err := db.InsertOptOut(context.Background(), test.accountID, test.messageID, test.messageType)
+			res, err := db.InsertOptOut(context.Background(), test.accountID, test.messageID, test.messageType, test.sender)
 			if err == nil && !types.OptOutEqual(test.expectedOptOut, *res) {
 				t.Errorf("unexpected result %+v, \nbut got %+v", test.expectedOptOut, res)
 			}
@@ -124,12 +126,13 @@ func Test_DB_InsertOptOut(t *testing.T) {
 func insertOptOuts(t *testing.T, db *db, optOuts []types.OptOut) {
 	for _, optOut := range optOuts {
 		if _, err := db.postgres.Exec(context.Background(),
-			`INSERT INTO opt_out(id, account_id, message_id, message_type, link_id, created_at, updated_at)
-			VALUES($1, $2, $3, $4, $5, $6, $7)`,
+			`INSERT INTO opt_out(id, account_id, message_id, message_type, sender, link_id, created_at, updated_at)
+			VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
 			optOut.ID,
 			optOut.AccountID,
 			optOut.MessageID,
 			optOut.MessageType,
+			optOut.Sender,
 			optOut.LinkID,
 			optOut.CreatedAt,
 			optOut.UpdatedAt,

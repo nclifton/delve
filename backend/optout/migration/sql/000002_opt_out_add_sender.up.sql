@@ -1,0 +1,3 @@
+BEGIN;
+ALTER TABLE opt_out ADD COLUMN sender TEXT; 
+COMMIT;

@@ -35,6 +35,7 @@ func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
 		MessageID:   uid,
 		MessageType: Name,
 		Message:     message,
+		Sender:      p.Sender,
 	})
 	if err != nil {
 		return err
