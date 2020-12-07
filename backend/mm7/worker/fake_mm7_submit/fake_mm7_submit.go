@@ -82,7 +82,7 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 		})
 		if err != nil {
 			h.logError(msg, "", err.Error(), "Unexpected mm7RPC.GetCachedContent response")
-			return err
+			return h.updateStatus(msg.ID, "", MMSStatusFailed, err.Error())
 		}
 
 		// validation image size
