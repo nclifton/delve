@@ -33,7 +33,7 @@ func GenerateMM7Submit(params SubmitParams, soaptmpl *template.Template, message
 	// Metadata part.
 	metadataHeader := textproto.MIMEHeader{}
 	metadataHeader.Set("Content-Type", "text/xml")
-	metadataHeader.Set("Content-ID", "<soap-start>")
+	metadataHeader.Set("Content-ID", "soap-start")
 	part, err := main.CreatePart(metadataHeader)
 	if err != nil {
 		return nil, "", err
@@ -52,21 +52,21 @@ func GenerateMM7Submit(params SubmitParams, soaptmpl *template.Template, message
 	// Text Part
 	txtHeader := textproto.MIMEHeader{}
 	txtHeader.Set("Content-Type", "text/plain")
-	txtHeader.Set("Content-ID", "<msg-txt>")
+	txtHeader.Set("Content-ID", "msg-txt")
 	txtPart, _ := content.CreatePart(txtHeader)
 	_, err = txtPart.Write([]byte(message))
 	if err != nil {
 		return nil, "", err
 	}
-	attachments := []SMILMedia{{ContentID: "<msg-txt>", MediaType: "txt"}}
+	attachments := []SMILMedia{{ContentID: "msg-txt", MediaType: "txt"}}
 
 	for idx, image := range images {
 		mediaHeader := textproto.MIMEHeader{}
-		mediaHeader.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s-%d\".", "image", idx))
-		mediaHeader.Set("Content-ID", fmt.Sprintf("<%s-%d>", "image", idx))
+		mediaHeader.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s-%d\"", "image", idx))
+		mediaHeader.Set("Content-ID", fmt.Sprintf("%s-%d", "image", idx))
 		mediaHeader.Set("Content-Type", http.DetectContentType(image))
 
-		attachments = append(attachments, SMILMedia{ContentID: fmt.Sprintf("<%s-%d>", "image", idx), MediaType: "img"})
+		attachments = append(attachments, SMILMedia{ContentID: fmt.Sprintf("%s-%d", "image", idx), MediaType: "img"})
 		mediaPart, _ := content.CreatePart(mediaHeader)
 		_, err = io.Copy(mediaPart, bytes.NewReader(image))
 		if err != nil {
@@ -82,7 +82,7 @@ func GenerateMM7Submit(params SubmitParams, soaptmpl *template.Template, message
 
 	smilHeader := textproto.MIMEHeader{}
 	smilHeader.Set("Content-Type", "application/smil")
-	smilHeader.Set("Content-ID", "<mms.smil>")
+	smilHeader.Set("Content-ID", "mms.smil")
 	smilPart, _ := content.CreatePart(smilHeader)
 	_, err = smilPart.Write(smildata)
 	if err != nil {
@@ -90,8 +90,8 @@ func GenerateMM7Submit(params SubmitParams, soaptmpl *template.Template, message
 	}
 
 	metaDataContent := textproto.MIMEHeader{}
-	metaDataContent.Set("Content-Type", fmt.Sprintf("multipart/related; boundary=\"%s\"; start=\"%s\"; type=\"text/xml\"", content.Boundary(), "<mms.siml>"))
-	metaDataContent.Set("Content-ID", "<mmscontent>")
+	metaDataContent.Set("Content-Type", fmt.Sprintf("multipart/related; boundary=\"%s\"; start=\"%s\"; type=\"text/xml\"", content.Boundary(), "mms.smil"))
+	metaDataContent.Set("Content-ID", "mmscontent")
 	err = content.Close()
 	if err != nil {
 		return nil, "", err
@@ -110,7 +110,7 @@ func GenerateMM7Submit(params SubmitParams, soaptmpl *template.Template, message
 	}
 
 	// Request Content-Type with boundary parameter.
-	contentType := fmt.Sprintf("multipart/related; boundary=%s", main.Boundary())
+	contentType := fmt.Sprintf("multipart/related; boundary=%s; start=\"%s\"", main.Boundary(), "soap-start")
 
 	return body, contentType, nil
 }
