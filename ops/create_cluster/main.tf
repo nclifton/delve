@@ -75,7 +75,7 @@ module "aurora_postgresql" {
 
 module "pgadmin" {
   source            = "./modules/pgadmin"
-  postgres_endpoint = "${module.aurora_postgresql.endpoint}"
+  postgres_endpoint = module.aurora_postgresql.endpoint
 }
 
 module "redis" {
@@ -92,6 +92,12 @@ module "keda" {
 
 module "harness" {
     source = "./modules/harness"
+}
+
+# TODO: Remove this and use peering connection once Optus Proxy has been
+# re-architected. Due February 2021.
+module "optus_vpn_connection" {
+    source = "./modules/optus_vpn_connection"
 }
 
 module "optus_peering" {
