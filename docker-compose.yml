@@ -199,6 +199,23 @@ services:
     ports:
       - "54321:5432"
 
+  forestadmin:
+    build:
+      context: .
+      dockerfile: ops/dev/docker-compose/Dockerfile_forestadmin
+    environment:
+      - APPLICATION_PORT=3310
+      - DATABASE_URL=postgres://postgres:example@postgres:5432/account
+      - FOREST_AUTH_SECRET=8d3d9df0260ad4414d18d77b5d16d585b636234357e56fac
+      - FOREST_ENV_SECRET=470bdd45ada20f90a83f13c795b3422d5b8baf1198e81118b3e5fa2484579837
+      - FOREST_SENDSEI_ADMIN_API=http://backend:8000/v1
+      - NODE_ENV=production
+      - CHOKIDAR_USEPOLLING=true
+    ports:
+      - "13310:3310"
+    volumes:
+      - ./backend/forestadmin:/usr/src/app
+
   accountpostgressetup:
     build:
       context: .

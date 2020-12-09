@@ -1,0 +1,10 @@
+# This file can be used to override environment specific config.
+# Any value in the default values.yaml file can be overridden here.
+# For example, you can set environment specific variables here
+# or set the number of replicas for a specific environment only.
+k8sServiceChart:
+  env:
+    secrets:
+      FOREST_ENV_SECRET: "a9035a801cf9512cb9a87027d0647b32d4ed0d8b6a9c0416d3ffddecd35c2849"
+      FOREST_AUTH_SECRET: "bc4df7ea97e407b9f72b484a09a4befc44fd16246dfac787"
+      DATABASE_URL: "postgresql://foo:barbut8chars@tp-production.cluster-cfxjlakpdgu3.ap-southeast-2.rds.amazonaws.com/account"
