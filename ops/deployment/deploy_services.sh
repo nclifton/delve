@@ -13,7 +13,7 @@ if [ -z "${ENV}" ]; then
   exit 1
 fi
 
-RELEASE_VERSION=$(<${SCRIPTDIR}/../releases/RELEASE_VERSION)
+#RELEASE_VERSION=$(<${SCRIPTDIR}/../releases/RELEASE_VERSION)
 
 if [ "${ENV}" = "production" ]; then
   echo "Are you sure you want to release TP v${RELEASE_VERSION} to PRODUCTION?"
@@ -58,7 +58,7 @@ for service_path in ${service_paths}; do
   if [ ${ENV} = "staging" ]; then
     /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "mtmostaging.com" "latest"
   elif [ ${ENV} = "production" ]; then
-    /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "tp.mtmo.io" ${RELEASE_VERSION}
+    /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "tp.mtmo.io" "latest"
   else
     echo "Environment not supported!"
   fi
