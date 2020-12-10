@@ -7,7 +7,7 @@ import (
 type PublishOptOutParams struct {
 	Source        string         `json:"source"`
 	Timestamp     time.Time      `json:"timestamp"`
-	SourceMessage *SourceMessage `json:"source_message,omitempty"`
+	OriginMessage *SourceMessage `json:"origin_message,omitempty"`
 	AccountID     string         `json:"account_id"`
 }
 

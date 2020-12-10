@@ -5,6 +5,7 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	ooRPC "github.com/burstsms/mtmo-tp/backend/optout/rpc"
 	smsRPC "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
@@ -19,6 +20,8 @@ type Env struct {
 	WebhookRPCPort int    `envconfig:"WEBHOOK_RPC_PORT"`
 	SMSRPCHost     string `envconfig:"SMS_RPC_HOST"`
 	SMSRPCPort     int    `envconfig:"SMS_RPC_PORT"`
+	MMSRPCHost     string `envconfig:"MMS_RPC_HOST"`
+	MMSRPCPort     int    `envconfig:"MMS_RPC_PORT"`
 	OptOutDomain   string `envconfig:"OPTOUTLINK_DOMAIN"`
 
 	NRName    string `envconfig:"NR_NAME"`
@@ -48,8 +51,9 @@ func main() {
 
 	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort)
 	smsrpc := smsRPC.New(env.SMSRPCHost, env.SMSRPCPort)
+	mmsrpc := mmsRPC.New(env.MMSRPCHost, env.MMSRPCPort)
 
-	orpc, err := ooRPC.NewService(env.PostgresURL, env.OptOutDomain, wrpc, smsrpc)
+	orpc, err := ooRPC.NewService(env.PostgresURL, env.OptOutDomain, wrpc, smsrpc, mmsrpc)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", ooRPC.Name, err)
 	}

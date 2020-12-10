@@ -37,7 +37,7 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 	generateOptOutLinkReply, err := s.svc.OptOut.GenerateOptOutLink(optOut.GenerateOptOutLinkParams{
 		AccountID:   p.AccountID,
 		MessageID:   uid,
-		MessageType: Name,
+		MessageType: "mms",
 		Message:     message,
 		Sender:      p.Sender,
 	})

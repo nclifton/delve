@@ -7,7 +7,9 @@ import (
 	"strings"
 	"time"
 
+	mmsrpc "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
+	smsrpc "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	wrpc "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
@@ -28,6 +30,49 @@ func (s *OptOutService) FindByLinkID(p types.FindByLinkIDParams, r *types.FindBy
 	return nil
 }
 
+func (s *OptOutService) getOptOutOrigin(MessageType string, MessageID string, AccountID string) (*wrpc.SourceMessage, error) {
+
+	var originMessage wrpc.SourceMessage
+	// Get the linked message
+	switch MessageType {
+	case `sms`:
+		sms, err := s.smsRPC.FindByID(smsrpc.FindByIDParams{ID: MessageID, AccountID: AccountID})
+		if err != nil {
+			return nil, nil
+		}
+
+		originMessage = wrpc.SourceMessage{
+			Type:       `sms`,
+			ID:         sms.ID,
+			Recipient:  sms.Recipient,
+			Sender:     sms.Sender,
+			Message:    sms.Message,
+			MessageRef: sms.MessageRef,
+		}
+	case `mms`:
+		rply, err := s.mmsRPC.FindByID(mmsrpc.FindByIDParams{ID: MessageID})
+		if err != nil {
+			return nil, nil
+		}
+
+		originMessage = wrpc.SourceMessage{
+			Type:        `mms`,
+			ID:          rply.MMS.ID,
+			Recipient:   rply.MMS.Recipient,
+			Sender:      rply.MMS.Sender,
+			Message:     rply.MMS.Message,
+			MessageRef:  rply.MMS.MessageRef,
+			Subject:     rply.MMS.Subject,
+			ContentURLS: rply.MMS.ContentURLs,
+		}
+
+	default:
+		return nil, fmt.Errorf("Invalid messageType (%s)", MessageType)
+	}
+
+	return &originMessage, nil
+}
+
 func (s *OptOutService) OptOutViaLink(p types.OptOutViaLinkParams, r *types.OptOutViaLinkReply) error {
 	ctx := context.Background()
 
@@ -36,10 +81,16 @@ func (s *OptOutService) OptOutViaLink(p types.OptOutViaLinkParams, r *types.OptO
 		return err
 	}
 
+	originMessage, err := s.getOptOutOrigin(optOut.MessageType, optOut.MessageID, optOut.AccountID)
+	if err != nil {
+		return nil
+	}
+
 	if err := s.webhookRPC.PublishOptOut(wrpc.PublishOptOutParams{
-		Source:    "link_hit",
-		Timestamp: time.Now().UTC(),
-		AccountID: optOut.AccountID,
+		Source:        "link",
+		Timestamp:     time.Now().UTC(),
+		AccountID:     optOut.AccountID,
+		OriginMessage: originMessage,
 	}); err != nil {
 		return err
 	}

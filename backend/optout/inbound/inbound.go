@@ -116,7 +116,12 @@ func (r *Route) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func OptOutGET(r *Route) {
 	r.w.WriteHeader(http.StatusOK)
 
-	optout, err := r.api.optout.FindByLinkID(rpc.FindByLinkIDParams{LinkID: r.params.ByName("linkID")})
+	linkID := r.params.ByName("linkID")
+	if linkID == "favicon.ico" {
+		return
+	}
+
+	optout, err := r.api.optout.FindByLinkID(rpc.FindByLinkIDParams{LinkID: linkID})
 	if err != nil {
 		log.Printf("Err: %s", err.Error())
 		return

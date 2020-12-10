@@ -20,7 +20,7 @@ k8sServiceChart:
   serviceType: ClusterIP
   servicePort: 10011
   serviceTargetPort: 10011
-  # For Headless Services (e.g. RabbitMQ Consumers) 
+  # For Headless Services (e.g. RabbitMQ Consumers)
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   #serviceClusterIP: None
 
@@ -74,3 +74,5 @@ k8sServiceChart:
       OPTOUTLINK_DOMAIN: "optout.${environmentVariable.dns}"
       SMS_RPC_HOST: "sms-rpc-service"
       SMS_RPC_PORT: "10009"
+      MMS_RPC_HOST: "mms-rpc-service"
+      MMS_RPC_PORT: "10007"

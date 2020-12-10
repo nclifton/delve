@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
@@ -25,6 +26,7 @@ type OptOutService struct {
 	db           optOutDB
 	webhookRPC   webhookRPC
 	smsRPC       *sms.Client
+	mmsRPC       *mms.Client
 	name         string
 	optOutDomain string
 }
@@ -41,7 +43,7 @@ func (s *Service) Receiver() interface{} {
 	return s.receiver
 }
 
-func NewService(postgresURL, optOutDomain string, webhook *webhook.Client, sms *sms.Client) (rpc.Service, error) {
+func NewService(postgresURL, optOutDomain string, webhook *webhook.Client, sms *sms.Client, mms *mms.Client) (rpc.Service, error) {
 	gob.Register(map[string]interface{}{})
 	db, err := NewDB(postgresURL)
 	if err != nil {
@@ -54,6 +56,7 @@ func NewService(postgresURL, optOutDomain string, webhook *webhook.Client, sms *
 			optOutDomain: optOutDomain,
 			webhookRPC:   webhook,
 			smsRPC:       sms,
+			mmsRPC:       mms,
 		},
 	}
 

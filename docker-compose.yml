@@ -119,7 +119,7 @@ services:
       - OPTOUT_RPC_HOST=backend
       - OPTOUT_POSTGRES_URL=postgresql://postgres:example@postgres/optout
       - OPTOUT_REDIS_URL=redis:6379
-      - OPTOUT_OPTOUTLINK_DOMAIN=localhost:10010
+      - OPTOUT_OPTOUTLINK_DOMAIN=localhost:10012
 
       - TRACK_LINK_RPC_PORT=10010
       - TRACK_LINK_RPC_HOST=backend

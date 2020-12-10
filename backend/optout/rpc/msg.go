@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
-	smsrpc "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	wrpc "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 )
 
@@ -25,31 +24,16 @@ func (s *OptOutService) OptOutViaMsg(p types.OptOutViaMsgParams, r *types.NoRepl
 	}
 
 	if optOut {
-		var sourceMessage wrpc.SourceMessage
-
-		// Get the linked message
-		if p.MessageType == `sms` {
-			sms, err := s.smsRPC.FindByID(smsrpc.FindByIDParams{ID: p.MessageID, AccountID: p.AccountID})
-			if err != nil {
-				return nil
-			}
-
-			sourceMessage = wrpc.SourceMessage{
-				Type:       `sms`,
-				ID:         sms.ID,
-				Recipient:  sms.Recipient,
-				Sender:     sms.Sender,
-				Message:    sms.Message,
-				MessageRef: sms.MessageRef,
-			}
-
+		originMessage, err := s.getOptOutOrigin(p.MessageType, p.MessageID, p.AccountID)
+		if err != nil {
+			return nil
 		}
 
-		err := s.webhookRPC.PublishOptOut(wrpc.PublishOptOutParams{
-			Source:        "sms_inbound",
+		err = s.webhookRPC.PublishOptOut(wrpc.PublishOptOutParams{
+			Source:        "sms",
 			Timestamp:     time.Now().UTC(),
 			AccountID:     p.AccountID,
-			SourceMessage: &sourceMessage,
+			OriginMessage: originMessage,
 		})
 		if err != nil {
 			return err
