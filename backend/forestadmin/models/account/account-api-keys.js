@@ -19,6 +19,9 @@ module.exports = (sequelize, DataTypes) => {
       },
       key: {
         type: DataTypes.STRING,
+        defaultValue: Sequelize.literal(
+          "encode(digest(random()::text, 'sha1'),'hex')"
+        ),
         allowNull: false,
       },
     },
