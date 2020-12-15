@@ -7,4 +7,5 @@ k8sServiceChart:
     secrets:
       FOREST_ENV_SECRET: "fbdfdcbd1bd47297e9ede18f0d92d40c27856826892aca44b16851cbdccc3da5"
       FOREST_AUTH_SECRET: "69ae1ad6d14eb3103366272f60ef851fb4c08cdc01bc434c"
-      DATABASE_URL: "postgresql://foo:barbut8chars@tp-staging.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/account"
+      ACCOUNT_POSTGRES_URL: "postgresql://foo:barbut8chars@tp-staging.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/account"
+      WEBHOOK_POSTGRES_URL: "postgresql://foo:barbut8chars@tp-staging.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/webhook"

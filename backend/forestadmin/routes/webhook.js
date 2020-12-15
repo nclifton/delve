@@ -1,44 +1,62 @@
 const express = require("express");
 const {
   PermissionMiddlewareCreator,
+  RecordCreator,
+  RecordUpdater,
   RecordSerializer,
 } = require("forest-express-sequelize");
 const models = require("../models");
 
-const account = models.sequelize.account.models;
-const webhookDb = models.sequelize.webhook.models;
-const sequelize = models.sequelize;
+const webhook = models.sequelize.webhook.models;
+const dbAccount = models.sequelize.account.models;
 
 const router = express.Router();
-const permissionMiddlewareCreator = new PermissionMiddlewareCreator("account");
+const permissionMiddlewareCreator = new PermissionMiddlewareCreator("webhook");
 
-// This file contains the logic of every route in Forest Admin for the collection account:
+// This file contains the logic of every route in Forest Admin for the collection webhook:
 // - Native routes are already generated but can be extended/overriden - Learn how to extend a route here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/extend-a-route
 // - Smart action routes will need to be added as you create new Smart Actions - Learn how to create a Smart Action here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/actions/create-and-manage-smart-actions
 
 // Create a Account
 router.post(
-  "/account",
+  "/webhook",
   permissionMiddlewareCreator.create(),
   (request, response, next) => {
-    // Learn what this route does here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/default-routes#create-a-record
-    next();
+    const recordCreator = new RecordCreator(webhook.webhook);
+    recordCreator
+      .deserialize(request.body)
+      .then((recordToCreate) => {
+        recordToCreate.ref_account_id = recordToCreate.account_id;
+        return recordCreator.create(recordToCreate);
+      })
+      .then((record) => recordCreator.serialize(record))
+      .then((recordSerialized) => response.send(recordSerialized))
+      .catch(next);
   }
 );
 
 // Update a Account
 router.put(
-  "/account/:recordId",
+  "/webhook/:recordId",
   permissionMiddlewareCreator.update(),
   (request, response, next) => {
-    // Learn what this route does here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/default-routes#update-a-record
-    next();
+    const recordUpdater = new RecordUpdater(webhook.webhook);
+    recordUpdater
+      .deserialize(request.body)
+      .then((recordToUpdate) => {
+        recordToUpdate.ref_account_id =
+          request.body.data.relationships.account_id.data.id;
+        return recordUpdater.update(recordToUpdate, request.params.recordId);
+      })
+      .then((record) => recordUpdater.serialize(record))
+      .then((recordSerialized) => response.send(recordSerialized))
+      .catch(next);
   }
 );
 
 // Delete a Account
 router.delete(
-  "/account/:recordId",
+  "/webhook/:recordId",
   permissionMiddlewareCreator.delete(),
   (request, response, next) => {
     // Learn what this route does here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/default-routes#delete-a-record
@@ -48,7 +66,7 @@ router.delete(
 
 // Get a list of Accounts
 router.get(
-  "/account",
+  "/webhook",
   permissionMiddlewareCreator.list(),
   (request, response, next) => {
     // Learn what this route does here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/default-routes#get-a-list-of-records
@@ -58,7 +76,7 @@ router.get(
 
 // Get a number of Accounts
 router.get(
-  "/account/count",
+  "/webhook/count",
   permissionMiddlewareCreator.list(),
   (request, response, next) => {
     // Learn what this route does here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/default-routes#get-a-number-of-records
@@ -68,7 +86,7 @@ router.get(
 
 // Get a Account
 router.get(
-  "/account/:recordId",
+  "/webhook/:recordId",
   permissionMiddlewareCreator.details(),
   (request, response, next) => {
     // Learn what this route does here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/default-routes#get-a-record
@@ -78,7 +96,7 @@ router.get(
 
 // Export a list of Accounts
 router.get(
-  "/account.csv",
+  "/webhook.csv",
   permissionMiddlewareCreator.export(),
   (request, response, next) => {
     // Learn what this route does here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/default-routes#export-a-list-of-records
@@ -88,7 +106,7 @@ router.get(
 
 // Delete a list of Accounts
 router.delete(
-  "/account",
+  "/webhook",
   permissionMiddlewareCreator.delete(),
   (request, response, next) => {
     // Learn what this route does here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/default-routes#delete-a-list-of-records
@@ -96,37 +114,26 @@ router.delete(
   }
 );
 
-// This needs to be here so stop errors on Account > Webhooks > Create
-router.post(
-  "/account/:recordId/relationships/webhooks",
+// This needs to be here to make updating account_id on webhook work..
+router.put(
+  "/webhook/:recordId/relationships/account_id",
   permissionMiddlewareCreator.list(),
   (request, response, next) => {
-    const accountId = request.params.recordId;
-    const recordSerializer = new RecordSerializer(webhookDb.webhook);
+    const webhookId = request.params.recordId;
+    const recordUpdater = new RecordUpdater(webhook.webhook);
 
-    webhookDb.webhook
-      .findAll({ where: { account_id: accountId } })
-      .then((records) =>
-        recordSerializer.serialize(records, { count: records.length })
-      )
-      .then((recordsSerialize) => response.send(recordsSerialize))
-      .catch(next);
-  }
-);
-
-router.get(
-  "/account/:recordId/relationships/webhooks",
-  permissionMiddlewareCreator.list(),
-  (request, response, next) => {
-    const accountId = request.params.recordId;
-    const recordSerializer = new RecordSerializer(webhookDb.webhook);
-
-    webhookDb.webhook
-      .findAll({ where: { account_id: accountId } })
-      .then((records) =>
-        recordSerializer.serialize(records, { count: records.length })
-      )
-      .then((recordsSerialize) => response.send(recordsSerialize))
+    webhook.webhook
+      .findByPk(webhookId)
+      .then((webhookRecord) => {
+        recordToUpdate = {
+          id: webhookId,
+          ref_account_id: webhookRecord.ref_account_id,
+          account_id: webhookRecord.ref_account_id,
+        };
+        return recordUpdater.update(recordToUpdate, webhookId);
+      })
+      .then((record) => recordUpdater.serialize(record))
+      .then((recordSerialized) => response.send(recordSerialized))
       .catch(next);
   }
 );

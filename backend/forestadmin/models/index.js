@@ -1,51 +1,62 @@
-const fs = require('fs');
-const path = require('path');
-const Sequelize = require('sequelize');
+const fs = require("fs");
+const path = require("path");
+const Sequelize = require("sequelize");
 
-if (!process.env.DATABASE_URL) {
-  console.error('Cannot connect to the database. Please declare the DATABASE_URL environment variable with the correct database connection string.');
-  process.exit();
-}
+let databases = [
+  {
+    name: "account",
+    connectionString: process.env.ACCOUNT_POSTGRES_URL,
+  },
+  {
+    name: "webhook",
+    connectionString: process.env.WEBHOOK_POSTGRES_URL,
+  },
+];
 
-const databaseOptions = {
-  logging: process.env.NODE_ENV === 'development' ? console.log : false,
-  pool: { maxConnections: 10, minConnections: 1 },
-  dialectOptions: {},
-};
+const sequelize = {};
+const db = {};
+const models = {};
 
-if (process.env.DATABASE_SSL && JSON.parse(process.env.DATABASE_SSL.toLowerCase())) {
-  const rejectUnauthorized = process.env.DATABASE_REJECT_UNAUTHORIZED;
-  if (rejectUnauthorized && (JSON.parse(rejectUnauthorized.toLowerCase()) === false)) {
-    databaseOptions.dialectOptions.ssl = { rejectUnauthorized: false };
-  } else {
+databases.forEach((databaseInfo) => {
+  models[databaseInfo.name] = {};
+  const isDevelopment =
+    process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
+  const databaseOptions = {
+    logging: isDevelopment ? console.log : false,
+    pool: { maxConnections: 10, minConnections: 1 },
+    dialectOptions: {},
+  };
+  if (
+    process.env.DATABASE_SSL &&
+    JSON.parse(process.env.DATABASE_SSL.toLowerCase())
+  ) {
     databaseOptions.dialectOptions.ssl = true;
   }
-}
-
-const sequelize = new Sequelize(process.env.DATABASE_URL, databaseOptions);
-const db = {};
-
-fs
-  .readdirSync(__dirname)
-  .filter((file) => {
-    return (file.indexOf('.') !== 0) && (file !== 'index.js');
-  })
-  .forEach((file) => {
-    try {
-      const model = sequelize.import(path.join(__dirname, file));
-      db[model.name] = model;
-    } catch (error) {
-      console.error('Model creation error: ' + error);
+  const connection = new Sequelize(
+    databaseInfo.connectionString,
+    databaseOptions
+  );
+  sequelize[databaseInfo.name] = connection;
+  fs.readdirSync(path.join(__dirname, databaseInfo.name))
+    .filter((file) => file.indexOf(".") !== 0 && file !== "index.js")
+    .forEach((file) => {
+      try {
+        const model = connection.import(
+          path.join(__dirname, databaseInfo.name, file)
+        );
+        models[databaseInfo.name][model.name] = model;
+      } catch (error) {
+        console.error("Model creation error: " + error);
+      }
+    });
+  Object.keys(models[databaseInfo.name]).forEach((modelName) => {
+    if ("associate" in models[databaseInfo.name][modelName]) {
+      models[databaseInfo.name][modelName].associate(
+        sequelize[databaseInfo.name].models
+      );
     }
   });
-
-Object.keys(db).forEach((modelName) => {
-  if ('associate' in db[modelName]) {
-    db[modelName].associate(db);
-  }
 });
-
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
-
 module.exports = db;

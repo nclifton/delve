@@ -4,35 +4,39 @@ module.exports = (sequelize, DataTypes) => {
   const { Sequelize } = sequelize;
   // This section contains the fields of your model, mapped to your table's columns.
   // Learn more here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/models/enrich-your-models#declaring-a-new-field-in-a-model
-  const AccountApiKeys = sequelize.define('accountApiKeys', {
-    id: {
-      type: DataTypes.UUID,
-      primaryKey: true,
-      defaultValue: Sequelize.literal('uuid_generate_v4()'),
-      allowNull: false,
+  const AccountApiKeys = sequelize.define(
+    "accountApiKeys",
+    {
+      id: {
+        type: DataTypes.UUID,
+        primaryKey: true,
+        defaultValue: Sequelize.literal("uuid_generate_v4()"),
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      key: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
-    description: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    key: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-  }, {
-    tableName: 'account_api_keys',
-    timestamps: false,
-    schema: process.env.DATABASE_SCHEMA,
-  });
+    {
+      tableName: "account_api_keys",
+      timestamps: false,
+      schema: process.env.DATABASE_SCHEMA,
+    }
+  );
 
   // This section contains the relationships for this model. See: https://docs.forestadmin.com/documentation/v/v6/reference-guide/relationships#adding-relationships.
   AccountApiKeys.associate = (models) => {
     AccountApiKeys.belongsTo(models.account, {
       foreignKey: {
-        name: 'accountIdKey',
-        field: 'account_id',
+        name: "accountIdKey",
+        field: "account_id",
       },
-      as: 'account',
+      as: "account",
     });
   };
 

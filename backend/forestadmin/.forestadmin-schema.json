@@ -179,6 +179,21 @@
       "reference": null,
       "inverseOf": null,
       "validations": []
+    }, {
+      "field": "webhooks",
+      "type": ["String"],
+      "defaultValue": null,
+      "enums": null,
+      "integration": null,
+      "isFilterable": false,
+      "isPrimaryKey": false,
+      "isReadOnly": true,
+      "isRequired": false,
+      "isSortable": false,
+      "isVirtual": true,
+      "reference": "webhook.account_id",
+      "inverseOf": null,
+      "validations": []
     }],
     "segments": [],
     "actions": []
@@ -265,8 +280,8 @@
     "segments": [],
     "actions": []
   }, {
-    "name": "schemaMigrations",
-    "nameOld": "schemaMigrations",
+    "name": "webhook",
+    "nameOld": "webhook",
     "icon": null,
     "integration": null,
     "isReadOnly": false,
@@ -275,8 +290,38 @@
     "onlyForRelationships": false,
     "paginationType": "page",
     "fields": [{
-      "field": "dirty",
-      "type": "Boolean",
+      "field": "account_id",
+      "type": "String",
+      "defaultValue": null,
+      "enums": null,
+      "integration": null,
+      "isFilterable": false,
+      "isPrimaryKey": false,
+      "isReadOnly": true,
+      "isRequired": false,
+      "isSortable": false,
+      "isVirtual": true,
+      "reference": "account.id",
+      "inverseOf": null,
+      "validations": []
+    }, {
+      "field": "createdAt",
+      "type": "Date",
+      "defaultValue": null,
+      "enums": null,
+      "integration": null,
+      "isFilterable": true,
+      "isPrimaryKey": false,
+      "isReadOnly": false,
+      "isRequired": false,
+      "isSortable": true,
+      "isVirtual": false,
+      "reference": null,
+      "inverseOf": null,
+      "validations": []
+    }, {
+      "field": "event",
+      "type": "String",
       "defaultValue": null,
       "enums": null,
       "integration": null,
@@ -294,7 +339,7 @@
         "value": null
       }]
     }, {
-      "field": "version",
+      "field": "id",
       "type": "Number",
       "defaultValue": null,
       "enums": null,
@@ -312,6 +357,85 @@
         "type": "is present",
         "value": null
       }]
+    }, {
+      "field": "name",
+      "type": "String",
+      "defaultValue": null,
+      "enums": null,
+      "integration": null,
+      "isFilterable": true,
+      "isPrimaryKey": false,
+      "isReadOnly": false,
+      "isRequired": true,
+      "isSortable": true,
+      "isVirtual": false,
+      "reference": null,
+      "inverseOf": null,
+      "validations": [{
+        "message": null,
+        "type": "is present",
+        "value": null
+      }]
+    }, {
+      "field": "rateLimit",
+      "type": "Number",
+      "defaultValue": 0,
+      "enums": null,
+      "integration": null,
+      "isFilterable": true,
+      "isPrimaryKey": false,
+      "isReadOnly": false,
+      "isRequired": false,
+      "isSortable": true,
+      "isVirtual": false,
+      "reference": null,
+      "inverseOf": null,
+      "validations": []
+    }, {
+      "field": "ref_account_id",
+      "type": "String",
+      "defaultValue": null,
+      "enums": null,
+      "integration": null,
+      "isFilterable": true,
+      "isPrimaryKey": false,
+      "isReadOnly": false,
+      "isRequired": false,
+      "isSortable": true,
+      "isVirtual": false,
+      "reference": null,
+      "inverseOf": null,
+      "validations": []
+    }, {
+      "field": "updatedAt",
+      "type": "Date",
+      "defaultValue": null,
+      "enums": null,
+      "integration": null,
+      "isFilterable": true,
+      "isPrimaryKey": false,
+      "isReadOnly": false,
+      "isRequired": false,
+      "isSortable": true,
+      "isVirtual": false,
+      "reference": null,
+      "inverseOf": null,
+      "validations": []
+    }, {
+      "field": "url",
+      "type": "String",
+      "defaultValue": "",
+      "enums": null,
+      "integration": null,
+      "isFilterable": true,
+      "isPrimaryKey": false,
+      "isReadOnly": false,
+      "isRequired": false,
+      "isSortable": true,
+      "isVirtual": false,
+      "reference": null,
+      "inverseOf": null,
+      "validations": []
     }],
     "segments": [],
     "actions": []
@@ -321,7 +445,7 @@
     "liana": "forest-express-sequelize",
     "liana_version": "6.5.0",
     "engine": "nodejs",
-    "engine_version": "15.2.1",
+    "engine_version": "13.12.0",
     "orm_version": "5.15.2"
   }
 }
