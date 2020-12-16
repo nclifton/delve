@@ -33,7 +33,7 @@ func GenerateMM7DeliverRequest(params DeliverRequestParams, soaptmpl *template.T
 
 	// Metadata part.
 	metadataHeader := textproto.MIMEHeader{}
-	metadataHeader.Set("Content-Type", "text/xml")
+	metadataHeader.Set("Content-Type", "text/xml; charset=utf-8")
 	metadataHeader.Set("Content-ID", "<soap-start>")
 	part, err := main.CreatePart(metadataHeader)
 	if err != nil {
@@ -52,7 +52,7 @@ func GenerateMM7DeliverRequest(params DeliverRequestParams, soaptmpl *template.T
 
 	// Text Part
 	txtHeader := textproto.MIMEHeader{}
-	txtHeader.Set("Content-Type", "text/plain")
+	txtHeader.Set("Content-Type", "text/plain; charset=utf-8")
 	txtHeader.Set("Content-ID", "<msg-txt>")
 	txtPart, err := content.CreatePart(txtHeader)
 	if err != nil {
@@ -93,7 +93,7 @@ func GenerateMM7DeliverRequest(params DeliverRequestParams, soaptmpl *template.T
 	}
 
 	smilHeader := textproto.MIMEHeader{}
-	smilHeader.Set("Content-Type", "application/smil")
+	smilHeader.Set("Content-Type", "application/smil; charset=utf-8")
 	smilHeader.Set("Content-ID", "<mms.smil>")
 	smilPart, err := content.CreatePart(smilHeader)
 	if err != nil {

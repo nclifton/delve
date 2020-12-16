@@ -11,7 +11,7 @@ import (
 )
 
 func TestGenerateMM7DeliverRequest(t *testing.T) {
-	msgtext := `my test mms`
+	msgtext := `my test mms 😊 😊`
 	soaptmpl, err := template.New("test").Parse(`{{.TransactionID}}`)
 	if err != nil {
 		t.Error(err)
@@ -44,16 +44,16 @@ func TestGenerateMM7DeliverRequest(t *testing.T) {
 	assert.Equal(t, len(parts), 5)
 	assert.Equal(t, parts[0].ContentID, "<soap-start>")
 	assert.Equal(t, string(parts[0].Body), "transactionid")
-	assert.Equal(t, parts[0].ContentType, "text/xml")
+	assert.Equal(t, parts[0].ContentType, "text/xml; charset=utf-8")
 	assert.Equal(t, parts[1].ContentID, "<msg-txt>")
-	assert.Equal(t, parts[1].ContentType, "text/plain")
+	assert.Equal(t, parts[1].ContentType, "text/plain; charset=utf-8")
 	assert.Equal(t, string(parts[1].Body), msgtext)
 	assert.Equal(t, parts[2].ContentID, "image-0.png")
 	assert.Equal(t, parts[2].ContentType, "image/png")
 	assert.Equal(t, parts[3].ContentID, "image-1.png")
 	assert.Equal(t, parts[3].ContentType, "image/png")
 	assert.Equal(t, parts[4].ContentID, "<mms.smil>")
-	assert.Equal(t, parts[4].ContentType, "application/smil")
+	assert.Equal(t, parts[4].ContentType, "application/smil; charset=utf-8")
 }
 
 func TestGenerateMM7DeliverResponse(t *testing.T) {
