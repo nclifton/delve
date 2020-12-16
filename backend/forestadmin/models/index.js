@@ -11,6 +11,14 @@ let databases = [
     name: "webhook",
     connectionString: process.env.WEBHOOK_POSTGRES_URL,
   },
+  {
+    name: "sms",
+    connectionString: process.env.SMS_POSTGRES_URL,
+  },
+  {
+    name: "mms",
+    connectionString: process.env.MMS_POSTGRES_URL,
+  },
 ];
 
 const sequelize = {};

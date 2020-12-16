@@ -12,7 +12,12 @@ module.exports = async function (app) {
       envSecret: process.env.FOREST_ENV_SECRET,
       authSecret: process.env.FOREST_AUTH_SECRET,
       sequelize: models.Sequelize,
-      connections: [models.sequelize.account, models.sequelize.webhook],
+      connections: [
+        models.sequelize.account,
+        models.sequelize.webhook,
+        models.sequelize.sms,
+        models.sequelize.mms,
+      ],
     })
   );
 
