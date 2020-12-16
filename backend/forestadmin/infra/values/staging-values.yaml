@@ -9,3 +9,5 @@ k8sServiceChart:
       FOREST_AUTH_SECRET: "69ae1ad6d14eb3103366272f60ef851fb4c08cdc01bc434c"
       ACCOUNT_POSTGRES_URL: "postgresql://foo:barbut8chars@tp-staging.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/account"
       WEBHOOK_POSTGRES_URL: "postgresql://foo:barbut8chars@tp-staging.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/webhook"
+      SMS_POSTGRES_URL: "postgresql://foo:barbut8chars@tp-staging.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/sms"
+      MMS_POSTGRES_URL: "postgresql://foo:barbut8chars@tp-staging.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/mms"
