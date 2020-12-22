@@ -1,0 +1,79 @@
+# The subchart contains default values which can be overridden here
+k8sServiceChart:
+  name: api
+  # Component is the group of services (domain) the service belongs to
+  component: api
+  namespace: tp
+  replicas: 2
+
+  image:
+    repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/api
+    tag: ${artifact.metadata.tag}
+
+  podLabels:
+    # env label required for New Relic integration
+    env: ${env.name}
+
+  #podAnnotations:
+
+  # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
+  serviceType: NodePort
+  servicePort: 10014
+  serviceTargetPort: 10014
+  # For Headless Services (e.g. RabbitMQ Consumers)
+  # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
+  #serviceClusterIP: None
+
+  # Cluster Ingress
+  ingress:
+    enabled: false
+    # Add ingress rules (cluster ingress endpoints) as a list below
+    rules:
+      #      - host: "api.${environmentVariable.dns}"
+      #  path: /*
+
+  # HorizontalPodAutoscaler
+  hpa:
+    enabled: false
+    minReplicas: 6
+    maxReplicas: 12
+    cpuTargetAverageUtilization: 80
+    memoryTargetAverageUtilization: 80
+
+  # Pod resource limits
+  resourceLimits:
+    cpu: 80m
+    memory: 256Mi
+  resourceRequests:
+    cpu: 80m
+    memory: 256Mi
+
+  # Flag to turn on/off the exposing of the contianer port and liveness and readiness probes
+  # TODO: Remove this flag once all services have liveness and readiness endpoints
+  exposePorts: true
+
+  # Liveness Probe configuration
+  livenessProbe:
+    httpGet: false
+    path: /
+    initialDelaySeconds: 60
+    periodSeconds: 60
+    successThreshold: 1
+    timeoutSeconds: 1
+
+  # Readiness Probe configuration
+  readinessProbe:
+    httpGet: false
+    path: /
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+
+  # Specify all environment variables to be added to the container.
+  env:
+    config:
+      NR_NAME: "${env.name}"
+      NR_LICENSE: "3289b893db560c39096d3c222d4a33037c24f943"
+      NR_TRACING: "true"
+      API_PORT: "10000"
