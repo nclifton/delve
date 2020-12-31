@@ -56,7 +56,8 @@ for service_path in ${service_paths}; do
   service_names+=($service_name)
 
   if [ ${ENV} = "staging" ]; then
-    /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "mtmostaging.com" "latest"
+    #/bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "mtmostaging.com" "latest"
+    echo "Environment managed by Harness, skipping Helm Deploy..."
   elif [ ${ENV} = "production" ]; then
     /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "tp.mtmo.io" "latest"
   else
