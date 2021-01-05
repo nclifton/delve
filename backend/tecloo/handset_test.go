@@ -45,13 +45,13 @@ func TestHandset(t *testing.T) {
 
 		assert.Equal(t, len(parts), 4)
 		assert.Equal(t, parts[0].ContentID, "<soap-start>")
-		assert.Equal(t, parts[0].ContentType, "text/xml")
+		assert.Equal(t, parts[0].ContentType, "text/xml; charset=utf-8")
 		assert.Equal(t, parts[1].ContentID, "<msg-txt>")
-		assert.Equal(t, parts[1].ContentType, "text/plain")
+		assert.Equal(t, parts[1].ContentType, "text/plain; charset=utf-8")
 		assert.Equal(t, parts[2].ContentID, "image-0.png")
 		assert.Equal(t, parts[2].ContentType, "image/png")
 		assert.Equal(t, parts[3].ContentID, "<mms.smil>")
-		assert.Equal(t, parts[3].ContentType, "application/smil")
+		assert.Equal(t, parts[3].ContentType, "application/smil; charset=utf-8")
 
 		if r.Method != "POST" {
 			t.Errorf("want %s, got %s", "POST", r.Method)

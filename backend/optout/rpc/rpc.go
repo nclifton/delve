@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/gob"
 
+	"google.golang.org/grpc"
+
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
-	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 const Name = "OptOut"
@@ -19,7 +21,7 @@ type optOutDB interface {
 }
 
 type webhookRPC interface {
-	PublishOptOut(p webhook.PublishOptOutParams) error
+	PublishOptOut(ctx context.Context, in *webhookpb.PublishOptOutParams, opts ...grpc.CallOption) (*webhookpb.NoReply, error)
 }
 
 type OptOutService struct {
@@ -43,7 +45,7 @@ func (s *Service) Receiver() interface{} {
 	return s.receiver
 }
 
-func NewService(postgresURL, optOutDomain string, webhook *webhook.Client, sms *sms.Client, mms *mms.Client) (rpc.Service, error) {
+func NewService(postgresURL, optOutDomain string, webhook webhookpb.ServiceClient, sms *sms.Client, mms *mms.Client) (rpc.Service, error) {
 	gob.Register(map[string]interface{}{})
 	db, err := NewDB(postgresURL)
 	if err != nil {

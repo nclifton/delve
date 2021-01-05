@@ -1,16 +1,18 @@
 package rpc
 
 import (
+	"context"
 	"log"
-	"time"
+
+	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/sms/biz"
 	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
-	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
-	"github.com/google/uuid"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
@@ -133,14 +135,14 @@ func (s *SMSService) MarkSent(p types.MarkSentParams, r *types.NoReply) error {
 	}
 
 	// if it exists call the webhook service to send any status event webhooks
-	err = s.webhookRPC.PublishSMSStatusUpdate(webhookRPC.PublishSMSStatusUpdateParams{
-		AccountID:       sms.AccountID,
-		SMSID:           sms.ID,
+	_, err = s.webhookRPC.PublishSMSStatusUpdate(context.Background(), &webhookpb.PublishSMSStatusUpdateParams{
+		AccountId:       sms.AccountID,
+		SMSId:           sms.ID,
 		MessageRef:      sms.MessageRef,
 		Recipient:       sms.Recipient,
 		Sender:          sms.Sender,
 		Status:          `sent`,
-		StatusUpdatedAt: time.Now(),
+		StatusUpdatedAt: timestamppb.Now(),
 	})
 	if err != nil {
 		return err
@@ -164,14 +166,14 @@ func (s *SMSService) MarkFailed(p types.MarkFailedParams, r *types.NoReply) erro
 	}
 
 	// if it exists call the webhook service to send any status event webhooks
-	err = s.webhookRPC.PublishSMSStatusUpdate(webhookRPC.PublishSMSStatusUpdateParams{
-		AccountID:       sms.AccountID,
-		SMSID:           sms.ID,
+	_, err = s.webhookRPC.PublishSMSStatusUpdate(context.Background(), &webhookpb.PublishSMSStatusUpdateParams{
+		AccountId:       sms.AccountID,
+		SMSId:           sms.ID,
 		MessageRef:      sms.MessageRef,
 		Recipient:       sms.Recipient,
 		Sender:          sms.Sender,
 		Status:          `failed`,
-		StatusUpdatedAt: time.Now(),
+		StatusUpdatedAt: timestamppb.Now(),
 	})
 	if err != nil {
 		return err

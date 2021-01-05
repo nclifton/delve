@@ -85,7 +85,7 @@ func TestSend(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		_, err := cli.Send(test.sendParams)
+		err := cli.Send(test.sendParams)
 
 		if err != test.expectedErr {
 			t.Errorf("for %s, \nexpected error %v, \n but got error %v", test.name, test.expectedErr, err)

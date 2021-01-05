@@ -35,7 +35,7 @@ func NewWorker(name string, con Conn, nrOpts *nr.Options) *Worker {
 }
 
 func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
-	log.Printf("started and waiting for jobs")
+	log.Printf("%s worker started and waiting for jobs", opts.QueueName)
 
 	messages, done, err := Consume(w.con, opts)
 	if err != nil {

@@ -1,19 +1,22 @@
 package rpc
 
 import (
+	"context"
 	"encoding/gob"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	"google.golang.org/grpc"
+
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
-	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 const Name = `MMS`
 
 type webhookSvc interface {
-	PublishMMSStatusUpdate(params webhook.PublishMMSStatusUpdateParams) error
+	PublishMMSStatusUpdate(ctx context.Context, in *webhookpb.PublishMMSStatusUpdateParams, opts ...grpc.CallOption) (*webhookpb.NoReply, error)
 }
 
 type tracklinkSvc interface {

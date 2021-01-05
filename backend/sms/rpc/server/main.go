@@ -4,6 +4,7 @@ import (
 	"log"
 
 	accountRPC "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
@@ -63,7 +64,13 @@ func main() {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
 	}
 
-	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort)
+	tracer, closer, err := jaeger.Connect(smsRPC.Name)
+	if err != nil {
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
+	}
+	defer closer.Close()
+
+	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort, tracer)
 	arpc := accountRPC.New(env.AccountRPCHost, env.AccountRPCPort)
 	tlrpc := tracklinkRPC.NewClient(env.TrackLinkRPCHost, env.TrackLinkRPCPort)
 	orpc := optOutRPC.NewClient(env.OptOutRPCHost, env.OptOutRPCPort)

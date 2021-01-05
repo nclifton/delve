@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
@@ -62,8 +63,14 @@ func main() {
 		ExchangeType: env.RabbitExchangeType,
 	}
 
+	tracer, closer, err := jaeger.Connect(mmsRPC.Name)
+	if err != nil {
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", mmsRPC.Name, err)
+	}
+	defer closer.Close()
+
 	svc := mmsRPC.ConfigSvc{
-		Webhook:   webhook.NewClient(env.WebhookRPCHost, env.WebhookRPCPort),
+		Webhook:   webhook.NewClient(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
 		TrackLink: tracklink.NewClient(env.TrackLinkRPCHost, env.TrackLinkRPCPort),
 		OptOut:    optOut.NewClient(env.OptOutRPCHost, env.OptOutRPCPort),
 	}

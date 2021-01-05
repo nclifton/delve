@@ -61,7 +61,7 @@ func (api *TeclooAPI) parseSubmit(contentType string, body io.Reader) (string, *
 
 		api.log.Fields(logger.Fields{"ContentID": part.ContentID}).Debug("Processing Part")
 
-		if part.ContentID == "<soap-start>" {
+		if strings.Trim(part.ContentID, "<>") == "soap-start" {
 
 			soap := strings.Replace(string(part.Body), "\n", "", -1)
 			soap = stripRegex.ReplaceAllString(soap, "><")

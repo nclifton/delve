@@ -1,0 +1,10 @@
+package main
+
+import (
+	"github.com/burstsms/mtmo-tp/backend/webhook/worker"
+)
+
+func main() {
+	worker := worker.New()
+	worker.Run()
+}

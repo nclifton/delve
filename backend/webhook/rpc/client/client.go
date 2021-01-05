@@ -1,23 +1,25 @@
 package client
 
 import (
-	"encoding/gob"
-	"strconv"
+	"fmt"
+	"log"
 
-	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
-	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
+	otgrpc "github.com/opentracing-contrib/go-grpc"
+	"github.com/opentracing/opentracing-go"
+	"google.golang.org/grpc"
+
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
-type Client struct {
-	rpc.Client
-}
-
-func NewClient(host string, port int) *Client {
-	gob.Register(map[string]interface{}{})
-	return &Client{
-		Client: rpc.Client{
-			ServiceAddress: host + ":" + strconv.Itoa(port),
-			ServiceName:    types.Name,
-		},
+func NewClient(host string, port int, tracer opentracing.Tracer) webhookpb.ServiceClient {
+	conn, err := grpc.Dial(
+		fmt.Sprintf("%s:%d", host, port),
+		grpc.WithInsecure(),
+		grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(tracer)))
+	if err != nil {
+		log.Fatal(err)
+		return nil
 	}
+
+	return webhookpb.NewServiceClient(conn)
 }

@@ -1,16 +1,18 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"log"
 	"strconv"
 	"strings"
-	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	optOutRPC "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
-	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 func (s *SMSService) QueueMO(p types.QueueMOParams, r *types.NoReply) error {
@@ -57,6 +59,9 @@ func (s *SMSService) checkMultiPart(p *types.ProcessMOParams) error {
 			return err
 		}
 		parcount, err := strconv.ParseInt(p.SARParts, 10, 64)
+		if err != nil {
+			return err
+		}
 
 		// do we habe all the parts
 		if count == parcount {
@@ -120,11 +125,11 @@ func (s *SMSService) ProcessMO(p types.ProcessMOParams, r *types.NoReply) error 
 		return err
 	}
 
-	var lastMessage *webhookRPC.LastMessage
+	var lastMessage *webhookpb.Message
 	if *sms != (types.SMS{}) {
-		lastMessage = &webhookRPC.LastMessage{
+		lastMessage = &webhookpb.Message{
 			Type:       "sms",
-			ID:         sms.ID,
+			Id:         sms.ID,
 			Recipient:  sms.Recipient,
 			Sender:     sms.Sender,
 			Message:    sms.Message,
@@ -134,13 +139,14 @@ func (s *SMSService) ProcessMO(p types.ProcessMOParams, r *types.NoReply) error 
 		lastMessage = nil
 	}
 
-	return s.webhookRPC.PublishMO(webhookRPC.PublishMOParams{
-		AccountID:   account.Account.ID,
-		SMSID:       p.MessageID,
+	_, err = s.webhookRPC.PublishMO(context.Background(), &webhookpb.PublishMOParams{
+		AccountId:   account.Account.ID,
+		SMSId:       p.MessageID,
 		Recipient:   p.To,
 		Sender:      p.From,
 		Message:     p.Message,
-		ReceivedAt:  time.Now(),
+		ReceivedAt:  timestamppb.Now(),
 		LastMessage: lastMessage,
 	})
+	return err
 }

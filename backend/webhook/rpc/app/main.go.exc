@@ -1,0 +1,9 @@
+package main
+
+import "github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/service"
+
+func main() {
+	app := service.New()
+	defer app.Close()
+	app.Run()
+}

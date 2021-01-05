@@ -12,7 +12,8 @@ import (
 )
 
 func initDB(t *testing.T) *db {
-	db, err := NewDB(os.Getenv("OPTOUT_TEST_DATABASE_URL"))
+	url := os.Getenv("OPTOUT_TEST_DATABASE_URL")
+	db, err := NewDB(url)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -24,7 +25,7 @@ func Test_DB_FindOptOutByLinkID(t *testing.T) {
 	db := initDB(t)
 
 	testOptOuts := []types.OptOut{
-		types.OptOut{ID: "11111111-1111-1111-1111-111111111111", AccountID: "11111111-1111-1111-1111-111111111112", MessageID: "11111111-1111-1111-1111-111111111113", MessageType: "SMS", LinkID: "dVYHEhq6", Sender: "1701"},
+		{ID: "11111111-1111-1111-1111-111111111111", AccountID: "11111111-1111-1111-1111-111111111112", MessageID: "11111111-1111-1111-1111-111111111113", MessageType: "SMS", LinkID: "dVYHEhq6", Sender: "1701"},
 	}
 
 	tests := []struct {
@@ -72,7 +73,7 @@ func Test_DB_InsertOptOut(t *testing.T) {
 	db := initDB(t)
 
 	testOptOuts := []types.OptOut{
-		types.OptOut{ID: "11111111-1111-1111-1111-111111111111", AccountID: "11111111-1111-1111-1111-111111111112", MessageID: "11111111-1111-1111-1111-111111111113", MessageType: "SMS", LinkID: "dVYHEhq6", Sender: "1701"},
+		{ID: "11111111-1111-1111-1111-111111111111", AccountID: "11111111-1111-1111-1111-111111111112", MessageID: "11111111-1111-1111-1111-111111111113", MessageType: "SMS", LinkID: "dVYHEhq6", Sender: "1701"},
 	}
 
 	tests := []struct {

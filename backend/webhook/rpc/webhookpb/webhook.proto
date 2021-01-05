@@ -1,0 +1,132 @@
+/* 
+* webhook.proto
+*
+* definition of the webhook rpc service
+*/
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb";
+
+package webhookpb;
+
+message NoParams {}
+message NoReply {}
+
+message FindParams {
+    string Account_id = 1;
+}
+message Webhook {
+    int64 Id = 1;
+    string Account_id = 2;
+    string Event = 3;
+    string Name = 4;
+    string URL = 5;
+    int32 Rate_limit = 6;
+    google.protobuf.Timestamp Created_at = 7;
+    google.protobuf.Timestamp Updated_at = 9;
+}
+
+message FindReply {
+    repeated Webhook Webhooks = 1;
+}
+
+message InsertParams {
+    string Account_id = 2;
+    string Event = 3;
+    string Name = 4;
+    string URL = 5;
+    int32 Rate_limit = 6;
+}
+
+message InsertReply {
+    Webhook Webhook = 1;
+}
+
+message DeleteParams {
+    int64 Id = 1;
+    string Account_id = 2;
+}
+
+message UpdateParams {
+    int64 Id = 1;
+    string Account_id = 2;
+    string Event = 3;
+    string Name = 4;
+    string URL = 5;
+    int32 Rate_limit = 6;
+}
+message UpdateReply {
+    Webhook Webhook = 1;
+}
+
+message PublishMMSStatusUpdateParams {
+    string Account_id = 1;
+    string MMS_id = 2;
+    string Message_ref = 3;
+    string Recipient = 4;
+    string Sender = 5;
+    string Status = 6;
+    string Status_description = 7;
+    google.protobuf.Timestamp Status_updated_at = 8;
+}
+
+message Message {
+    string Type = 1;
+    string Id = 2;
+    string Recipient = 3;
+    string Sender = 4;
+    string Message = 5;
+    string Message_ref = 6;
+    string Subject = 7;
+    repeated string ContentURLs = 8;
+}
+
+message PublishOptOutParams {
+    string Source = 1;
+    google.protobuf.Timestamp Timestamp = 2;
+    Message Source_message = 3;
+    string Account_id = 4;
+}
+
+message PublishSMSStatusUpdateParams {
+    string Account_id = 1;
+    string SMS_id = 2;
+    string Message_ref = 3;
+    string Recipient = 4;
+    string Sender = 5;
+    string Status = 6;
+    google.protobuf.Timestamp Status_updated_at = 7;
+}
+
+message PublishMOParams {
+    string Account_id = 1;
+    string SMS_id = 2; 
+    string Message = 3;
+    string Recipient = 4;
+    string Sender = 5;
+    google.protobuf.Timestamp Received_at = 6;
+    Message Last_message = 7;
+}
+
+message PublishLinkHitParams {
+	string URL = 1;           
+	int32 Hits = 2;
+	google.protobuf.Timestamp Timestamp = 3;
+	Message SourceMessage = 4;
+	string Account_id = 5;
+}
+
+service Service {
+    rpc Find(FindParams) returns (FindReply);
+    rpc Insert(InsertParams) returns (InsertReply);
+    rpc Delete(DeleteParams) returns (NoReply);
+    rpc Update(UpdateParams) returns (UpdateReply);
+    rpc PublishMMSStatusUpdate(PublishMMSStatusUpdateParams) returns (NoReply);
+    rpc PublishOptOut(PublishOptOutParams) returns (NoReply);
+    rpc PublishSMSStatusUpdate(PublishSMSStatusUpdateParams) returns (NoReply);
+    rpc PublishMO(PublishMOParams) returns (NoReply);
+    rpc PublishLinkHit(PublishLinkHitParams) returns (NoReply);
+}

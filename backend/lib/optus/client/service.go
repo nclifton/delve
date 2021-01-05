@@ -17,9 +17,6 @@ func NewService(apiURL string, optusUser string, optusPass string) (service, err
 		return service{}, fmt.Errorf("optus apiURL missing")
 	}
 
-	optusUser = optusUser
-	optusPass = optusPass
-
 	// generate basic auth header value from optus credentials
 	var b bytes.Buffer
 	input := []byte(fmt.Sprintf("%s:%s", optusUser, optusPass))

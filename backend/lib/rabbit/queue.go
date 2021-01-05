@@ -1,6 +1,7 @@
 package rabbit
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,9 +12,11 @@ import (
 
 	"github.com/NeowayLabs/wabbit"
 	"github.com/NeowayLabs/wabbit/amqp"
-	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/opentracing/opentracing-go"
 	amqpT "github.com/streadway/amqp"
+
+	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 )
 
 type Conn = wabbit.Conn
@@ -29,7 +32,9 @@ type PublishOptions struct {
 	Priority       uint8
 	DontEncodeJson bool
 	// TODO remove this dirt
-	NrTxn *newrelic.Transaction
+	NrTxn  *newrelic.Transaction
+	Tracer opentracing.Tracer
+	Ctx    context.Context
 }
 
 type ConsumeOptions struct {
@@ -224,10 +229,17 @@ func Consume(con Conn, options ConsumeOptions) (chan Delivery, chan bool, error)
 	return dch, done, nil
 }
 
-func Connect(url string) (Conn, error) {
+/*
+second argument optional and if is set true will allow closing of the connection without triggering a fatal
+*/
+func Connect(url string, flags ...bool) (Conn, error) {
+
 	con, err := amqp.Dial(url)
 	if err != nil {
 		return nil, err
+	}
+	if len(flags) > 0 && flags[0] {
+		return con, err
 	}
 
 	// temporary solution to dropping amqp connections is to just make the process exit

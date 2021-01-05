@@ -1,0 +1,21 @@
+run:
+  skip-dirs-use-default: true
+  skip-dirs:
+    - ops/deployment
+    - buu/mongo-go-driver
+  modules-download-mode: vendor
+
+linters:
+  fast: true
+  enable-all: false
+  disable-all: true
+  enable:
+    - errcheck
+    - unused
+    - gosimple
+    - structcheck
+    - varcheck
+    - deadcode
+    - typecheck
+    - govet
+    - gofmt

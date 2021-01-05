@@ -33,6 +33,7 @@ func (h *Webhook) OnFinalFailure(body []byte) error {
 }
 
 func (h *Webhook) Handle(body []byte, headers map[string]interface{}) error {
+
 	data := &msg.WebhookMessageSpec{}
 
 	err := json.NewDecoder(bytes.NewReader(body)).Decode(&data)

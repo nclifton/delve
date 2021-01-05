@@ -6,10 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	mmstypes "github.com/burstsms/mtmo-tp/backend/mms/rpc/types"
 	smstypes "github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/track_link/rpc/types"
-	wtypes "github.com/burstsms/mtmo-tp/backend/webhook/rpc/types"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 // URLRegex for detecting URLs in a string
@@ -82,23 +84,23 @@ func (s *TrackLinkService) LinkHit(p types.LinkHitParams, r *types.LinkHitReply)
 		messageref = msg.SMS.MessageRef
 	}
 
-	sourcemsg := wtypes.SourceMessage{
+	sourcemsg := webhookpb.Message{
 		Type:        tracklink.MessageType,
-		ID:          tracklink.MessageID,
+		Id:          tracklink.MessageID,
 		Recipient:   recipient,
 		Sender:      sender,
 		Message:     message,
 		MessageRef:  messageref,
 		Subject:     subject,
-		ContentURLS: contenturls,
+		ContentURLs: contenturls,
 	}
 
-	err = s.webhookRPC.PublishLinkHit(wtypes.PublishLinkHitParams{
+	_, err = s.webhookRPC.PublishLinkHit(context.Background(), &webhookpb.PublishLinkHitParams{
 		URL:           tracklink.URL,
-		Hits:          tracklink.Hits,
-		Timestamp:     time.Now().UTC(),
+		Hits:          int32(tracklink.Hits),
+		Timestamp:     timestamppb.New(time.Now().UTC()),
 		SourceMessage: &sourcemsg,
-		AccountID:     tracklink.AccountID,
+		AccountId:     tracklink.AccountID,
 	})
 	return err
 }

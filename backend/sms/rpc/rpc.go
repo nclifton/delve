@@ -8,14 +8,14 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
-	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 const Name = "SMS"
 
 type SMSService struct {
 	db           *db
-	webhookRPC   *webhook.Client
+	webhookRPC   webhookpb.ServiceClient
 	accountRPC   *account.Client
 	tracklinkRPC *tracklink.Client
 	optOutRPC    *optOut.Client
@@ -44,7 +44,7 @@ func NewService(
 	features SMSFeatures,
 	postgresURL string,
 	rabbitmq rabbit.Conn,
-	webhook *webhook.Client,
+	webhook webhookpb.ServiceClient,
 	account *account.Client,
 	tracklink *tracklink.Client,
 	redisURL string,

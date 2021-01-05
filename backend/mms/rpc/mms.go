@@ -6,13 +6,15 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/burstsms/mtmo-tp/backend/lib/number"
 	"github.com/burstsms/mtmo-tp/backend/mms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/mms/worker"
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
-	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
-	"github.com/google/uuid"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
@@ -124,16 +126,18 @@ func (s *MMSService) UpdateStatus(p types.UpdateStatusParams, r *types.NoReply) 
 		return err
 	}
 
-	return s.svc.Webhook.PublishMMSStatusUpdate(webhook.PublishMMSStatusUpdateParams{
-		AccountID:         mms.AccountID,
-		MMSID:             mms.ID,
+	_, err = s.svc.Webhook.PublishMMSStatusUpdate(ctx, &webhookpb.PublishMMSStatusUpdateParams{
+		AccountId:         mms.AccountID,
+		MMSId:             mms.ID,
 		MessageRef:        mms.MessageRef,
 		Recipient:         mms.Recipient,
 		Sender:            mms.Sender,
 		Status:            p.Status,
 		StatusDescription: p.Description,
-		StatusUpdatedAt:   time.Now(),
+		StatusUpdatedAt:   timestamppb.New(time.Now()),
 	})
+
+	return err
 }
 
 func (s *MMSService) FindByID(p types.FindByIDParams, r *types.FindByIDReply) error {

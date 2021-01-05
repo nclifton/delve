@@ -6,7 +6,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
-	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 const Name = "TrackLink"
@@ -17,7 +17,7 @@ type TrackLinkService struct {
 	trackDomain string
 	mmsRPC      *mms.Client
 	smsRPC      *sms.Client
-	webhookRPC  *webhook.Client
+	webhookRPC  webhookpb.ServiceClient
 }
 
 type Service struct {
@@ -33,7 +33,7 @@ func (s *Service) Receiver() interface{} {
 }
 
 // A silly comment
-func NewService(postgresURL, trackDomain string, mms *mms.Client, sms *sms.Client, webhook *webhook.Client) (rpc.Service, error) {
+func NewService(postgresURL, trackDomain string, mms *mms.Client, sms *sms.Client, webhook webhookpb.ServiceClient) (rpc.Service, error) {
 	gob.Register(map[string]interface{}{})
 	db, err := NewDB(postgresURL)
 	if err != nil {

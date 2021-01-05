@@ -21,3 +21,4 @@ backend/coverage_report.txt
 terraform.*
 .generated-values.yaml
 
+backend/.vscode

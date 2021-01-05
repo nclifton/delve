@@ -7,10 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	mmsrpc "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
 	smsrpc "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
-	wrpc "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 const optOutTemplate = "[opt-out-link]"
@@ -30,9 +32,9 @@ func (s *OptOutService) FindByLinkID(p types.FindByLinkIDParams, r *types.FindBy
 	return nil
 }
 
-func (s *OptOutService) getOptOutOrigin(MessageType string, MessageID string, AccountID string) (*wrpc.SourceMessage, error) {
+func (s *OptOutService) getOptOutOrigin(MessageType string, MessageID string, AccountID string) (*webhookpb.Message, error) {
 
-	var originMessage wrpc.SourceMessage
+	var originMessage webhookpb.Message
 	// Get the linked message
 	switch MessageType {
 	case `sms`:
@@ -41,9 +43,9 @@ func (s *OptOutService) getOptOutOrigin(MessageType string, MessageID string, Ac
 			return nil, nil
 		}
 
-		originMessage = wrpc.SourceMessage{
+		originMessage = webhookpb.Message{
 			Type:       `sms`,
-			ID:         sms.ID,
+			Id:         sms.ID,
 			Recipient:  sms.Recipient,
 			Sender:     sms.Sender,
 			Message:    sms.Message,
@@ -55,15 +57,15 @@ func (s *OptOutService) getOptOutOrigin(MessageType string, MessageID string, Ac
 			return nil, nil
 		}
 
-		originMessage = wrpc.SourceMessage{
+		originMessage = webhookpb.Message{
 			Type:        `mms`,
-			ID:          rply.MMS.ID,
+			Id:          rply.MMS.ID,
 			Recipient:   rply.MMS.Recipient,
 			Sender:      rply.MMS.Sender,
 			Message:     rply.MMS.Message,
 			MessageRef:  rply.MMS.MessageRef,
 			Subject:     rply.MMS.Subject,
-			ContentURLS: rply.MMS.ContentURLs,
+			ContentURLs: rply.MMS.ContentURLs,
 		}
 
 	default:
@@ -80,18 +82,12 @@ func (s *OptOutService) OptOutViaLink(p types.OptOutViaLinkParams, r *types.OptO
 	if err != nil {
 		return err
 	}
-
-	originMessage, err := s.getOptOutOrigin(optOut.MessageType, optOut.MessageID, optOut.AccountID)
+	_, err = s.webhookRPC.PublishOptOut(context.Background(), &webhookpb.PublishOptOutParams{
+		Source:    "link_hit",
+		Timestamp: timestamppb.New(time.Now().UTC()),
+		AccountId: optOut.AccountID,
+	})
 	if err != nil {
-		return nil
-	}
-
-	if err := s.webhookRPC.PublishOptOut(wrpc.PublishOptOutParams{
-		Source:        "link",
-		Timestamp:     time.Now().UTC(),
-		AccountID:     optOut.AccountID,
-		OriginMessage: originMessage,
-	}); err != nil {
 		return err
 	}
 

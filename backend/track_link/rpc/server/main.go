@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
@@ -49,9 +50,15 @@ func main() {
 
 	port := env.RPCPort
 
+	tracer, closer, err := jaeger.Connect(tlrpc.Name)
+	if err != nil {
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", tlrpc.Name, err)
+	}
+	defer closer.Close()
+
 	mmsrpc := mmsRPC.New(env.MMSRPCHost, env.MMSRPCPort)
 	smsrpc := smsRPC.New(env.SMSRPCHost, env.SMSRPCPort)
-	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort)
+	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort, tracer)
 
 	srpc, err := tlrpc.NewService(env.PostgresURL, env.TrackDomain, mmsrpc, smsrpc, wrpc)
 	if err != nil {

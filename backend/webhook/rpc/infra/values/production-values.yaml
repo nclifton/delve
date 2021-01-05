@@ -6,5 +6,15 @@
 # WARNING: This file must exist in order for Harness to work properly even if it's empty.
 k8sServiceChart:
   env:
+    config:
+      RPC_HOST: webhook
+      RPC_PORT: 10002
+      RABBIT_EXCHANGE: webhook
+      RABBIT_EXCHANGE_TYPE: direct
+      JAEGER_AGENT_HOST: jaeger
+      JAEGER_AGENT_PORT: 6831
+      JAEGER_SAMPLER_TYPE: const
+      JAEGER_SAMPLER_PARAM: 1
     secrets:
       POSTGRES_URL: "postgresql://foo:barbut8chars@tp-production.cluster-cfxjlakpdgu3.ap-southeast-2.rds.amazonaws.com/webhook"
+      RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/webhook"

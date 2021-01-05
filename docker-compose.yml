@@ -42,12 +42,12 @@ services:
       - ACCOUNT_POSTGRES_URL=postgresql://postgres:example@postgres/account
       - ACCOUNT_REDIS_URL=redis:6379
 
-      - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
-      - WEBHOOK_RPC_HOST=backend
-      - WEBHOOK_RPC_PORT=10002
       - WEBHOOK_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/webhook
+      - WEBHOOK_RABBIT_EXCHANGE=webhook
+      - WEBHOOK_RABBIT_EXCHANGE_TYPE=direct
       - WEBHOOK_CLIENT_TIMEOUT=3
       - WEBHOOK_REDIS_URL=redis:6379
+      - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
 
       - MMS_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mms
       - MMS_RABBIT_EXCHANGE=mms
@@ -56,7 +56,7 @@ services:
       - MMS_RPC_HOST=backend
       - MMS_RPC_PORT=10007
       - MMS_POSTGRES_URL=postgresql://postgres:example@postgres/mms
-      - MMS_WEBHOOK_RPC_HOST=backend
+      - MMS_WEBHOOK_RPC_HOST=webhook
       - MMS_WEBHOOK_RPC_PORT=10002
       - MMS_TRACK_LINK_RPC_HOST=backend
       - MMS_TRACK_LINK_RPC_PORT=10010
@@ -108,7 +108,7 @@ services:
       - SMS_CLIENT_TIMEOUT=3
       - SMS_REDIS_URL=redis:6379
       - SMS_ALARIS_URL=http://backend:10006/api
-      - SMS_WEBHOOK_RPC_HOST=backend
+      - SMS_WEBHOOK_RPC_HOST=webhook
       - SMS_WEBHOOK_RPC_PORT=10002
       - SMS_TRACK_LINK_RPC_HOST=backend
       - SMS_TRACK_LINK_RPC_PORT=10010
@@ -129,8 +129,13 @@ services:
       - TRACK_LINK_INBOUND_PORT=10013
       - TRACK_LINK_POSTGRES_URL=postgresql://postgres:example@postgres/track_link
       - TRACK_LINK_TRACKLINK_DOMAIN=localhost:10010
-      - TRACK_LINK_WEBHOOK_RPC_HOST=backend
+      - TRACK_LINK_WEBHOOK_RPC_HOST=webhook
       - TRACK_LINK_WEBHOOK_RPC_PORT=10002
+
+      - JAEGER_AGENT_HOST=jaeger
+      - JAEGER_AGENT_PORT=6831
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=1
 
     deploy:
       resources:
@@ -190,7 +195,7 @@ services:
       /usr/bin/mc policy set public minio/tp-csv;
       "
 
-  postgres:
+  postgres: 
     image: postgres:11.8-alpine
     hostname: postgres
     volumes:
@@ -202,6 +207,13 @@ services:
     ports:
       - "54321:5432"
 
+  jaeger:
+    container_name: jaeger
+    hostname: jaeger
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
   forestadmin:
     build:
       context: .
@@ -314,6 +326,21 @@ services:
       OPTOUT_POSTGRES_PASSWORD: example
       OPTOUT_POSTGRES_SSL: disable
       OPTOUT_POSTGRES_NAME: optout
+  webhook:
+    build:
+      context: .
+      dockerfile: backend/webhook/rpc/infra/Dockerfile.dev
+    hostname: webhook
+    tty: true
+    volumes:
+      - ./backend:/backend
+    ports:
+      - "10002:10002"
+    env_file:
+      - backend/webhook/rpc/infra/values/dev-values.env
+    depends_on:
+      - rabbitmq
+      - postgres
 
 volumes:
   redis_data:

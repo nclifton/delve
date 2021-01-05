@@ -3,8 +3,10 @@ package rpc
 import (
 	"context"
 
+	"google.golang.org/grpc"
+
 	types "github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
-	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 type mockDB struct {
@@ -21,9 +23,10 @@ func (m mockDB) InsertOptOut(ctx context.Context, accountID, messageID, messageT
 }
 
 type mockWebhookRPC struct {
-	err error
+	reply *webhookpb.NoReply
+	err   error
 }
 
-func (m mockWebhookRPC) PublishOptOut(p webhook.PublishOptOutParams) error {
-	return m.err
+func (m mockWebhookRPC) PublishOptOut(ctx context.Context, p *webhookpb.PublishOptOutParams, opts ...grpc.CallOption) (*webhookpb.NoReply, error) {
+	return m.reply, m.err
 }

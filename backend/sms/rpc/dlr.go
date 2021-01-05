@@ -1,12 +1,14 @@
 package rpc
 
 import (
+	"context"
 	"log"
-	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
-	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 const (
@@ -17,15 +19,15 @@ const (
 	DLRStatusNotAccepted = "not_accepted"
 	DLRStatusPending     = "pending"
 
-	dlrCodeDelivered     = "DELIVRD"
-	dlrCodeAccepted      = "ACCEPTD"
-	dlrCodeExpired       = "EXPIRED"
-	dlrCodeDeleted       = "DELETED"
-	dlrCodeUndelivered   = "UNDELIV"
-	dlrCodeRejected      = "REJECTD"
-	dlrCodeSystemExpired = "EXPIRED"
-	dlrCodeEnroute       = "ENROUTE"
-	dlrCodeSent          = "SENT"
+	dlrCodeDelivered   = "DELIVRD"
+	dlrCodeAccepted    = "ACCEPTD"
+	dlrCodeExpired     = "EXPIRED"
+	dlrCodeDeleted     = "DELETED"
+	dlrCodeUndelivered = "UNDELIV"
+	dlrCodeRejected    = "REJECTD"
+	//dlrCodeSystemExpired = "EXPIRED"
+	dlrCodeEnroute = "ENROUTE"
+	dlrCodeSent    = "SENT"
 )
 
 func (s *SMSService) QueueDLR(p types.QueueDLRParams, r *types.NoReply) error {
@@ -94,14 +96,14 @@ func (s *SMSService) ProcessDLR(p types.ProcessDLRParams, r *types.NoReply) erro
 	}
 
 	// if it exists call the webhook service to send any status event webhooks
-	err = s.webhookRPC.PublishSMSStatusUpdate(webhookRPC.PublishSMSStatusUpdateParams{
-		AccountID:       sms.AccountID,
-		SMSID:           sms.ID,
+	_, err = s.webhookRPC.PublishSMSStatusUpdate(context.Background(), &webhookpb.PublishSMSStatusUpdateParams{
+		AccountId:       sms.AccountID,
+		SMSId:           sms.ID,
 		MessageRef:      sms.MessageRef,
 		Recipient:       sms.Recipient,
 		Sender:          sms.Sender,
 		Status:          status,
-		StatusUpdatedAt: time.Now(),
+		StatusUpdatedAt: timestamppb.Now(),
 	})
 	if err != nil {
 		return err
