@@ -1,17 +1,17 @@
 package service
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"net"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/kelseyhightower/envconfig"
 	opentracing "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 
-	libdb "github.com/burstsms/mtmo-tp/backend/lib/db"
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/db"
@@ -47,7 +47,7 @@ type app struct {
 	ignoreClosedQueueConnection bool
 	queueConn                   rabbit.Conn
 	db                          db.DB
-	sqlDB                       *sql.DB
+	sqlDB                       *pgxpool.Pool
 	opts                        []grpc.ServerOption
 	grpcServer                  *grpc.Server
 }
@@ -133,7 +133,7 @@ func (a *app) SetQueue(queue queue.Queue) {
 
 func (a *app) createDb() {
 	var err error
-	a.sqlDB, err = libdb.PostgresDB(a.env.PostgresURL)
+	a.sqlDB, err = pgxpool.Connect(context.Background(), a.env.PostgresURL)
 	if err != nil {
 		log.Fatalf("failed to init postgres: %s\n with error: %s", a.env.PostgresURL, err)
 	}

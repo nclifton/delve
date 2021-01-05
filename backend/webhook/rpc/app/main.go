@@ -1,16 +1,17 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/kelseyhightower/envconfig"
 
 	"google.golang.org/grpc"
 
-	libdb "github.com/burstsms/mtmo-tp/backend/lib/db"
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/db"
@@ -58,7 +59,8 @@ func main() {
 		Tracer:       tracer,
 	})
 
-	sqlDB, err := libdb.PostgresDB(env.PostgresURL)
+	sqlDB, err := pgxpool.Connect(context.Background(), env.PostgresURL)
+
 	if err != nil {
 		log.Fatalf("failed to init postgres: %s\n with error: %s", env.PostgresURL, err)
 	}

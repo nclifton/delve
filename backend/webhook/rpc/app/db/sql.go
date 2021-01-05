@@ -2,23 +2,25 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"time"
+
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type sqlDB struct {
-	sql *sql.DB
+	sql *pgxpool.Pool
 }
 
-func NewSQLDB(db *sql.DB) DB {
+func NewSQLDB(db *pgxpool.Pool) DB {
 	return &sqlDB{
 		sql: db,
 	}
 }
 
 func (db *sqlDB) InsertWebhook(ctx context.Context, accountID, event, name, url string, rateLimit int32) (Webhook, error) {
-	row := db.sql.QueryRowContext(
+	row := db.sql.QueryRow(
 		ctx,
 		`insert into webhook (account_id, event, name, url, rate_limit, created_at, updated_at)
 		values ($1, $2, $3, $4, $5, $6, $7)
@@ -48,7 +50,7 @@ func (db *sqlDB) InsertWebhook(ctx context.Context, accountID, event, name, url 
 }
 
 func (db *sqlDB) FindWebhook(ctx context.Context, accountID string) ([]Webhook, error) {
-	rows, err := db.sql.QueryContext(
+	rows, err := db.sql.Query(
 		ctx,
 		`select id, account_id, event, name, url, rate_limit, created_at, updated_at
 		from webhook where account_id = $1
@@ -85,7 +87,7 @@ func (db *sqlDB) FindWebhook(ctx context.Context, accountID string) ([]Webhook, 
 }
 
 func (db *sqlDB) FindWebhookByEvent(ctx context.Context, accountID string, event string) ([]Webhook, error) {
-	rows, err := db.sql.QueryContext(
+	rows, err := db.sql.Query(
 		ctx,
 		`select id, account_id, event, name, url, rate_limit, created_at, updated_at
 		from webhook
@@ -125,7 +127,7 @@ func (db *sqlDB) FindWebhookByEvent(ctx context.Context, accountID string, event
 
 func (db *sqlDB) DeleteWebhook(ctx context.Context, id int64, accountID string) error {
 
-	ct, err := db.sql.ExecContext(
+	ct, err := db.sql.Exec(
 		ctx,
 		`delete from webhook where
 		id = $1 and account_id = $2`,
@@ -136,7 +138,7 @@ func (db *sqlDB) DeleteWebhook(ctx context.Context, id int64, accountID string) 
 		return err
 	}
 
-	count, err := ct.RowsAffected()
+	count := ct.RowsAffected()
 	if err != nil {
 		return err
 	}
@@ -148,7 +150,7 @@ func (db *sqlDB) DeleteWebhook(ctx context.Context, id int64, accountID string) 
 }
 
 func (db *sqlDB) UpdateWebhook(ctx context.Context, id int64, accountID, event, name, url string, rateLimit int32) (Webhook, error) {
-	row := db.sql.QueryRowContext(
+	row := db.sql.QueryRow(
 		ctx,
 		`update webhook set
 		event = $1,
@@ -178,7 +180,7 @@ func (db *sqlDB) UpdateWebhook(ctx context.Context, id int64, accountID, event, 
 		&wh.CreatedAt,
 		&wh.UpdatedAt,
 	)
-	if err != nil && err == sql.ErrNoRows {
+	if err != nil && err == pgx.ErrNoRows {
 		return wh, errors.New("not found")
 	}
 	if err != nil {
