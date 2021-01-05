@@ -37,6 +37,7 @@ type TestFixtures struct {
 
 func New() *TestFixtures {
 
+	log.Println("setup fixtures")
 	var env FixturesEnv
 	if err := envconfig.Process("INTEGRATION_TEST_FIXTURE", &env); err != nil {
 		log.Fatal("failed to read env vars:", err)
@@ -57,6 +58,7 @@ func (tf *TestFixtures) SetupRedis() {
 }
 
 func (tf *TestFixtures) Teardown() {
+	log.Println("teardown fixtures")
 	for i := len(tf.teardowns) - 1; i >= 0; i-- {
 		tf.teardowns[i]()
 	}

@@ -3,6 +3,7 @@
 package test
 
 import (
+	"log"
 	"os"
 	"reflect"
 
@@ -12,6 +13,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 
@@ -20,23 +22,26 @@ import (
 )
 
 var tfx *fixtures.TestFixtures
+var listener *bufconn.Listener
 
 func TestMain(m *testing.M) {
 	tfx = fixtures.New()
 	tfx.SetupPostgres("webhook", getWebhookEnv().MigrationRoot)
 	tfx.SetupRabbit()
 	tfx.SetupRedis()
+	listener = startGrpcServer(tfx)
 	code := m.Run()
 	defer os.Exit(code)
 	defer tfx.Teardown()
 }
 
-func setupForInsert(t *testing.T, tfx *fixtures.TestFixtures) *testDeps {
-	return setupForTest(t, tfx)
+func setupForInsert(t *testing.T) *testDeps {
+	return newSetup(t, tfx, listener)
 }
 
 func Test_Insert(t *testing.T) {
-	setup := setupForInsert(t, tfx)
+	setup := setupForInsert(t)
+	log.Println("test Insert")
 	defer setup.teardown(t)
 	client := setup.getClient(t)
 
@@ -97,17 +102,22 @@ func Test_Insert(t *testing.T) {
 }
 
 func setupForFind(t *testing.T) *testDeps {
-	setup := setupForTest(t, tfx)
+	setup := newSetup(t, tfx, listener)
+
 	setup.adb.HaveInDatabase("webhook",
 		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
 		[]interface{}{32767, "42", "event1", "name1", "url1", 2, "2021-01-12 22:41:42", "2021-01-13 22:25:25"})
+
 	setup.adb.HaveInDatabase("webhook",
 		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
 		[]interface{}{32768, "42", "event", "name", "url", 1, "2021-01-12 22:42:42", "2021-01-13 22:24:24"})
+		
 	return setup
 }
 
 func Test_Find(t *testing.T) {
+	log.Println("test Find")
+
 	setup := setupForFind(t)
 	defer setup.teardown(t)
 	client := setup.getClient(t)
@@ -175,7 +185,7 @@ func Test_Find(t *testing.T) {
 }
 
 func setupForUpdate(t *testing.T) *testDeps {
-	setup := setupForTest(t, tfx)
+	setup := newSetup(t, tfx, listener)
 	setup.adb.HaveInDatabase("webhook",
 		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
 		[]interface{}{32767, "42", "event1", "name1", "url1", 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
@@ -183,6 +193,8 @@ func setupForUpdate(t *testing.T) *testDeps {
 }
 
 func Test_Update(t *testing.T) {
+	log.Println("test Update")
+
 	setup := setupForUpdate(t)
 	defer setup.teardown(t)
 	client := setup.getClient(t)
@@ -288,7 +300,7 @@ func Test_Update(t *testing.T) {
 }
 
 func setupForDelete(t *testing.T) *testDeps {
-	setup := setupForTest(t, tfx)
+	setup := newSetup(t, tfx, listener)
 	setup.adb.HaveInDatabase("webhook",
 		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
 		[]interface{}{32767, "42", "event1", "name1", "url1", 2, "2021-01-12 22:41:42", "2021-01-13 22:25:25"})
@@ -296,6 +308,8 @@ func setupForDelete(t *testing.T) *testDeps {
 }
 
 func Test_Delete(t *testing.T) {
+	log.Println("test Delete")
+
 	setup := setupForDelete(t)
 	defer setup.teardown(t)
 	client := setup.getClient(t)

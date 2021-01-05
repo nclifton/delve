@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 
@@ -38,7 +38,6 @@ type testDeps struct {
 	listener          *bufconn.Listener
 	connectionToRPC   *grpc.ClientConn
 	adb               *assertdb.AssertDb
-	appClose          func() error
 	httpServer        *httptest.Server
 	httpRequests      []*http.Request
 	httpRequestBodies []string
@@ -57,61 +56,49 @@ func getWebhookEnv() *WebhookEnv {
 	}
 	return &env
 }
-
-func (setup *testDeps) teardown(t *testing.T) {
-	if setup.adb != nil {
-		setup.adb.Teardown()
-	}
-	setup.connectionToRPC.Close()
-	if setup.appClose != nil {
-		err := setup.appClose()
-		if err != nil {
-			t.Fatalf("failed to close application: %+v", err)
-		}
-	}
-	if setup.httpServer != nil {
-		setup.httpServer.Close()
-	}
-
-}
-
-func setupForTest(t *testing.T, tfx *fixtures.TestFixtures) *testDeps {
-
-	setup := &testDeps{
-		ctx: context.Background(),
-		tfx: tfx,
-		env: getWebhookEnv(),
-	}
-
+func startGrpcServer(tfx *fixtures.TestFixtures) *bufconn.Listener {
+	env := getWebhookEnv()
 	app := service.New()
-	app.SetEnv(&service.WebhookEnv{
-		RPCHost:            "webhook service under test",
-		RPCPort:            "N/A",
+	app.Env = &service.WebhookEnv{
+		RPCHost:            "",
+		RPCPort:            "",
 		RabbitURL:          tfx.Rabbit.ConnStr,
 		PostgresURL:        tfx.Postgres.ConnStr,
-		RabbitExchange:     setup.env.RabbitExchange,
-		RabbitExchangeType: setup.env.RabbitExchangeType,
-	})
-	app.SetListener(setup.getBufListener())
-	app.SetTracer(setup.getNoopTracer())
-	// we need to use a rabbitmq connection that will not fatal the test when we stop the service
-	app.IgnoreClosedQueueConnection()
+		RabbitExchange:     env.RabbitExchange,
+		RabbitExchangeType: env.RabbitExchangeType,
+	}
+	listener := bufconn.Listen(1024 * 1024)
+	app.Listener = listener
+
+	// we need to use a rabbitmq connection that will not do a os.Exit() when we stop the service
+	app.IgnoreClosedQueueConnection = true
 	go app.Run()
-	setup.appClose = app.Close
+
+	return listener
+}
+
+func newSetup(t *testing.T, tfx *fixtures.TestFixtures, listener *bufconn.Listener) *testDeps {
+
+	setup := &testDeps{
+		ctx:      context.Background(),
+		tfx:      tfx,
+		env:      getWebhookEnv(),
+		listener: listener,
+	}
 
 	setup.adb = assertdb.New(t, setup.tfx.Postgres.ConnStr)
 
 	return setup
 }
 
-func (setup *testDeps) getNoopTracer() opentracing.Tracer {
-	return opentracing.GlobalTracer()
-}
+func (setup *testDeps) teardown(t *testing.T) {
+	if setup.adb != nil {
+		setup.adb.Teardown()
+	}
+	if setup.httpServer != nil {
+		setup.httpServer.Close()
+	}
 
-func (setup *testDeps) getBufListener() *bufconn.Listener {
-	bufferSize := 1024 * 1024
-	setup.listener = bufconn.Listen(bufferSize)
-	return setup.listener
 }
 
 func (setup *testDeps) getClient(t *testing.T) webhookpb.ServiceClient {
@@ -133,11 +120,10 @@ func getBufDialer(listener *bufconn.Listener) func(context.Context, string) (net
 }
 
 func (setup *testDeps) startWorker(t *testing.T) {
-	// use go routine to start the webhook worker
 	wkr := worker.New()
-	wkr.SetEnv(&worker.WebhookEnv{
+	wkr.Env = &worker.WebhookEnv{
 		RPCPort:         0,
-		RPCHost:         "n/a",
+		RPCHost:         "",
 		RabbitURL:       setup.tfx.Rabbit.ConnStr,
 		ClientTimeout:   3,
 		WorkerQueueName: "webhook.post",
@@ -145,9 +131,11 @@ func (setup *testDeps) startWorker(t *testing.T) {
 		NRName:          "",
 		NRLicense:       "",
 		NRTracing:       false,
-	})
-	wkr.IgnoreClosedQueueConnection()
+	}
+	wkr.IgnoreClosedQueueConnection = true
+	// use go routine to run the webhook worker
 	go wkr.Run()
+	time.Sleep(100 * time.Millisecond) // wait a bit for the worker to become ready
 
 }
 
@@ -156,11 +144,25 @@ func (setup *testDeps) startHttpServer(t *testing.T) {
 	setup.httpRequestBodies = make([]string, 0)
 	setup.httpServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		setup.httpRequests = append(setup.httpRequests, r)
-		body,err := ioutil.ReadAll(r.Body)
-		if err != nil{
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
 			log.Printf("failed to read request body, %+v", err)
 		}
-		setup.httpRequestBodies = append(setup.httpRequestBodies,string(body))
-		fmt.Fprintln(w, "Hello, client")
+		setup.httpRequestBodies = append(setup.httpRequestBodies, string(body))
+		fmt.Fprintln(w, "thank you")
 	}))
+}
+
+
+func waitForRequest(setup *testDeps, t *testing.T) {
+	var cnt = 0
+	log.Println("waiting for http request")
+	for len(setup.httpRequests) == 0 {
+		if cnt > 500 {
+			assert.Fail(t, "timed out waiting for request")
+		}
+		time.Sleep(time.Millisecond)
+		cnt++
+	}
+	log.Printf("received http request after %d milliseconds", cnt)
 }

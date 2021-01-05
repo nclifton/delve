@@ -60,7 +60,6 @@ func main() {
 	})
 
 	sqlDB, err := pgxpool.Connect(context.Background(), env.PostgresURL)
-
 	if err != nil {
 		log.Fatalf("failed to init postgres: %s\n with error: %s", env.PostgresURL, err)
 	}
