@@ -381,5 +381,5 @@ var _Service_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "rpc/webhookpb/webhook.proto",
+	Metadata: "webhook/rpc/webhookpb/webhook.proto",
 }

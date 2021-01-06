@@ -197,7 +197,7 @@ services:
       /usr/bin/mc policy set public minio/tp-csv;
       "
 
-  postgres: 
+  postgres:
     image: postgres:11.8-alpine
     hostname: postgres
     volumes:
@@ -331,8 +331,9 @@ services:
   webhook:
     build:
       context: .
-      dockerfile: backend/webhook/rpc/infra/Dockerfile.dev
+      dockerfile: ops/dev/docker-compose/DockerfileDomain.dev
     hostname: webhook
+    entrypoint: ["/go/bin/modd", "--file=./webhook/rpc/modd.conf"]
     tty: true
     volumes:
       - ./backend:/backend
