@@ -53,7 +53,7 @@ sed -i -e 's/${env.name}/tp-'"${ENV}"'/g' ${CHART_DIR}/.generated-values.yaml
 sed -i -e 's/${environmentVariable.dns}/'"${ENV_DNS}"'/g' ${CHART_DIR}/.generated-values.yaml
 
 # Set Image Tag
-sed -i -e 's/${artifact.metadata.tag}/'"${IMAGE_TAG}"'/g' ${CHART_DIR}/.generated-values.yaml
+sed -i -e 's/${artifact.buildNo}/'"${IMAGE_TAG}"'/g' ${CHART_DIR}/.generated-values.yaml
 
 # Harness does a rolling deploy but our manual scripts are currently uninstall/install
 helm --kubeconfig ${kube_config} uninstall ${service_name} --namespace tp

@@ -13,7 +13,7 @@ import (
 var gitref = "unset" // set with go linker in build script
 
 type Env struct {
-	Port string `envconfig:"PORT"`
+	Port string `envconfig:"API_PORT"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`

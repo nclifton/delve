@@ -8,7 +8,7 @@ k8sServiceChart:
 
   image:
     repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/webhook_rpc
-    tag: ${artifact.metadata.tag}
+    tag: ${artifact.buildNo}
 
   podLabels:
     # env label required for New Relic integration
@@ -72,6 +72,11 @@ k8sServiceChart:
       NR_TRACING: "true"
       RABBIT_EXCHANGE: "webhooks"
       RABBIT_EXCHANGE_TYPE: "direct"
+      RPC_HOST: "webhook"
       RPC_PORT: "10002"
+      JAEGER_AGENT_HOST: "jaeger"
+      JAEGER_AGENT_PORT: "6831"
+      JAEGER_SAMPLER_TYPE: "const"
+      JAEGER_SAMPLER_PARAM: "1"
     secrets:
       RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/webhook"

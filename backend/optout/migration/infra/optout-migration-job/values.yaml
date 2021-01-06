@@ -8,7 +8,7 @@ k8sDeploymentJobChart:
 
   image:
     repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/optout_migration
-    tag: ${artifact.metadata.tag}
+    tag: ${artifact.buildNo}
 
   podLabels:
     # env label required for New Relic integration

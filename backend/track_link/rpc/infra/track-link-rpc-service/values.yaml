@@ -8,7 +8,7 @@ k8sServiceChart:
 
   image:
     repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/track_link_rpc
-    tag: ${artifact.metadata.tag}
+    tag: ${artifact.buildNo}
 
   podLabels:
     # env label required for New Relic integration

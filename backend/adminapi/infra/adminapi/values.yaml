@@ -1,14 +1,14 @@
 # The subchart contains default values which can be overridden here
 k8sServiceChart:
-  name: api
+  name: adminapi
   # Component is the group of services (domain) the service belongs to
   component: api
   namespace: tp
   replicas: 2
 
   image:
-    repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/api
-    tag: ${artifact.metadata.tag}
+    repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/adminapi
+    tag: ${artifact.buildNo}
 
   podLabels:
     # env label required for New Relic integration
@@ -17,7 +17,7 @@ k8sServiceChart:
   #podAnnotations:
 
   # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
-  serviceType: NodePort
+  serviceType: ClusterIP
   servicePort: 10014
   serviceTargetPort: 10014
   # For Headless Services (e.g. RabbitMQ Consumers)
@@ -27,10 +27,6 @@ k8sServiceChart:
   # Cluster Ingress
   ingress:
     enabled: false
-    # Add ingress rules (cluster ingress endpoints) as a list below
-    rules:
-      #      - host: "api.${environmentVariable.dns}"
-      #  path: /*
 
   # HorizontalPodAutoscaler
   hpa:
@@ -76,4 +72,4 @@ k8sServiceChart:
       NR_NAME: "${env.name}"
       NR_LICENSE: "3289b893db560c39096d3c222d4a33037c24f943"
       NR_TRACING: "true"
-      API_PORT: "10000"
+      API_PORT: "10014"
