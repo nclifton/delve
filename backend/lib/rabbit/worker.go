@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
-	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/opentracing/opentracing-go"
 )
 
 type MessageHandler interface {
@@ -19,16 +19,25 @@ type MessageHandler interface {
 // TODO remove NR code litering our app
 // should be replaced with calls to our own metrics service
 type Worker struct {
-	name  string
-	con   Conn
-	nrApp *newrelic.Application
+	name   string
+	con    Conn
+	tracer opentracing.Tracer
 }
 
-func NewWorker(name string, con Conn, nrOpts *nr.Options) *Worker {
+func NewWorker(name string, con Conn, nr *nr.Options) *Worker {
 	worker := &Worker{
-		name:  name,
-		con:   con,
-		nrApp: nr.CreateApp(nrOpts),
+		name: name,
+		con:  con,
+	}
+
+	return worker
+}
+
+func NewWorkerWithTracer(name string, con Conn, nr *nr.Options, tracer opentracing.Tracer) *Worker {
+	worker := &Worker{
+		name:   name,
+		con:    con,
+		tracer: tracer,
 	}
 
 	return worker
@@ -39,7 +48,7 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 
 	messages, done, err := Consume(w.con, opts)
 	if err != nil {
-		log.Fatalf("Failed to consume from queue: %s", err)
+		log.Fatalf("failed to consume from queue: %s", err)
 	}
 
 	// listen for termination signals so we can cleanly close consumer
@@ -57,12 +66,24 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 	}()
 
 	for msg := range messages {
-		nrTxn := w.nrApp.StartTransaction(w.name)
+		headers := amqpHeadersCarrier(msg.Headers())
 
-		// Connect this transaction to previous ones in the chain
-		nr.AcceptAMQPHeader(nrTxn, msg.Headers())
+		var sp opentracing.Span
+		if w.tracer != nil {
+			spCtx, err := w.tracer.Extract(opentracing.TextMap, headers)
+			if err != nil {
+				log.Printf("error parsing tracer span from message (%s): %s", msg.MessageId(), err)
+			}
 
-		err = handler.Handle(msg.Body(), msg.Headers())
+			sp = w.tracer.StartSpan(
+				fmt.Sprintf("AMQP Consume %s %s", opts.Exchange, opts.RouteKey),
+				opentracing.FollowsFrom(spCtx),
+			)
+			sp.LogKV("Message", msg.Body())
+			// TODO: inject context with span into handler
+		}
+
+		err = handler.Handle(msg.Body(), headers)
 		if err != nil {
 			switch err.(type) {
 			case *ErrWorkerMessageParse:
@@ -130,6 +151,9 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 
 		log.Printf("worker: %s successfully processed the msg", w.name)
 
-		nrTxn.End()
+		if w.tracer != nil {
+			sp.Finish()
+		}
 	}
+
 }

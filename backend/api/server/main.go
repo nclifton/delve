@@ -6,12 +6,16 @@ import (
 
 	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/api"
+	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
+	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
 
 	"github.com/kelseyhightower/envconfig"
 )
+
+const apiName = "REST API"
 
 var gitref = "unset" // set with go linker in build script
 
@@ -26,6 +30,9 @@ type Env struct {
 
 	MMSHost string `envconfig:"MMS_HOST"`
 	MMSPort int    `envconfig:"MMS_PORT"`
+
+	WebhookRPCHost string `envconfig:"WEBHOOK_HOST"`
+	WebhookRPCPort int    `envconfig:"WEBHOOK_PORT"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
@@ -49,11 +56,19 @@ func main() {
 		DistributedTracerEnabled: env.NRTracing,
 	})
 
+	tracer, closer, err := jaeger.Connect(apiName)
+	if err != nil {
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", apiName, err)
+	}
+	defer closer.Close()
+
 	app := api.New(&api.Options{
+		Tracer:        tracer,
 		Gitref:        gitref,
 		AccountClient: account.New(env.AccountHost, env.AccountPort),
 		SMSClient:     sms.New(env.SMSHost, env.SMSPort),
 		MMSClient:     mms.New(env.MMSHost, env.MMSPort),
+		WebhookClient: webhook.NewClient(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
 		NrApp:         newrelicM,
 	})
 

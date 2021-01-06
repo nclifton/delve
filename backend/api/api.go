@@ -6,20 +6,25 @@ import (
 	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/api/middleware/auth"
 	"github.com/burstsms/mtmo-tp/backend/api/middleware/context"
+	"github.com/burstsms/mtmo-tp/backend/api/middleware/tracing"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
+	"github.com/opentracing/opentracing-go"
 )
 
 // Options will hold some state for our http handler
 type Options struct {
+	Tracer        opentracing.Tracer
 	Gitref        string
 	AccountClient *account.Client
 	SMSClient     *sms.Client
 	MMSClient     *mms.Client
+	WebhookClient webhookpb.ServiceClient
 	NrApp         func(http.Handler) http.Handler
 }
 
@@ -27,6 +32,7 @@ type RPCClients struct {
 	account *account.Client
 	sms     *sms.Client
 	mms     *mms.Client
+	webhook webhookpb.ServiceClient
 }
 
 // API wraps an instance of our api app
@@ -47,6 +53,7 @@ func New(opts *Options) *API {
 		account: opts.AccountClient,
 		sms:     opts.SMSClient,
 		mms:     opts.MMSClient,
+		webhook: opts.WebhookClient,
 	}
 
 	api := &API{
@@ -60,6 +67,8 @@ func New(opts *Options) *API {
 	})
 
 	newrelicM := opts.NrApp
+
+	tracingM := tracing.New(opts.Tracer)
 
 	// maybe not needed with httprouter panic handler
 	recoveryM := recovery.New(&recovery.Options{
@@ -76,7 +85,7 @@ func New(opts *Options) *API {
 
 	// define the middleware chains for our api endpoints
 	// we can group them and expand chains
-	baseChain := alice.New(loggerM, newrelicM, recoveryM)
+	baseChain := alice.New(loggerM, newrelicM, recoveryM, tracingM)
 	defaultChain := baseChain.Append(context.ClearHandler)
 	authChain := baseChain.Append(authM).Append(context.ClearHandler)
 
@@ -99,6 +108,8 @@ func New(opts *Options) *API {
 	router.POST("/v1/sms", NewRoute(api, authChain, SMSPOST))
 
 	router.POST("/v1/mms", NewRoute(api, authChain, MMSPOST))
+
+	router.POST("/v1/webhook/test", NewRoute(api, authChain, TestPublishOptOutWebhookPOST))
 
 	return api
 }

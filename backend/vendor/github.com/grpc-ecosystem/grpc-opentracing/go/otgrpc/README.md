@@ -6,13 +6,13 @@ systems in Go.
 ## Installation
 
 ```
-go get github.com/opentracing-contrib/go-grpc
+go get github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc
 ```
 
 ## Documentation
 
 See the basic usage examples below and the [package documentation on
-godoc.org](https://godoc.org/github.com/opentracing-contrib/go-grpc).
+godoc.org](https://godoc.org/github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc).
 
 ## Client-side usage example
 

@@ -15,8 +15,6 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/opentracing/opentracing-go"
 	amqpT "github.com/streadway/amqp"
-
-	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 )
 
 type Conn = wabbit.Conn
@@ -49,10 +47,31 @@ type ConsumeOptions struct {
 // Publish will send each message specified by data to the exchange
 // using the supplied routing key.
 func Publish(con Conn, options PublishOptions, message interface{}) error {
-	if options.NrTxn != nil {
-		amqpSeg := nr.StartAMQPSegment(options.NrTxn, options.Exchange)
-		options.Headers = nr.CreateAMQPHeader(options.NrTxn)
-		defer amqpSeg.End()
+	headers := amqpHeadersCarrier{}
+	var err error
+	var body []byte
+
+	if options.DontEncodeJson {
+		body = message.([]byte)
+	} else {
+		body, err = json.Marshal(&message)
+		if err != nil {
+			return err
+		}
+	}
+
+	if options.Tracer != nil {
+		parent := opentracing.SpanFromContext(options.Ctx)
+		sp := options.Tracer.StartSpan(
+			fmt.Sprintf("AMQP Publish %s %s", options.Exchange, options.RouteKey),
+			opentracing.ChildOf(parent.Context()),
+		)
+		sp.LogKV("Message", string(body))
+		sp.Finish()
+
+		if err := options.Tracer.Inject(sp.Context(), opentracing.TextMap, headers); err != nil {
+			return err
+		}
 	}
 
 	ch, err := con.Channel()
@@ -93,25 +112,14 @@ func Publish(con Conn, options PublishOptions, message interface{}) error {
 	confirm := ch.NotifyPublish(make(chan wabbit.Confirmation, 1))
 
 	params := wabbit.Option{
-		"headers":      (Table)(options.Headers), // we DO need to convert to amqp.Table
-		"deliveryMode": 2,                        // 1 = Transient, 2 = Persistent
+		"headers":      Table(headers), // we DO need to convert to amqp.Table
+		"deliveryMode": 2,              // 1 = Transient, 2 = Persistent
 		"priority":     options.Priority,
 	}
 
 	if options.Expiration > 0 {
 		// RabbitMQ expects Expiration specified in milliseconds
 		params["expiration"] = strconv.FormatInt(options.Expiration.Milliseconds(), 10)
-	}
-
-	var body []byte
-
-	if options.DontEncodeJson {
-		body = message.([]byte)
-	} else {
-		body, err = json.Marshal(&message)
-		if err != nil {
-			return err
-		}
 	}
 
 	err = ch.Publish(options.Exchange, options.RouteKey, body, params)

@@ -136,6 +136,9 @@ github.com/google/go-cmp/cmp/internal/value
 # github.com/google/uuid v1.1.2
 ## explicit
 github.com/google/uuid
+# github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
+## explicit
+github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.0
@@ -202,9 +205,9 @@ github.com/opencontainers/go-digest
 # github.com/opencontainers/image-spec v1.0.1
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
-# github.com/opentracing-contrib/go-grpc v0.0.0-20200813121455-4a6760c71486
+# github.com/opentracing-contrib/go-stdlib v1.0.0
 ## explicit
-github.com/opentracing-contrib/go-grpc
+github.com/opentracing-contrib/go-stdlib/nethttp
 # github.com/opentracing/opentracing-go v1.2.0
 ## explicit
 github.com/opentracing/opentracing-go

@@ -13,6 +13,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.13.0
 	github.com/golang/protobuf v1.4.3
 	github.com/google/uuid v1.1.2
+	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/jackc/pgconn v1.7.2
 	github.com/jackc/pgx/v4 v4.9.2
 	github.com/julienschmidt/httprouter v1.3.0
@@ -22,7 +23,7 @@ require (
 	github.com/lib/pq v1.5.1
 	github.com/newrelic/go-agent/v3 v3.9.0
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/opentracing-contrib/go-grpc v0.0.0-20200813121455-4a6760c71486
+	github.com/opentracing-contrib/go-stdlib v1.0.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/orlangure/gnomock v0.10.1
 	github.com/pborman/uuid v1.2.1 // indirect

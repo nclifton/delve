@@ -36,6 +36,8 @@ services:
       - API_SMS_PORT=10009
       - API_MMS_HOST=backend
       - API_MMS_PORT=10007
+      - API_WEBHOOK_HOST=webhook
+      - API_WEBHOOK_PORT=10002
 
       - ACCOUNT_RPC_PORT=10001
       - ACCOUNT_RPC_HOST=backend

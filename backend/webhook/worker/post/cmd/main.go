@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	agent "github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/redis"
@@ -68,7 +69,13 @@ func main() {
 		RetryScale:    rabbit.RetryScale,
 	}
 
-	worker := rabbit.NewWorker(opts.QueueName, rabbitmq, nrOpts)
+	tracer, closer, err := jaeger.Connect(env.WorkerQueueName + "_worker")
+	if err != nil {
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", env.WorkerQueueName+"_worker", err)
+	}
+	defer closer.Close()
+
+	worker := rabbit.NewWorkerWithTracer(opts.QueueName, rabbitmq, nrOpts, tracer)
 
 	log.Println("Service started")
 	worker.Run(opts, wHandler)

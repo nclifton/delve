@@ -7,17 +7,17 @@ import (
 	"log"
 	"net"
 
-	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/kelseyhightower/envconfig"
-
-	"google.golang.org/grpc"
-
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/db"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/queue"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/service"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/kelseyhightower/envconfig"
+
+	"google.golang.org/grpc"
 )
 
 type webhookEnv struct {
@@ -40,8 +40,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
 
 	tracer, closer, err := jaeger.Connect(env.RPCHost)
 	if err != nil {
@@ -64,6 +62,12 @@ func main() {
 		log.Fatalf("failed to init postgres: %s\n with error: %s", env.PostgresURL, err)
 	}
 	pdb := db.NewSQLDB(sqlDB)
+
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(
+			otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()),
+		),
+	)
 
 	webhookpb.RegisterServiceServer(grpcServer, service.NewWebhookService(pdb, rqueue))
 

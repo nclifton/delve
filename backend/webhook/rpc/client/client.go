@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	otgrpc "github.com/opentracing-contrib/go-grpc"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 
@@ -15,7 +15,10 @@ func NewClient(host string, port int, tracer opentracing.Tracer) webhookpb.Servi
 	conn, err := grpc.Dial(
 		fmt.Sprintf("%s:%d", host, port),
 		grpc.WithInsecure(),
-		grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(tracer)))
+		grpc.WithUnaryInterceptor(
+			otgrpc.OpenTracingClientInterceptor(tracer, otgrpc.LogPayloads()),
+		),
+	)
 	if err != nil {
 		log.Fatal(err)
 		return nil

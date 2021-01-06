@@ -1,10 +1,6 @@
 package otgrpc
 
-import (
-	"context"
-
-	opentracing "github.com/opentracing/opentracing-go"
-)
+import "github.com/opentracing/opentracing-go"
 
 // Option instances may be used in OpenTracing(Server|Client)Interceptor
 // initialization.
@@ -43,7 +39,6 @@ func IncludingSpans(inclusionFunc SpanInclusionFunc) Option {
 // arbitrary tags/logs/etc to the opentracing.Span associated with client
 // and/or server RPCs.
 type SpanDecoratorFunc func(
-	ctx context.Context,
 	span opentracing.Span,
 	method string,
 	req, resp interface{},
