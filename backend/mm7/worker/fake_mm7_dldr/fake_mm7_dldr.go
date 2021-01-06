@@ -2,14 +2,15 @@ package fakemm7dldrworker
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"path"
 	"regexp"
 	"strings"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/mm7utils"
-	belogger "github.com/burstsms/mtmo-tp/backend/logger"
 	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/mm7/worker"
 )
@@ -45,21 +46,21 @@ type MM7RPCClient interface {
 
 type FakeMM7DLDRHandler struct {
 	mm7RPC MM7RPCClient
-	log    *belogger.StandardLogger
+	log    *logger.StandardLogger
 }
 
 func NewHandler(c MM7RPCClient) *FakeMM7DLDRHandler {
 	return &FakeMM7DLDRHandler{
 		mm7RPC: c,
-		log:    belogger.NewLogger(),
+		log:    logger.NewLogger(),
 	}
 }
 
-func (h *FakeMM7DLDRHandler) OnFinalFailure(body []byte) error {
+func (h *FakeMM7DLDRHandler) OnFinalFailure(ctx context.Context, body []byte) error {
 	return nil
 }
 
-func (h *FakeMM7DLDRHandler) Handle(body []byte, headers map[string]interface{}) error {
+func (h *FakeMM7DLDRHandler) Handle(ctx context.Context, body []byte, headers map[string]interface{}) error {
 	contentType, ok := headers["Content-Type"].(string)
 	if !ok {
 		err := errors.New("Content-Type not provided")

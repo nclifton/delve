@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/mm7utils"
-	"github.com/burstsms/mtmo-tp/backend/logger"
 )
 
 type HandsetParams struct {
@@ -76,7 +76,7 @@ func HandsetPOST(r *Route) {
 			r.api.log.Errorf("Could not do DR request: %s", err)
 		}
 	}
-	r.api.log.Fields(logger.Fields{
+	r.api.log.Fields(r.r.Context(), logger.Fields{
 		"TransactionID": req.ID,
 		"Subject":       req.Subject,
 		"Message":       req.Message,

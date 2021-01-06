@@ -2,6 +2,7 @@ package sender
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -39,7 +40,7 @@ func NewHandler(c *rpc.Client, http *http.Client, limiter Limiter, alarisClient 
 	}
 }
 
-func (h *SenderHandler) OnFinalFailure(body []byte) error {
+func (h *SenderHandler) OnFinalFailure(ctx context.Context, body []byte) error {
 
 	jobdata := &msg.SMSSendMessageSpec{}
 	err := json.NewDecoder(bytes.NewReader(body)).Decode(&jobdata)
@@ -56,7 +57,7 @@ func (h *SenderHandler) OnFinalFailure(body []byte) error {
 	return nil
 }
 
-func (h *SenderHandler) Handle(body []byte, headers map[string]interface{}) error {
+func (h *SenderHandler) Handle(ctx context.Context, body []byte, headers map[string]interface{}) error {
 
 	jobdata := &msg.SMSSendMessageSpec{}
 	err := json.NewDecoder(bytes.NewReader(body)).Decode(&jobdata)

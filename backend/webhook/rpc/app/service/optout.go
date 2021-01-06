@@ -10,6 +10,7 @@ import (
 func (s *webhookImpl) PublishOptOut(ctx context.Context, p *webhookpb.PublishOptOutParams) (*webhookpb.NoReply, error) {
 	webhooks, err := s.db.FindWebhookByEvent(ctx, p.AccountId, EventOptOutStatus)
 	if err != nil {
+		s.log.Error(ctx, "FindWebhookByEvent", err.Error())
 		return &webhookpb.NoReply{}, err
 	}
 
@@ -20,6 +21,7 @@ func (s *webhookImpl) PublishOptOut(ctx context.Context, p *webhookpb.PublishOpt
 			Payload:   msg.WebhookBody{Event: EventOptOutStatus, Data: p},
 		})
 		if err != nil {
+			s.log.Error(ctx, "PostWebhook", err.Error())
 			return &webhookpb.NoReply{}, err
 		}
 	}

@@ -1,6 +1,7 @@
 package mms_send
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -17,7 +18,7 @@ func TestHandle(t *testing.T) {
 			mockMMSRPCClient{},
 		)
 
-		err := s.Handle(b, map[string]interface{}{})
+		err := s.Handle(context.Background(), b, map[string]interface{}{})
 		if err != nil && err.Error() != "" {
 			t.Error("unexpected error:", err)
 		}

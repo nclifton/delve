@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/burstsms/mtmo-tp/backend/logger"
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/sms/biz"
 	"github.com/google/uuid"
 )
@@ -86,7 +86,7 @@ func HandsetGET(r *Route) {
 				sarId = sarIdsplit
 				sarPartNumber = strconv.Itoa(part + 1)
 			}
-			r.api.log.Fields(logger.Fields{
+			r.api.log.Fields(r.r.Context(), logger.Fields{
 				"msgid":   MessageID,
 				"dnis":    values.dnis,
 				"ani":     values.ani,

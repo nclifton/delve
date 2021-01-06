@@ -1,6 +1,7 @@
 package optussubmitworker
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"testing"
@@ -68,7 +69,7 @@ func TestHandle(t *testing.T) {
 		currentTest := tests["success"]
 		s := NewHandler(currentTest.rpcClient, currentTest.optus, nil)
 
-		err := s.Handle(currentTest.body, map[string]interface{}{})
+		err := s.Handle(context.Background(), currentTest.body, map[string]interface{}{})
 		if err != currentTest.expectedErr {
 			t.Error("unexpected error:", err)
 		}
@@ -78,7 +79,7 @@ func TestHandle(t *testing.T) {
 		currentTest := tests["rate limit"]
 		s := NewHandler(currentTest.rpcClient, currentTest.optus, nil)
 
-		err := s.Handle(currentTest.body, map[string]interface{}{})
+		err := s.Handle(context.Background(), currentTest.body, map[string]interface{}{})
 		if err != nil && err.Error() != currentTest.expectedErr.Error() {
 			t.Error("unexpected error:", err)
 		}

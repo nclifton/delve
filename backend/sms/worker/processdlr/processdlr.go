@@ -2,6 +2,7 @@ package processdlr
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"log"
 
@@ -20,11 +21,11 @@ func NewHandler(c *rpc.Client) *SenderHandler {
 	}
 }
 
-func (h *SenderHandler) OnFinalFailure(body []byte) error {
+func (h *SenderHandler) OnFinalFailure(ctx context.Context, body []byte) error {
 	return nil
 }
 
-func (h *SenderHandler) Handle(body []byte, headers map[string]interface{}) error {
+func (h *SenderHandler) Handle(ctx context.Context, body []byte, headers map[string]interface{}) error {
 
 	jobdata := &msg.DLRMessageSpec{}
 	err := json.NewDecoder(bytes.NewReader(body)).Decode(&jobdata)

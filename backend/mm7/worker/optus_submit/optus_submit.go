@@ -2,14 +2,14 @@ package optussubmitworker
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"text/template"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	tcl "github.com/burstsms/mtmo-tp/backend/lib/optus/client"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
-	"github.com/burstsms/mtmo-tp/backend/logger"
-	belogger "github.com/burstsms/mtmo-tp/backend/logger"
 	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/mm7/worker"
 )
@@ -27,7 +27,7 @@ type optusClient interface {
 type OptusSubmitHandler struct {
 	mm7RPC   mm7RPCClient
 	optus    optusClient
-	log      *belogger.StandardLogger
+	log      *logger.StandardLogger
 	soaptmpl *template.Template
 }
 
@@ -35,12 +35,12 @@ func NewHandler(c mm7RPCClient, optus optusClient, soaptmpl *template.Template) 
 	return &OptusSubmitHandler{
 		mm7RPC:   c,
 		optus:    optus,
-		log:      belogger.NewLogger(),
+		log:      logger.NewLogger(),
 		soaptmpl: soaptmpl,
 	}
 }
 
-func (h *OptusSubmitHandler) OnFinalFailure(body []byte) error {
+func (h *OptusSubmitHandler) OnFinalFailure(ctx context.Context, body []byte) error {
 	return nil
 }
 
@@ -49,16 +49,16 @@ const (
 	MMSStatusSent   = "sent"
 )
 
-func (h *OptusSubmitHandler) Handle(body []byte, headers map[string]interface{}) error {
+func (h *OptusSubmitHandler) Handle(ctx context.Context, body []byte, headers map[string]interface{}) error {
 	msg := &worker.SubmitMessage{}
 	if err := json.NewDecoder(bytes.NewReader(body)).Decode(&msg); err != nil {
-		h.logError(msg, "", err.Error(), "Decoding job failed")
+		h.logError(ctx, msg, "", err.Error(), "Decoding job failed")
 		return err
 	}
 
 	r, err := h.mm7RPC.CheckRateLimit(mm7RPC.CheckRateLimitParams{ProviderKey: worker.FakeProviderKey})
 	if err != nil {
-		h.logError(msg, "", err.Error(), "Unexpected mm7RPC.CheckRateLimit response")
+		h.logError(ctx, msg, "", err.Error(), "Unexpected mm7RPC.CheckRateLimit response")
 		return err
 	}
 
@@ -72,7 +72,7 @@ func (h *OptusSubmitHandler) Handle(body []byte, headers map[string]interface{})
 			ContentURL: url,
 		})
 		if err != nil {
-			h.logError(msg, "", err.Error(), "Unexpected mm7RPC.GetCachedContent response")
+			h.logError(ctx, msg, "", err.Error(), "Unexpected mm7RPC.GetCachedContent response")
 			return err
 		}
 
@@ -93,7 +93,7 @@ func (h *OptusSubmitHandler) Handle(body []byte, headers map[string]interface{})
 	if err != nil {
 		status = MMSStatusFailed
 		description = err.Error()
-		h.logError(msg, status, description, "Optus http request failed")
+		h.logError(ctx, msg, status, description, "Optus http request failed")
 		err := h.updateStatus(msg.ID, status, description)
 		return err
 	}
@@ -102,13 +102,13 @@ func (h *OptusSubmitHandler) Handle(body []byte, headers map[string]interface{})
 
 	if result.Body.SubmitRsp.Status.StatusCode != "1000" {
 		status = MMSStatusFailed
-		h.logError(msg, status, description, "Received error status from Tecloo")
+		h.logError(ctx, msg, status, description, "Received error status from Tecloo")
 		err := h.updateStatus(msg.ID, status, description)
 		return err
 	}
 
 	status = MMSStatusSent
-	h.logSuccess(msg, status, description, "Optus Submit Worker Successful send")
+	h.logSuccess(ctx, msg, status, description, "Optus Submit Worker Successful send")
 	err = h.updateStatus(msg.ID, status, description)
 	return err
 }
@@ -123,7 +123,7 @@ func (h *OptusSubmitHandler) updateStatus(id, status, description string) error 
 	return err
 }
 
-func (h *OptusSubmitHandler) logError(msg *worker.SubmitMessage, status, description, label string) {
+func (h *OptusSubmitHandler) logError(ctx context.Context, msg *worker.SubmitMessage, status, description, label string) {
 	fields := logger.Fields{
 		"ID":          msg.ID,
 		"Sender":      msg.Sender,
@@ -132,10 +132,10 @@ func (h *OptusSubmitHandler) logError(msg *worker.SubmitMessage, status, descrip
 		"Description": description,
 	}
 
-	h.log.Fields(fields).Error(label)
+	h.log.Fields(ctx, fields).Error(label)
 }
 
-func (h *OptusSubmitHandler) logSuccess(msg *worker.SubmitMessage, status, description, label string) {
+func (h *OptusSubmitHandler) logSuccess(ctx context.Context, msg *worker.SubmitMessage, status, description, label string) {
 	fields := logger.Fields{
 		"ID":          msg.ID,
 		"Sender":      msg.Sender,
@@ -144,5 +144,5 @@ func (h *OptusSubmitHandler) logSuccess(msg *worker.SubmitMessage, status, descr
 		"Description": description,
 	}
 
-	h.log.Fields(fields).Info(label)
+	h.log.Fields(ctx, fields).Info(label)
 }

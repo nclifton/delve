@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"text/template"
 
-	"github.com/burstsms/mtmo-tp/backend/lib/middleware/logger"
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
-	belogger "github.com/burstsms/mtmo-tp/backend/logger"
 	"github.com/julienschmidt/httprouter"
+
 	"github.com/justinas/alice"
 )
 
@@ -30,7 +30,7 @@ type TeclooTemplates struct {
 type TeclooAPI struct {
 	opts      *TeclooAPIOptions
 	router    *httprouter.Router
-	log       *belogger.StandardLogger
+	log       *logger.StandardLogger
 	templates *TeclooTemplates
 	client    *http.Client
 }
@@ -57,15 +57,10 @@ func NewTeclooAPI(opts *TeclooAPIOptions) *TeclooAPI {
 
 	api := &TeclooAPI{
 		opts:      opts,
-		log:       belogger.NewLogger(),
+		log:       logger.NewLogger(),
 		templates: templates,
 		client:    client,
 	}
-
-	loggerM := logger.New(&logger.Options{
-		Verbose:    true,
-		UseXRealIp: true,
-	})
 
 	// maybe not needed with httprouter panic handler
 	recoveryM := recovery.New(&recovery.Options{
@@ -74,7 +69,7 @@ func NewTeclooAPI(opts *TeclooAPIOptions) *TeclooAPI {
 
 	// define the middleware chains for our api endpoints
 	// we can group them and expand chains
-	baseChain := alice.New(loggerM, recoveryM)
+	baseChain := alice.New(recoveryM)
 
 	if opts.NrApp != nil {
 		baseChain.Append(opts.NrApp)

@@ -2,14 +2,14 @@ package fakemm7submitworker
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"text/template"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	tcl "github.com/burstsms/mtmo-tp/backend/lib/tecloo/client"
-	"github.com/burstsms/mtmo-tp/backend/logger"
-	belogger "github.com/burstsms/mtmo-tp/backend/logger"
 	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/mm7/worker"
 )
@@ -28,7 +28,7 @@ type teclooSvc interface {
 type FakeMM7SubmitHandler struct {
 	mm7RPC   mm7RPCClient
 	tecloo   teclooSvc
-	log      *belogger.StandardLogger
+	log      *logger.StandardLogger
 	soaptmpl *template.Template
 }
 
@@ -36,12 +36,12 @@ func NewHandler(c mm7RPCClient, tecloo teclooSvc, soaptmpl *template.Template) *
 	return &FakeMM7SubmitHandler{
 		mm7RPC:   c,
 		tecloo:   tecloo,
-		log:      belogger.NewLogger(),
+		log:      logger.NewLogger(),
 		soaptmpl: soaptmpl,
 	}
 }
 
-func (h *FakeMM7SubmitHandler) OnFinalFailure(body []byte) error {
+func (h *FakeMM7SubmitHandler) OnFinalFailure(context.Context, []byte) error {
 	return nil
 }
 
@@ -50,16 +50,16 @@ const (
 	MMSStatusSent   = "sent"
 )
 
-func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{}) error {
+func (h *FakeMM7SubmitHandler) Handle(ctx context.Context, body []byte, headers map[string]interface{}) error {
 	msg := &worker.SubmitMessage{}
 	if err := json.NewDecoder(bytes.NewReader(body)).Decode(&msg); err != nil {
-		h.logError(msg, "", err.Error(), "Decoding job failed")
+		h.logError(ctx, msg, "", err.Error(), "Decoding job failed")
 		return err
 	}
 
 	r, err := h.mm7RPC.CheckRateLimit(mm7RPC.CheckRateLimitParams{ProviderKey: worker.FakeProviderKey})
 	if err != nil {
-		h.logError(msg, "", err.Error(), "Unexpected mm7RPC.CheckRateLimit response")
+		h.logError(ctx, msg, "", err.Error(), "Unexpected mm7RPC.CheckRateLimit response")
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 		ProviderKey: worker.FakeProviderKey,
 	})
 	if err != nil {
-		h.logError(msg, "", err.Error(), "Unexpected mm7RPC.ProviderSpec response")
+		h.logError(ctx, msg, "", err.Error(), "Unexpected mm7RPC.ProviderSpec response")
 		return err
 	}
 
@@ -81,14 +81,14 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 			ContentURL: url,
 		})
 		if err != nil {
-			h.logError(msg, "", err.Error(), "Unexpected mm7RPC.GetCachedContent response")
+			h.logError(ctx, msg, "", err.Error(), "Unexpected mm7RPC.GetCachedContent response")
 			return h.updateStatus(msg.ID, "", MMSStatusFailed, err.Error())
 		}
 
 		// validation image size
 		if len(r.Content) > psReply.ImageSizeMaxKB*1000 {
 			description := fmt.Sprintf("Total image size > %dkb", psReply.ImageSizeMaxKB)
-			h.logError(msg, MMSStatusFailed, description, "Validation error")
+			h.logError(ctx, msg, MMSStatusFailed, description, "Validation error")
 			return h.updateStatus(msg.ID, "", MMSStatusFailed, description)
 		}
 
@@ -109,7 +109,7 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 	if err != nil {
 		status = MMSStatusFailed
 		description = err.Error()
-		h.logError(msg, status, description, "Tecloo http request failed")
+		h.logError(ctx, msg, status, description, "Tecloo http request failed")
 		err := h.updateStatus(msg.ID, "", status, description)
 		return err
 	}
@@ -118,13 +118,13 @@ func (h *FakeMM7SubmitHandler) Handle(body []byte, headers map[string]interface{
 
 	if result.Body.SubmitRsp.Status.StatusCode != "1000" {
 		status = MMSStatusFailed
-		h.logError(msg, status, description, "Received error status from Tecloo")
+		h.logError(ctx, msg, status, description, "Received error status from Tecloo")
 		err := h.updateStatus(msg.ID, result.Body.SubmitRsp.MessageID, status, description)
 		return err
 	}
 
 	status = MMSStatusSent
-	h.logSuccess(msg, status, description, "Fake MM7 Submit Worker Successful send")
+	h.logSuccess(ctx, msg, status, description, "Fake MM7 Submit Worker Successful send")
 
 	return h.updateStatus(msg.ID, result.Body.SubmitRsp.MessageID, status, description)
 }
@@ -138,7 +138,7 @@ func (h *FakeMM7SubmitHandler) updateStatus(id, messageID, status, description s
 	})
 }
 
-func (h *FakeMM7SubmitHandler) logError(msg *worker.SubmitMessage, status, description, label string) {
+func (h *FakeMM7SubmitHandler) logError(ctx context.Context, msg *worker.SubmitMessage, status, description, label string) {
 	fields := logger.Fields{
 		"ID":          msg.ID,
 		"Sender":      msg.Sender,
@@ -147,10 +147,10 @@ func (h *FakeMM7SubmitHandler) logError(msg *worker.SubmitMessage, status, descr
 		"Description": description,
 	}
 
-	h.log.Fields(fields).Error(label)
+	h.log.Fields(ctx, fields).Error(label)
 }
 
-func (h *FakeMM7SubmitHandler) logSuccess(msg *worker.SubmitMessage, status, description, label string) {
+func (h *FakeMM7SubmitHandler) logSuccess(ctx context.Context, msg *worker.SubmitMessage, status, description, label string) {
 	fields := logger.Fields{
 		"ID":          msg.ID,
 		"Sender":      msg.Sender,
@@ -159,5 +159,5 @@ func (h *FakeMM7SubmitHandler) logSuccess(msg *worker.SubmitMessage, status, des
 		"Description": description,
 	}
 
-	h.log.Fields(fields).Info(label)
+	h.log.Fields(ctx, fields).Info(label)
 }

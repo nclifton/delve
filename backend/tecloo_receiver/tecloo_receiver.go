@@ -5,10 +5,9 @@ import (
 	"net/http"
 	"text/template"
 
-	"github.com/burstsms/mtmo-tp/backend/lib/middleware/logger"
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
-	belogger "github.com/burstsms/mtmo-tp/backend/logger"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 )
@@ -29,7 +28,7 @@ type TeclooReceiverTemplates struct {
 type TeclooReceiverAPI struct {
 	opts      *TeclooReceiverAPIOptions
 	router    *httprouter.Router
-	log       *belogger.StandardLogger
+	log       *logger.StandardLogger
 	templates *TeclooReceiverTemplates
 }
 
@@ -61,14 +60,9 @@ func NewTeclooReceiverAPI(opts *TeclooReceiverAPIOptions) *TeclooReceiverAPI {
 
 	api := &TeclooReceiverAPI{
 		opts:      opts,
-		log:       belogger.NewLogger(),
+		log:       logger.NewLogger(),
 		templates: templates,
 	}
-
-	loggerM := logger.New(&logger.Options{
-		Verbose:    true,
-		UseXRealIp: true,
-	})
 
 	// maybe not needed with httprouter panic handler
 	recoveryM := recovery.New(&recovery.Options{
@@ -77,7 +71,7 @@ func NewTeclooReceiverAPI(opts *TeclooReceiverAPIOptions) *TeclooReceiverAPI {
 
 	// define the middleware chains for our api endpoints
 	// we can group them and expand chains
-	baseChain := alice.New(loggerM, recoveryM)
+	baseChain := alice.New(recoveryM)
 
 	if opts.NrApp != nil {
 		baseChain.Append(opts.NrApp)

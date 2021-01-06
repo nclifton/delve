@@ -2,6 +2,7 @@ package tecloo
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
@@ -10,8 +11,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/mm7utils"
-	"github.com/burstsms/mtmo-tp/backend/logger"
 	"github.com/google/uuid"
 )
 
@@ -41,6 +42,7 @@ func SubmitPOST(r *Route) {
 }
 
 func (api *TeclooAPI) parseSubmit(contentType string, body io.Reader) (string, *bytes.Buffer, error) {
+	ctx := context.Background()
 
 	parts, err := mm7utils.ProcessMultiPart(contentType, body)
 	if err != nil {
@@ -59,7 +61,7 @@ func (api *TeclooAPI) parseSubmit(contentType string, body io.Reader) (string, *
 	for _, part := range parts {
 		fileHash := sha1.New()
 
-		api.log.Fields(logger.Fields{"ContentID": part.ContentID}).Debug("Processing Part")
+		api.log.Fields(ctx, logger.Fields{"ContentID": part.ContentID}).Debug("Processing Part")
 
 		if strings.Trim(part.ContentID, "<>") == "soap-start" {
 
@@ -96,7 +98,7 @@ func (api *TeclooAPI) parseSubmit(contentType string, body io.Reader) (string, *
 		}
 
 	}
-	api.log.Fields(logger.Fields{
+	api.log.Fields(ctx, logger.Fields{
 		"TransactionID": transactionid,
 		"Subject":       subject,
 		"Message":       message,

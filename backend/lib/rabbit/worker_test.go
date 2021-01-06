@@ -1,6 +1,7 @@
 package rabbit_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/NeowayLabs/wabbit/amqptest"
@@ -11,11 +12,11 @@ import (
 type MockHandler struct{}
 
 // TODO actually make this do something
-func (mck *MockHandler) Handle(body []byte, headers map[string]interface{}) error {
+func (mck *MockHandler) Handle(ctx context.Context, body []byte, headers map[string]interface{}) error {
 	return nil
 }
 
-func (mck *MockHandler) OnFinalFailure(body []byte) error {
+func (mck *MockHandler) OnFinalFailure(ctx context.Context, body []byte) error {
 	return nil
 }
 

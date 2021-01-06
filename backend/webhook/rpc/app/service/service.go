@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/db"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/queue"
@@ -19,13 +20,18 @@ import (
 )
 
 type webhookImpl struct {
+	log   *logger.StandardLogger
 	db    db.DB
 	queue queue.Queue
 	webhookpb.UnimplementedServiceServer
 }
 
 func NewWebhookService(db db.DB, queue queue.Queue) webhookpb.ServiceServer {
-	return &webhookImpl{db: db, queue: queue}
+	return &webhookImpl{
+		log:   logger.NewLogger(),
+		db:    db,
+		queue: queue,
+	}
 }
 
 type WebhookEnv struct {

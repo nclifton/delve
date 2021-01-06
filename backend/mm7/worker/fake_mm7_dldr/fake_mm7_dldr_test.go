@@ -1,6 +1,7 @@
 package fakemm7dldrworker
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -16,7 +17,7 @@ func TestHandle(t *testing.T) {
 		w := NewHandler(client)
 		body := []byte("Some payload")
 
-		if err := w.Handle(body, nil); err == nil {
+		if err := w.Handle(context.Background(), body, nil); err == nil {
 			t.Error(err)
 		}
 	})
@@ -30,7 +31,7 @@ func TestHandle(t *testing.T) {
 			"Content-Type": "application/json",
 		}
 
-		if err := w.Handle(body, headers); err == nil {
+		if err := w.Handle(context.Background(), body, headers); err == nil {
 			t.Error(err)
 		}
 	})
@@ -67,7 +68,7 @@ func TestHandle(t *testing.T) {
 			"Content-Type": contentType,
 		}
 
-		if err = w.Handle(body, headers); err != nil {
+		if err = w.Handle(context.Background(), body, headers); err != nil {
 			t.Error(err)
 		}
 	})
@@ -109,7 +110,7 @@ func TestHandle(t *testing.T) {
 			"Content-Type": contentType,
 		}
 
-		if err = w.Handle(body, headers); err == nil {
+		if err = w.Handle(context.Background(), body, headers); err == nil {
 			t.Error(err)
 		}
 	})
@@ -153,7 +154,7 @@ func TestHandle(t *testing.T) {
 			"Content-Type": contentType,
 		}
 
-		if err = w.Handle(body, headers); err != nil {
+		if err = w.Handle(context.Background(), body, headers); err != nil {
 			t.Error(err)
 		}
 	})

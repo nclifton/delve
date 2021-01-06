@@ -7,7 +7,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/api/middleware/auth"
 	"github.com/burstsms/mtmo-tp/backend/api/middleware/context"
 	"github.com/burstsms/mtmo-tp/backend/api/middleware/tracing"
-	"github.com/burstsms/mtmo-tp/backend/lib/middleware/logger"
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
@@ -39,6 +39,7 @@ type RPCClients struct {
 type API struct {
 	opts   *Options
 	router *httprouter.Router
+	log    *logger.StandardLogger
 	RPCClients
 }
 
@@ -58,13 +59,9 @@ func New(opts *Options) *API {
 
 	api := &API{
 		opts:       opts,
+		log:        logger.NewLogger(),
 		RPCClients: clients,
 	}
-
-	loggerM := logger.New(&logger.Options{
-		Verbose:    true,
-		UseXRealIp: true,
-	})
 
 	newrelicM := opts.NrApp
 
@@ -85,7 +82,7 @@ func New(opts *Options) *API {
 
 	// define the middleware chains for our api endpoints
 	// we can group them and expand chains
-	baseChain := alice.New(loggerM, newrelicM, recoveryM, tracingM)
+	baseChain := alice.New(newrelicM, recoveryM, tracingM)
 	defaultChain := baseChain.Append(context.ClearHandler)
 	authChain := baseChain.Append(authM).Append(context.ClearHandler)
 

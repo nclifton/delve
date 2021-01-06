@@ -1,6 +1,7 @@
 package MgageSubmitworker
 
 import (
+	"context"
 	"log"
 	"net/rpc"
 )
@@ -15,11 +16,11 @@ func NewHandler(c *rpc.Client) *MgageSubmitHandler {
 	}
 }
 
-func (h *MgageSubmitHandler) OnFinalFailure(body []byte) error {
+func (h *MgageSubmitHandler) OnFinalFailure(ctx context.Context, body []byte) error {
 	return nil
 }
 
-func (h *MgageSubmitHandler) Handle(body []byte, headers map[string]interface{}) error {
+func (h *MgageSubmitHandler) Handle(ctx context.Context, body []byte, headers map[string]interface{}) error {
 	log.Println("Test MgageSubmitHandler...")
 	return nil
 }

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -26,6 +26,8 @@ func TestPublishOptOutWebhookPOST(r *Route) {
 		return
 	}
 
+	r.api.log.Info(r.r.Context(), "TestPublishOptOutWebhookPOST", fmt.Sprint(req))
+
 	res, err := r.api.webhook.Insert(r.r.Context(), &webhookpb.InsertParams{
 		AccountId: account.ID,
 		Event:     "opt_out",
@@ -34,7 +36,7 @@ func TestPublishOptOutWebhookPOST(r *Route) {
 		RateLimit: 10,
 	})
 	if err != nil {
-		log.Printf("Could not call insert webhook: %s", err.Error())
+		r.api.log.Error(r.r.Context(), "r.api.webhook.Insert", err.Error())
 		r.WriteError("Could not process webhook", http.StatusInternalServerError)
 		return
 	}
@@ -55,7 +57,7 @@ func TestPublishOptOutWebhookPOST(r *Route) {
 		SourceMessage: &message,
 	})
 	if err != nil {
-		log.Printf("Could not call publish opt out for webhook: %s", err.Error())
+		r.api.log.Error(r.r.Context(), "r.api.webhook.PublishOptOut", err.Error())
 		r.WriteError("Could not publish opt out", http.StatusInternalServerError)
 		return
 	}
@@ -65,7 +67,7 @@ func TestPublishOptOutWebhookPOST(r *Route) {
 		AccountId: account.ID,
 	})
 	if err != nil {
-		log.Printf("Could not call delete for webhook: %s", err.Error())
+		r.api.log.Error(r.r.Context(), "r.api.webhook.Delete", err.Error())
 		r.WriteError("Could not delete", http.StatusInternalServerError)
 		return
 	}

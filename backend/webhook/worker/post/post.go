@@ -2,16 +2,19 @@ package post
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/webhook/worker/msg"
 )
 
 type Webhook struct {
+	log     *logger.StandardLogger
 	client  *http.Client
 	limiter Limiter
 }
@@ -25,19 +28,19 @@ type Publisher interface {
 }
 
 func NewHandler(client *http.Client, limiter Limiter) *Webhook {
-	return &Webhook{client, limiter}
+	return &Webhook{logger.NewLogger(), client, limiter}
 }
 
-func (h *Webhook) OnFinalFailure(body []byte) error {
+func (h *Webhook) OnFinalFailure(ctx context.Context, body []byte) error {
 	return nil
 }
 
-func (h *Webhook) Handle(body []byte, headers map[string]interface{}) error {
-
+func (h *Webhook) Handle(ctx context.Context, body []byte, headers map[string]interface{}) error {
 	data := &msg.WebhookMessageSpec{}
 
 	err := json.NewDecoder(bytes.NewReader(body)).Decode(&data)
 	if err != nil {
+		h.log.Error(ctx, "json.NewDecoder", err.Error())
 		return rabbit.NewErrWorkerMessageParse(err.Error())
 	}
 

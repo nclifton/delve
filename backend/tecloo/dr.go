@@ -2,11 +2,12 @@ package tecloo
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"time"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/mm7utils"
-	"github.com/burstsms/mtmo-tp/backend/logger"
 )
 
 type DRParams struct {
@@ -31,6 +32,7 @@ var drStatusCodes = map[string]string{
 }
 
 func (api *TeclooAPI) sendDRRequest(params *DRParams) {
+	ctx := context.Background()
 
 	var status = "1000"
 
@@ -38,7 +40,7 @@ func (api *TeclooAPI) sendDRRequest(params *DRParams) {
 		status = params.Status
 	}
 
-	api.log.Fields(logger.Fields{
+	api.log.Fields(ctx, logger.Fields{
 		"TransactionID": params.TransactionID,
 		"Recipient":     params.Recipient,
 		"Sender":        params.Sender,

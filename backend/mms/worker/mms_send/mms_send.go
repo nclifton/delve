@@ -2,10 +2,10 @@ package mms_send
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
-	"github.com/burstsms/mtmo-tp/backend/logger"
-	belogger "github.com/burstsms/mtmo-tp/backend/logger"
+	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	mm7RPC "github.com/burstsms/mtmo-tp/backend/mm7/rpc/client"
 	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/mms/worker"
@@ -30,25 +30,25 @@ type mmsRPCClient interface {
 type MMSSendHandler struct {
 	mm7RPC mm7RPCClient
 	mmsRPC mmsRPCClient
-	log    *belogger.StandardLogger
+	log    *logger.StandardLogger
 }
 
 func NewHandler(mm7c mm7RPCClient, mmsc mmsRPCClient) *MMSSendHandler {
 	return &MMSSendHandler{
 		mm7RPC: mm7c,
 		mmsRPC: mmsc,
-		log:    belogger.NewLogger(),
+		log:    logger.NewLogger(),
 	}
 }
 
-func (h *MMSSendHandler) OnFinalFailure(body []byte) error {
+func (h *MMSSendHandler) OnFinalFailure(ctx context.Context, body []byte) error {
 	return nil
 }
 
-func (h *MMSSendHandler) Handle(body []byte, headers map[string]interface{}) error {
+func (h *MMSSendHandler) Handle(ctx context.Context, body []byte, headers map[string]interface{}) error {
 	msg := &worker.Job{}
 	if err := json.NewDecoder(bytes.NewReader(body)).Decode(&msg); err != nil {
-		h.logError(msg, "", err.Error(), "Decoding job failed")
+		h.logError(ctx, msg, "", err.Error(), "Decoding job failed")
 		return err
 	}
 
@@ -62,7 +62,7 @@ func (h *MMSSendHandler) Handle(body []byte, headers map[string]interface{}) err
 		ContentURLs: msg.ContentURLs,
 		ProviderKey: msg.ProviderKey,
 	}); err != nil {
-		h.logError(msg, MMSStatusFailed, err.Error(), "Problem sending to mm7")
+		h.logError(ctx, msg, MMSStatusFailed, err.Error(), "Problem sending to mm7")
 
 		return h.mmsRPC.UpdateStatus(mmsRPC.UpdateStatusParams{
 			ID:          msg.ID,
@@ -71,12 +71,12 @@ func (h *MMSSendHandler) Handle(body []byte, headers map[string]interface{}) err
 		})
 	}
 
-	h.logSuccess(msg, MMSStatusSent, "", "MMS send successfully to mm7 service")
+	h.logSuccess(ctx, msg, MMSStatusSent, "", "MMS send successfully to mm7 service")
 
 	return nil
 }
 
-func (h *MMSSendHandler) logError(msg *worker.Job, status, description, label string) {
+func (h *MMSSendHandler) logError(ctx context.Context, msg *worker.Job, status, description, label string) {
 	fields := logger.Fields{
 		"ID":          msg.ID,
 		"Sender":      msg.Sender,
@@ -84,10 +84,10 @@ func (h *MMSSendHandler) logError(msg *worker.Job, status, description, label st
 		"Status":      status,
 		"Description": description,
 	}
-	h.log.Fields(fields).Error(label)
+	h.log.Fields(ctx, fields).Error(label)
 }
 
-func (h *MMSSendHandler) logSuccess(msg *worker.Job, status, description, label string) {
+func (h *MMSSendHandler) logSuccess(ctx context.Context, msg *worker.Job, status, description, label string) {
 	fields := logger.Fields{
 		"ID":          msg.ID,
 		"Sender":      msg.Sender,
@@ -96,5 +96,5 @@ func (h *MMSSendHandler) logSuccess(msg *worker.Job, status, description, label 
 		"Description": description,
 	}
 
-	h.log.Fields(fields).Info(label)
+	h.log.Fields(ctx, fields).Info(label)
 }

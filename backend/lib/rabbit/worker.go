@@ -1,6 +1,7 @@
 package rabbit
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -12,8 +13,8 @@ import (
 )
 
 type MessageHandler interface {
-	Handle([]byte, map[string]interface{}) error
-	OnFinalFailure([]byte) error
+	Handle(context.Context, []byte, map[string]interface{}) error
+	OnFinalFailure(context.Context, []byte) error
 }
 
 // TODO remove NR code litering our app
@@ -66,6 +67,7 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 	}()
 
 	for msg := range messages {
+		ctx := context.Background()
 		headers := amqpHeadersCarrier(msg.Headers())
 
 		var sp opentracing.Span
@@ -80,10 +82,11 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 				opentracing.FollowsFrom(spCtx),
 			)
 			sp.LogKV("Message", msg.Body())
-			// TODO: inject context with span into handler
+
+			ctx = opentracing.ContextWithSpan(ctx, sp)
 		}
 
-		err = handler.Handle(msg.Body(), headers)
+		err = handler.Handle(ctx, msg.Body(), headers)
 		if err != nil {
 			switch err.(type) {
 			case *ErrWorkerMessageParse:
@@ -106,7 +109,7 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 					})
 					if err != nil {
 						log.Printf("could not retry message (%s): %s", msg.MessageId(), err)
-						err := handler.OnFinalFailure(msg.Body())
+						err := handler.OnFinalFailure(ctx, msg.Body())
 						if err != nil {
 							log.Printf("could not handle final failure for message (%s): %s", msg.MessageId(), err)
 						}
@@ -122,7 +125,7 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 						log.Printf("could not retry message (%s): %s", msg.MessageId(), err)
 					}
 				} else {
-					err := handler.OnFinalFailure(msg.Body())
+					err := handler.OnFinalFailure(ctx, msg.Body())
 					if err != nil {
 						log.Printf("could not handle final failure for message (%s): %s", msg.MessageId(), err)
 					}
@@ -134,7 +137,7 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 				}
 			default:
 				log.Printf("error processing message from queue %s ", err)
-				err := handler.OnFinalFailure(msg.Body())
+				err := handler.OnFinalFailure(ctx, msg.Body())
 				if err != nil {
 					log.Printf("could not handle final failure for message (%s): %s", msg.MessageId(), err)
 				}
