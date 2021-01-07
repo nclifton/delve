@@ -4,6 +4,7 @@ package test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -153,16 +154,61 @@ func (setup *testDeps) startHttpServer(t *testing.T) {
 	}))
 }
 
+type ExpectedRequests struct {
+	numberOfRequests int
+	waitMilliseconds int
+	methods          []string
+	contentTypes     []string
+	bodies           []string
+}
 
-func waitForRequest(setup *testDeps, t *testing.T) {
+func (setup *testDeps) waitForRequests(t *testing.T, want ExpectedRequests) {
 	var cnt = 0
 	log.Println("waiting for http request")
-	for len(setup.httpRequests) == 0 {
-		if cnt > 500 {
-			assert.Fail(t, "timed out waiting for request")
+	for len(setup.httpRequests) < want.numberOfRequests || want.numberOfRequests == 0 {
+		if cnt > want.waitMilliseconds {
+			plural := ""
+			if want.numberOfRequests > 1 {
+				plural = "s"
+			}
+			if want.numberOfRequests > len(setup.httpRequests) {
+				assert.Fail(t, fmt.Sprintf("timed out waiting for %d request%s", want.numberOfRequests, plural))
+			} else {
+				log.Printf("http request wait timed out")
+				return
+			}
 		}
 		time.Sleep(time.Millisecond)
 		cnt++
 	}
 	log.Printf("received http request after %d milliseconds", cnt)
+}
+
+func (setup *testDeps) resetHttpRequests(t *testing.T) {
+	setup.httpRequests = nil
+	setup.httpRequestBodies = nil
+}
+
+func (setup *testDeps) marshalJson(t *testing.T, v interface{}) string {
+	expectedBody, err := json.Marshal(v)
+	if err != nil {
+		t.Fatalf("error: %+v", err)
+	}
+	return string(expectedBody)
+}
+
+func (setup *testDeps) assertRequests(t *testing.T, want ExpectedRequests) {
+	assert.Equal(t, want.numberOfRequests, len(setup.httpRequests), "number of requests received")
+	for i, method := range want.methods {
+		req := setup.httpRequests[i]
+		assert.Equal(t, req.Method, method, fmt.Sprintf("request %d method", i+1))
+	}
+	for i, contentType := range want.contentTypes {
+		req := setup.httpRequests[i]
+		assert.Equal(t, req.Header.Get("Content-Type"), contentType, fmt.Sprintf("request %d Content-Type", i+1))
+	}
+	for i, body := range want.bodies {
+		log.Println(setup.httpRequestBodies[i])
+		assert.JSONEq(t, body, setup.httpRequestBodies[i], fmt.Sprintf("request %d body json", i+1))
+	}
 }

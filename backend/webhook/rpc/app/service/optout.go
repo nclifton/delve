@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 	"github.com/burstsms/mtmo-tp/backend/webhook/worker/msg"
@@ -18,7 +19,20 @@ func (s *webhookImpl) PublishOptOut(ctx context.Context, p *webhookpb.PublishOpt
 		err = s.queue.PostWebhook(ctx, msg.WebhookMessageSpec{
 			URL:       w.URL,
 			RateLimit: int(w.RateLimit),
-			Payload:   msg.WebhookBody{Event: EventOptOutStatus, Data: p},
+			Payload: msg.WebhookBody{
+				Event: EventOptOutStatus,
+				Data: PublishOptOutData{
+					Source:    p.Source,
+					Timestamp: p.Timestamp.AsTime().Format(time.RFC3339),
+					Source_message: PublishMessageData{
+						Type:        p.SourceMessage.Type,
+						Id:          p.SourceMessage.Id,
+						Recipient:   p.SourceMessage.Recipient,
+						Sender:      p.SourceMessage.Sender,
+						Message:     p.SourceMessage.Message,
+						Message_ref: p.SourceMessage.MessageRef,
+					},
+				}},
 		})
 		if err != nil {
 			s.log.Error(ctx, "PostWebhook", err.Error())

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/queue"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
@@ -20,7 +21,16 @@ func (s *webhookImpl) PublishMMSStatusUpdate(ctx context.Context, p *webhookpb.P
 		err = s.queue.PostWebhook(ctx, queue.PostWebhookMessage{
 			URL:       w.URL,
 			RateLimit: int(w.RateLimit),
-			Payload:   msg.WebhookBody{Event: EventMMSStatus, Data: p},
+			Payload: msg.WebhookBody{
+				Event: EventMMSStatus,
+				Data: PublishStatusData{
+					MMS_id:            p.MMSId,
+					Message_ref:       p.MessageRef,
+					Recipient:         p.Recipient,
+					Sender:            p.Sender,
+					Status:            p.Status,
+					Status_updated_at: p.StatusUpdatedAt.AsTime().Format(time.RFC3339),
+				}},
 		})
 		if err != nil {
 			return &webhookpb.NoReply{}, err

@@ -24,3 +24,5 @@ requires environment variables set for the tests
         INTEGRATION_TEST_FIXTURE_RABBITMQ_USER_PASSWORD=gnomick
 
 ```
+
+The publish integration test should assert that the http requests that are emitted conform to the expected patterns defined in the [webhook specs](../spec/webhooks.md)
