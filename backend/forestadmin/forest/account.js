@@ -6,7 +6,18 @@ const { collection } = require("forest-express-sequelize");
 // - Smart relationships: https://docs.forestadmin.com/documentation/reference-guide/relationships/create-a-smart-relationship
 // - Smart segments: https://docs.forestadmin.com/documentation/reference-guide/segments/smart-segments
 collection("account", {
-  actions: [],
+  actions: [
+    {
+      name: "Export global usage report",
+      type: "global",
+      download: true,
+    },
+    {
+      name: "Export account usage report",
+      type: "bulk",
+      download: true,
+    },
+  ],
   fields: [
     {
       field: "webhooks",

@@ -2,6 +2,7 @@ FROM keymetrics/pm2:latest-jessie
 
 RUN apt-get install python g++ gcc make tzdata
 RUN npm install npm@latest -g
+RUN npm install
 
 WORKDIR /usr/src/app
 EXPOSE 3310

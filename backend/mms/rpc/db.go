@@ -144,6 +144,10 @@ func (db *db) UpdateStatus(ctx context.Context, id, messageID, status string) er
 	return err
 }
 
+func bg() context.Context {
+	return context.Background()
+}
+
 type RabbitPublishOptions = rabbit.PublishOptions
 
 func (db *db) Publish(msg interface{}, routeKey string) error {

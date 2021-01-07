@@ -196,7 +196,33 @@
       "validations": []
     }],
     "segments": [],
-    "actions": []
+    "actions": [{
+      "name": "Export account usage report",
+      "type": "bulk",
+      "baseUrl": null,
+      "endpoint": "/forest/actions/export-account-usage-report",
+      "httpMethod": "POST",
+      "redirect": null,
+      "download": true,
+      "fields": [],
+      "hooks": {
+        "load": false,
+        "change": []
+      }
+    }, {
+      "name": "Export global usage report",
+      "type": "global",
+      "baseUrl": null,
+      "endpoint": "/forest/actions/export-global-usage-report",
+      "httpMethod": "POST",
+      "redirect": null,
+      "download": true,
+      "fields": [],
+      "hooks": {
+        "load": false,
+        "change": []
+      }
+    }]
   }, {
     "name": "accountApiKeys",
     "nameOld": "accountApiKeys",
@@ -1018,7 +1044,7 @@
   "meta": {
     "database_type": "postgres",
     "liana": "forest-express-sequelize",
-    "liana_version": "6.5.0",
+    "liana_version": "6.6.3",
     "engine": "nodejs",
     "engine_version": "13.12.0",
     "orm_version": "5.15.2"

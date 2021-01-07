@@ -28,6 +28,12 @@ services:
       - NR_TRACING=true
 
       - ADMINAPI_PORT=10014
+      - ADMINAPI_SMS_HOST=backend
+      - ADMINAPI_SMS_PORT=10009
+      - ADMINAPI_MMS_HOST=backend
+      - ADMINAPI_MMS_PORT=10007
+      - ADMINAPI_ACCOUNT_HOST=backend
+      - ADMINAPI_ACCOUNT_PORT=10001
 
       - API_PORT=10000
       - API_ACCOUNT_HOST=backend
@@ -228,7 +234,7 @@ services:
       - MMS_POSTGRES_URL=postgresql://postgres:example@postgres/mms
       - FOREST_AUTH_SECRET=8d3d9df0260ad4414d18d77b5d16d585b636234357e56fac
       - FOREST_ENV_SECRET=470bdd45ada20f90a83f13c795b3422d5b8baf1198e81118b3e5fa2484579837
-      - FOREST_SENDSEI_ADMIN_API=http://backend:8000/v1
+      - FOREST_ADMIN_API=http://backend:10014/v1
       - NODE_ENV=dev
       - CHOKIDAR_USEPOLLING=true
     ports:

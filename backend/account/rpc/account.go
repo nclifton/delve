@@ -25,6 +25,25 @@ func (s *AccountService) FindByAPIKey(p types.FindByAPIKeyParams, r *types.FindB
 	return nil
 }
 
+func (s *AccountService) FindByID(p types.FindByIDParams, r *types.FindByIDReply) error {
+	var account *types.Account
+
+	err := s.db.redis.Cached(
+		"Account.FindByID:"+p.ID,
+		&account,
+		time.Minute*5,
+		func() (interface{}, error) {
+			return s.db.FindByID(p.ID)
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	r.Account = account
+	return nil
+}
+
 func (s *AccountService) FindBySender(p types.FindBySenderParams, r *types.FindBySenderReply) error {
 	var account *types.Account
 

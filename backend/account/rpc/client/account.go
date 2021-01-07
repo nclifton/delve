@@ -25,3 +25,13 @@ func (c *Client) FindBySender(sender string) (r *FindBySenderReply, err error) {
 	}, r)
 	return r, err
 }
+
+type FindByIDReply = types.FindByIDReply
+
+func (c *Client) FindByID(id string) (r *FindByIDReply, err error) {
+	r = &FindByIDReply{}
+	err = c.Call("FindByID", types.FindByIDParams{
+		ID: id,
+	}, r)
+	return r, err
+}

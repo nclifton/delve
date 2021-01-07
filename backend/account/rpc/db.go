@@ -106,6 +106,36 @@ WHERE sender_sms @> $1;
 	return &account, nil
 }
 
+func (db *db) FindByID(id string) (*types.Account, error) {
+
+	var account types.Account
+
+	sql := `
+SELECT account.id, account.name, account.created_at, account.updated_at, account.sender_sms, account.sender_mms, account.alaris_username, account.alaris_password, account.alaris_url, account.mms_provider_key
+FROM account
+WHERE id = $1;
+	`
+
+	row := db.postgres.QueryRow(bg(), sql, id)
+	err := row.Scan(
+		&account.ID,
+		&account.Name,
+		&account.CreatedAt,
+		&account.UpdatedAt,
+		(*pq.StringArray)(&account.SenderSMS),
+		(*pq.StringArray)(&account.SenderMMS),
+		&account.AlarisUsername,
+		&account.AlarisPassword,
+		&account.AlarisURL,
+		&account.MMSProviderKey,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &account, nil
+}
+
 func bg() context.Context {
 	return context.Background()
 }

@@ -3,20 +3,33 @@ package adminapi
 import (
 	"net/http"
 
+	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
+	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
+	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 )
 
 type AdminAPIOptions struct {
-	NrApp func(http.Handler) http.Handler
+	NrApp         func(http.Handler) http.Handler
+	AccountClient *account.Client
+	SMSClient     *sms.Client
+	MMSClient     *mms.Client
+}
+
+type RPCClients struct {
+	account *account.Client
+	sms     *sms.Client
+	mms     *mms.Client
 }
 
 // API wraps an instance of our api app
 type AdminAPI struct {
 	opts   *AdminAPIOptions
 	router *httprouter.Router
+	RPCClients
 }
 
 // Handler exposes the router
@@ -26,8 +39,15 @@ func (a *AdminAPI) Handler() http.Handler {
 
 // New creates our api "app", i.e. the http handler
 func NewAdminAPI(opts *AdminAPIOptions) *AdminAPI {
+	clients := RPCClients{
+		account: opts.AccountClient,
+		sms:     opts.SMSClient,
+		mms:     opts.MMSClient,
+	}
+
 	api := &AdminAPI{
-		opts: opts,
+		opts:       opts,
+		RPCClients: clients,
 	}
 
 	loggerM := logger.New(&logger.Options{
@@ -55,6 +75,8 @@ func NewAdminAPI(opts *AdminAPIOptions) *AdminAPI {
 	// we also need a route and chain for 404
 	router.NotFound = NewPlainRoute(api, baseChain, NotFoundRoute)
 	router.GET("/v1/status", NewRoute(api, baseChain, StatusGET))
+	router.GET("/v1/report/usage", NewRoute(api, baseChain, UsageReportGET))
+	router.GET("/v1/report/usage/:account_id", NewRoute(api, baseChain, UsageReportGET))
 
 	return api
 }

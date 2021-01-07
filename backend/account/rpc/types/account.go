@@ -39,3 +39,11 @@ type FindBySenderParams struct {
 type FindBySenderReply struct {
 	Account *Account
 }
+
+type FindByIDParams struct {
+	ID string
+}
+
+type FindByIDReply struct {
+	Account *Account
+}
