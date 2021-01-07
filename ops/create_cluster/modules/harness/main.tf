@@ -3,7 +3,7 @@ resource "kubernetes_namespace" "harness" {
     name = "harness"
     labels = {
       "managed-by"   = "terraform"
-      "cluster-name" = "${terraform.workspace}"
+      "cluster-name" = terraform.workspace
     }
   }
 }
@@ -16,7 +16,7 @@ resource "helm_release" "harness" {
   version    = "1.0.2"
 
   values = [
-    "${templatefile("${path.module}/values.tmpl.yaml", { environment_name : terraform.workspace })}"
+    templatefile("${path.module}/values.tmpl.yaml", { environment_name : terraform.workspace })
   ]
 
   depends_on = [kubernetes_namespace.harness]

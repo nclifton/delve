@@ -3,7 +3,7 @@ resource "kubernetes_namespace" "kubernetes_dashboard" {
     name = "kubernetes-dashboard"
     labels = {
       "managed-by"   = "terraform"
-      "cluster-name" = "${terraform.workspace}"
+      "cluster-name" = terraform.workspace
     }
   }
 }
@@ -15,7 +15,7 @@ resource "kubernetes_service_account" "eks_admin" {
 
     labels = {
       "managed-by"             = "terraform"
-      "cluster-name"           = "${terraform.workspace}"
+      "cluster-name"           = terraform.workspace
       "app.kubernetes.io/name" = "eks-admin"
     }
   }
@@ -27,7 +27,7 @@ resource "kubernetes_cluster_role_binding" "eks_admin" {
 
     labels = {
       "managed-by"             = "terraform"
-      "cluster-name"           = "${terraform.workspace}"
+      "cluster-name"           = terraform.workspace
       "app.kubernetes.io/name" = "eks-admin"
     }
   }

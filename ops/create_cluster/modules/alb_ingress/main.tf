@@ -23,7 +23,7 @@ resource "kubernetes_cluster_role" "alb_ingress_controller" {
 
     labels = {
       "managed-by"             = "terraform"
-      "cluster-name"           = "${terraform.workspace}"
+      "cluster-name"           = terraform.workspace
       "app.kubernetes.io/name" = "alb-ingress-controller"
     }
   }
@@ -47,7 +47,7 @@ resource "kubernetes_cluster_role_binding" "alb_ingress_controller" {
 
     labels = {
       "managed-by"             = "terraform"
-      "cluster-name"           = "${terraform.workspace}"
+      "cluster-name"           = terraform.workspace
       "app.kubernetes.io/name" = "alb-ingress-controller"
     }
   }
@@ -81,3 +81,43 @@ resource "null_resource" "iamserviceaccount" {
   depends_on = [aws_iam_policy.alb_ingress_controller]
 }
 
+resource "kubernetes_deployment" "alb_ingress_controller" {
+  metadata {
+    name = "alb-ingress-controller"
+    namespace = "kube-system"
+    labels = {
+      "app.kubernetes.io/name" = "alb-ingress-controller"
+    }
+  }
+
+  spec {
+    selector {
+      match_labels = {
+        "app.kubernetes.io/name" = "alb-ingress-controller"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          "app.kubernetes.io/name" = "alb-ingress-controller"
+        }
+      }
+
+      spec {
+        container {
+          name  = "alb-ingress-controller"
+          image = "docker.io/amazon/aws-alb-ingress-controller:v1.1.7"
+          
+          args = [
+              "--ingress-class=alb",
+              "--cluster-name=${terraform.workspace}"
+          ]
+        }
+
+        service_account_name = "alb-ingress-controller"
+        automount_service_account_token = "true"
+      }
+    }
+  }
+}

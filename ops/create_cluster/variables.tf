@@ -9,3 +9,9 @@ variable "mtmo_prod_aws_profile" {
   default     = "mtmo-prod"
   description = "The aws profile for MTMO"
 }
+
+variable "env_dns" {
+  type        = string
+  default     = "mtmostaging.com"
+  description = "The environment base domain"
+}

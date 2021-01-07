@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-commander
+  namespace: redis
+spec:
+  type: NodePort
+  ports:
+    - port: 8081
+      targetPort: 8081
+      protocol: TCP
+      name: http
+  selector:
+    app: redis-commander
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-commander
+  namespace: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-commander
+  template:
+    metadata:
+      labels:
+        app: redis-commander
+        tier: backend
+    spec:
+      containers:
+        - name: redis-commander
+          image: rediscommander/redis-commander
+          env:
+            - name: REDIS_HOSTS
+              value: "redis-master.redis"
+            - name: K8S_SIGTERM
+              value: "1"
+            - name: "HTTP_USER"
+              value: "burstsms"
+            - name: "HTTP_PASSWORD"
+              value: "324nhsedf8sdf"
+          ports:
+            - name: redis-commander
+              containerPort: 8081
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512M"
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL

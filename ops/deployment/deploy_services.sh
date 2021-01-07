@@ -9,11 +9,16 @@ ROOTDIR="$(cd ../../ >/dev/null 2>&1 && pwd)"
 ENV=$1
 if [ -z "${ENV}" ]; then
   echo "Environment name must be specified"
-  echo "Usage: ./deploy_services.sh <ENV>"
+  echo "Usage: ./deploy_services.sh <ENV> <DOCKER_TAG>"
   exit 1
 fi
 
-#RELEASE_VERSION=$(<${SCRIPTDIR}/../releases/RELEASE_VERSION)
+DOCKER_TAG=$2
+if [ -z "${DOCKER_TAG}" ]; then
+  echo "Docker tag must be specified"
+  echo "Usage: ./deploy_services.sh <ENV> <DOCKER_TAG>"
+  exit 1
+fi
 
 if [ "${ENV}" = "production" ]; then
   echo "Are you sure you want to release TP v${RELEASE_VERSION} to PRODUCTION?"
@@ -26,22 +31,14 @@ if [ "${ENV}" = "production" ]; then
 fi
 
 kube_config="${SCRIPTDIR}/${ENV}/connection_config.yaml"
-alb_controller_file="${SCRIPTDIR}/${ENV}/alb-ingress-controller.yaml"
-ingress_file="${SCRIPTDIR}/${ENV}/ingress.yaml"
 
 # Load in service paths based on whether a directory contains an infra folder or not
 cd ${ROOTDIR}
 service_paths=$(find ./ -type d -name infra | sed -e 's/\/infra$//' | sed -e 's/\.\///')
 cd ${SCRIPTDIR}
 
-echo "Creating namespace..."
-kubectl --kubeconfig ${kube_config} create namespace tp
-# TODO: Annotation will be templated in Terraform once we move to using Terraform for deploying
-# This annotation allows linkerd to auto inject proxies into each pod in the namespace
-kubectl --kubeconfig ${kube_config} annotate namespace tp linkerd.io/inject=enabled
-# These annotations allow tracing to be auto injected into all our services
-kubectl --kubeconfig ${kube_config} annotate namespace tp config.linkerd.io/trace-collector=linkerd-collector.linkerd:55678
-kubectl --kubeconfig ${kube_config} annotate namespace tp config.alpha.linkerd.io/trace-collector-service-account=linkerd-collector
+# Create namespace if it doesn't exist
+kubectl --kubeconfig ${kube_config} apply -f ./namespace.yaml 
 
 echo "Deploying services..."
 # Keep service names so we can delete unknown helm charts later
@@ -56,10 +53,10 @@ for service_path in ${service_paths}; do
   service_names+=($service_name)
 
   if [ ${ENV} = "staging" ]; then
-    /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "mtmostaging.com" "latest"
-    #echo "Environment managed by Harness, skipping Helm Deploy..."
+    #/bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "mtmostaging.com" ${DOCKER_TAG}
+    echo "Environment managed by Harness, skipping Helm Deploy..."
   elif [ ${ENV} = "production" ]; then
-    /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "tp.mtmo.io" "latest"
+    /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "tp.mtmo.io" ${DOCKER_TAG}
   else
     echo "Environment not supported!"
   fi
@@ -75,7 +72,3 @@ for helm_chart in ${helm_charts}; do
     helm --kubeconfig ${kube_config} uninstall ${helm_chart} --namespace tp
   fi
 done
-
-echo "Creating ingress..."
-kubectl --kubeconfig ${kube_config} apply -f ${alb_controller_file}
-kubectl --kubeconfig ${kube_config} apply -f ${ingress_file}

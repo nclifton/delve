@@ -28,6 +28,11 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
+ENV_DNS="mtmostaging.com"
+if [[ "${CLUSTER_NAME}" == "tp-production" ]]; then
+    ENV_DNS="tp.mtmo.io"
+fi
+
 # Make sure no previous local state is used
 rm -rf .terraform || {
   echo "ERROR: Cannot rm terraform cache"
@@ -42,7 +47,7 @@ if [ $? == 1 ]; then
   terraform workspace new "${CLUSTER_NAME}"
 fi
 
-terraform apply -var "aws_profile=${AWS_PROFILE}"
+terraform apply -var "aws_profile=${AWS_PROFILE}" -var "env_dns=${ENV_DNS}"
 
 # Get the cluster_endpoint and update the service-config file
 ENDPOINT=$(terraform output postgresql_endpoint)

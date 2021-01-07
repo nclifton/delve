@@ -3,7 +3,7 @@ resource "kubernetes_namespace" "keda" {
     name = "keda"
     labels = {
       "managed-by"   = "terraform"
-      "cluster-name" = "${terraform.workspace}"
+      "cluster-name" = terraform.workspace
     }
   }
 }

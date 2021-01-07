@@ -3,7 +3,7 @@ resource "kubernetes_namespace" "external_dns" {
     name = "external-dns"
     labels = {
       "managed-by"   = "terraform"
-      "cluster-name" = "${terraform.workspace}"
+      "cluster-name" = terraform.workspace
     }
   }
 }

@@ -35,7 +35,7 @@ resource "aws_vpc_peering_connection" "cluster_to_optus_proxy" {
   tags = {
     Name           = "${terraform.workspace} to optus-proxy"
     "managed-by"   = "terraform"
-    "cluster-name" = "${terraform.workspace}"
+    "cluster-name" = terraform.workspace
   }
 }
 
@@ -48,6 +48,6 @@ resource "aws_vpc_peering_connection_accepter" "optus_proxy" {
   tags = {
     Name           = "${terraform.workspace} to optus-proxy"
     "managed-by"   = "terraform"
-    "cluster-name" = "${terraform.workspace}"
+    "cluster-name" = terraform.workspace
   }
 }

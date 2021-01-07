@@ -10,7 +10,7 @@ resource "kubernetes_namespace" "pgadmin" {
     name = "pgadmin"
     labels = {
       "managed-by"   = "terraform"
-      "cluster-name" = "${terraform.workspace}"
+      "cluster-name" = terraform.workspace
     }
   }
 }
@@ -35,7 +35,7 @@ resource "kubernetes_secret" "pgpassfile" {
     namespace = "pgadmin"
     labels = {
       "managed-by"   = "terraform"
-      "cluster-name" = "${terraform.workspace}"
+      "cluster-name" = terraform.workspace
     }
   }
 
@@ -56,7 +56,7 @@ resource "helm_release" "pgadmin" {
   version    = "1.3.2"
 
   values = [
-    "${templatefile("${path.module}/values.tmpl.yaml", { postgres_endpoint : var.postgres_endpoint })}"
+    templatefile("${path.module}/values.tmpl.yaml", { postgres_endpoint : var.postgres_endpoint })
   ]
   set {
     name  = "env.email"
@@ -69,4 +69,52 @@ resource "helm_release" "pgadmin" {
   }
 
   depends_on = [kubernetes_namespace.pgadmin]
+}
+
+resource "kubernetes_ingress" "pgadmin_ingress" {
+  metadata {
+    name = "pgadmin-ingress"
+    namespace = "pgadmin"
+    annotations = {
+        "kubernetes.io/ingress.class" = "alb"
+        "alb.ingress.kubernetes.io/scheme" = "internet-facing"
+        "alb.ingress.kubernetes.io/actions.ssl-redirect" = "{\"Type\": \"redirect\", \"RedirectConfig\": { \"Protocol\": \"HTTPS\", \"Port\": \"443\", \"StatusCode\": \"HTTP_301\"}}"
+        "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\":443}]"
+        "alb.ingress.kubernetes.io/success-codes" = "200,404"
+        "alb.ingress.kubernetes.io/target-type" = "ip"
+    }
+    labels = {
+        "app" = "pgadmin"
+    }
+  }
+
+  spec {
+    rule {
+      http {
+        path {
+          path = "/*"
+
+          backend {
+            service_name = "ssl-redirect"
+            service_port = "use-annotation"
+          }
+        }
+      }
+    }
+
+    rule {
+      host = "pgadmin.${var.env_dns}"
+      
+      http {
+        path {
+          path = "/*"
+
+          backend {
+            service_name = "pgadmin-pgadmin4"
+            service_port = 80
+          }
+        }
+      }
+    }
+  }
 }

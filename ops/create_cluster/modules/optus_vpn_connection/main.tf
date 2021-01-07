@@ -7,7 +7,7 @@ resource "aws_vpn_gateway" "vpn_gateway" {
   tags = {
     Name = "optus-vpn"
     "managed-by" = "terraform"
-    "cluster-name" = "${terraform.workspace}"
+    "cluster-name" = terraform.workspace
   }
 }
 
@@ -20,7 +20,7 @@ resource "aws_customer_gateway" "customer_gateway_mascot" {
   tags = {
     Name = "optus-vpn-mascot"
     "managed-by" = "terraform"
-    "cluster-name" = "${terraform.workspace}"
+    "cluster-name" = terraform.workspace
   }
 }
 
@@ -33,7 +33,7 @@ resource "aws_customer_gateway" "customer_gateway_hume" {
   tags = {
     Name = "optus-vpn-hume"
     "managed-by" = "terraform"
-    "cluster-name" = "${terraform.workspace}"
+    "cluster-name" = terraform.workspace
   }
 }
 
@@ -46,7 +46,7 @@ resource "aws_vpn_connection" "main_mascot" {
   tags = {
     Name = "optus-vpn-mascot"
     "managed-by" = "terraform"
-    "cluster-name" = "${terraform.workspace}"
+    "cluster-name" = terraform.workspace
   }
 }
 
@@ -59,7 +59,7 @@ resource "aws_vpn_connection" "main_hume" {
   tags = {
     Name = "optus-vpn-hume"
     "managed-by" = "terraform"
-    "cluster-name" = "${terraform.workspace}"
+    "cluster-name" = terraform.workspace
   }
 }
 

@@ -5,7 +5,7 @@ resource "kubernetes_namespace" "newrelic" {
     name = "newrelic"
     labels = {
       "managed-by"   = "terraform"
-      "cluster-name" = "${terraform.workspace}"
+      "cluster-name" = terraform.workspace
     }
   }
 }

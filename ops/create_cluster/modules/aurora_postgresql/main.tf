@@ -4,7 +4,7 @@ resource "aws_db_subnet_group" "dbsubnet" {
 
   tags = {
     "managed-by"   = "terraform"
-    "cluster-name" = "${terraform.workspace}"
+    "cluster-name" = terraform.workspace
     Name           = "${terraform.workspace}-dbsubnet"
   }
 }
@@ -19,7 +19,7 @@ resource "aws_rds_cluster_instance" "cluster_instances" {
   engine_version       = "11.7"
   tags = {
     "managed-by"   = "terraform"
-    "cluster-name" = "${terraform.workspace}"
+    "cluster-name" = terraform.workspace
   }
 }
 
@@ -37,6 +37,6 @@ resource "aws_rds_cluster" "postgresql" {
   vpc_security_group_ids    = [data.aws_security_group.clustersg.id]
   tags = {
     "managed-by"   = "terraform"
-    "cluster-name" = "${terraform.workspace}"
+    "cluster-name" = terraform.workspace
   }
 }
