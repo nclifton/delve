@@ -8,9 +8,10 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/api"
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
+	"github.com/burstsms/mtmo-tp/backend/lib/servicebuilder"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
-	webhook "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -68,8 +69,10 @@ func main() {
 		AccountClient: account.New(env.AccountHost, env.AccountPort),
 		SMSClient:     sms.New(env.SMSHost, env.SMSPort),
 		MMSClient:     mms.New(env.MMSHost, env.MMSPort),
-		WebhookClient: webhook.NewClient(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
-		NrApp:         newrelicM,
+		WebhookClient: webhookpb.NewServiceClient(
+			servicebuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+		),
+		NrApp: newrelicM,
 	})
 
 	log.Printf("%s service initialised and available on port %s", "api", env.Port)

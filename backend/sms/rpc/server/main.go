@@ -8,10 +8,11 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	"github.com/burstsms/mtmo-tp/backend/lib/servicebuilder"
 	optOutRPC "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	smsRPC "github.com/burstsms/mtmo-tp/backend/sms/rpc"
 	tracklinkRPC "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
-	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -70,7 +71,9 @@ func main() {
 	}
 	defer closer.Close()
 
-	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort, tracer)
+	wrpc := webhookpb.NewServiceClient(
+		servicebuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+	)
 	arpc := accountRPC.New(env.AccountRPCHost, env.AccountRPCPort)
 	tlrpc := tracklinkRPC.NewClient(env.TrackLinkRPCHost, env.TrackLinkRPCPort)
 	orpc := optOutRPC.NewClient(env.OptOutRPCHost, env.OptOutRPCPort)

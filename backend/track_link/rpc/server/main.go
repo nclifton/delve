@@ -6,10 +6,11 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	"github.com/burstsms/mtmo-tp/backend/lib/servicebuilder"
 	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	smsRPC "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	tlrpc "github.com/burstsms/mtmo-tp/backend/track_link/rpc"
-	webhookRPC "github.com/burstsms/mtmo-tp/backend/webhook/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -58,7 +59,9 @@ func main() {
 
 	mmsrpc := mmsRPC.New(env.MMSRPCHost, env.MMSRPCPort)
 	smsrpc := smsRPC.New(env.SMSRPCHost, env.SMSRPCPort)
-	wrpc := webhookRPC.NewClient(env.WebhookRPCHost, env.WebhookRPCPort, tracer)
+	wrpc := webhookpb.NewServiceClient(
+		servicebuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+	)
 
 	srpc, err := tlrpc.NewService(env.PostgresURL, env.TrackDomain, mmsrpc, smsrpc, wrpc)
 	if err != nil {
