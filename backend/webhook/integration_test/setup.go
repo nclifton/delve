@@ -19,9 +19,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/servicebuilder"
+
 	"github.com/burstsms/mtmo-tp/backend/webhook/integration_test/assertdb"
 	"github.com/burstsms/mtmo-tp/backend/webhook/integration_test/fixtures"
-	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/service"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/run"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 	"github.com/burstsms/mtmo-tp/backend/webhook/worker"
 )
@@ -36,7 +38,7 @@ type testDeps struct {
 	ctx               context.Context
 	tfx               *fixtures.TestFixtures
 	env               *WebhookEnv
-	listener          *bufconn.Listener
+	listener          net.Listener
 	connectionToRPC   *grpc.ClientConn
 	adb               *assertdb.AssertDb
 	httpServer        *httptest.Server
@@ -58,24 +60,26 @@ func getWebhookEnv() *WebhookEnv {
 	return &env
 }
 func startGrpcServer(tfx *fixtures.TestFixtures) *bufconn.Listener {
-	env := getWebhookEnv()
-	app := service.New()
-	app.Env = &service.WebhookEnv{
-		RPCHost:            "",
-		RPCPort:            "",
-		RabbitURL:          tfx.Rabbit.ConnStr,
-		PostgresURL:        tfx.Postgres.ConnStr,
-		RabbitExchange:     env.RabbitExchange,
-		RabbitExchangeType: env.RabbitExchangeType,
-	}
-	listener := bufconn.Listen(1024 * 1024)
-	app.Listener = listener
 
-	// we need to use a rabbitmq connection that will not do a os.Exit() when we stop the service
-	app.IgnoreClosedQueueConnection = true
-	go app.Run()
+	s := servicebuilder.NewGRPCServer(servicebuilder.Config{
+		RPCHost:                     "",
+		RPCPort:                     "",
+		RabbitURL:                   tfx.Rabbit.ConnStr,
+		PostgresURL:                 tfx.Postgres.ConnStr,
+		TracerDisable:               true,
+		RabbitIgnoreClosedQueueConn: true})
 
-	return listener
+	s.SetCustomListener(bufconn.Listen(1024 * 1024))
+
+	// start in a go routine
+	go func() {
+		err := s.GRPCStart(run.Server)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	return s.Listener().(*bufconn.Listener)
 }
 
 func newSetup(t *testing.T, tfx *fixtures.TestFixtures, listener *bufconn.Listener) *testDeps {
@@ -104,7 +108,7 @@ func (setup *testDeps) teardown(t *testing.T) {
 
 func (setup *testDeps) getClient(t *testing.T) webhookpb.ServiceClient {
 	conn, err := grpc.DialContext(setup.ctx, "",
-		grpc.WithContextDialer(getBufDialer(setup.listener)),
+		grpc.WithContextDialer(getBufDialer(setup.listener.(*bufconn.Listener))),
 		grpc.WithInsecure())
 	if err != nil {
 		t.Fatalf("failed to dial: %+v", err)
