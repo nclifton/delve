@@ -18,6 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
 	Find(ctx context.Context, in *FindParams, opts ...grpc.CallOption) (*FindReply, error)
+	FindByID(ctx context.Context, in *FindByIDParams, opts ...grpc.CallOption) (*FindByIDReply, error)
 	Insert(ctx context.Context, in *InsertParams, opts ...grpc.CallOption) (*InsertReply, error)
 	Delete(ctx context.Context, in *DeleteParams, opts ...grpc.CallOption) (*NoReply, error)
 	Update(ctx context.Context, in *UpdateParams, opts ...grpc.CallOption) (*UpdateReply, error)
@@ -39,6 +40,15 @@ func NewServiceClient(cc grpc.ClientConnInterface) ServiceClient {
 func (c *serviceClient) Find(ctx context.Context, in *FindParams, opts ...grpc.CallOption) (*FindReply, error) {
 	out := new(FindReply)
 	err := c.cc.Invoke(ctx, "/webhookpb.Service/Find", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serviceClient) FindByID(ctx context.Context, in *FindByIDParams, opts ...grpc.CallOption) (*FindByIDReply, error) {
+	out := new(FindByIDReply)
+	err := c.cc.Invoke(ctx, "/webhookpb.Service/FindByID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +132,7 @@ func (c *serviceClient) PublishLinkHit(ctx context.Context, in *PublishLinkHitPa
 // for forward compatibility
 type ServiceServer interface {
 	Find(context.Context, *FindParams) (*FindReply, error)
+	FindByID(context.Context, *FindByIDParams) (*FindByIDReply, error)
 	Insert(context.Context, *InsertParams) (*InsertReply, error)
 	Delete(context.Context, *DeleteParams) (*NoReply, error)
 	Update(context.Context, *UpdateParams) (*UpdateReply, error)
@@ -139,6 +150,9 @@ type UnimplementedServiceServer struct {
 
 func (UnimplementedServiceServer) Find(context.Context, *FindParams) (*FindReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Find not implemented")
+}
+func (UnimplementedServiceServer) FindByID(context.Context, *FindByIDParams) (*FindByIDReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindByID not implemented")
 }
 func (UnimplementedServiceServer) Insert(context.Context, *InsertParams) (*InsertReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Insert not implemented")
@@ -191,6 +205,24 @@ func _Service_Find_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServiceServer).Find(ctx, req.(*FindParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Service_FindByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindByIDParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).FindByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/webhookpb.Service/FindByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).FindByID(ctx, req.(*FindByIDParams))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -346,6 +378,10 @@ var _Service_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Find",
 			Handler:    _Service_Find_Handler,
+		},
+		{
+			MethodName: "FindByID",
+			Handler:    _Service_FindByID_Handler,
 		},
 		{
 			MethodName: "Insert",

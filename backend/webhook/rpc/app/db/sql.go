@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -123,6 +124,37 @@ func (db *sqlDB) FindWebhookByEvent(ctx context.Context, accountID string, event
 	}
 
 	return whs, nil
+}
+
+func (db *sqlDB) FindWebhookByID(ctx context.Context, accountID string, webhookID string) (Webhook, error) {
+	row := db.sql.QueryRow(
+		ctx,
+		`select id, account_id, event, name, url, rate_limit, created_at, updated_at
+		from webhook
+		where account_id = $1 and id = $2`,
+		accountID,
+		webhookID,
+	)
+
+	wh := Webhook{}
+	err := row.Scan(
+		&wh.ID,
+		&wh.AccountID,
+		&wh.Event,
+		&wh.Name,
+		&wh.URL,
+		&wh.RateLimit,
+		&wh.CreatedAt,
+		&wh.UpdatedAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return wh, errorlib.NotFoundErr{Message: "webhook not found"}
+		}
+		return wh, err
+	}
+
+	return wh, nil
 }
 
 func (db *sqlDB) DeleteWebhook(ctx context.Context, id int64, accountID string) error {

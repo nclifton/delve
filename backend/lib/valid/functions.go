@@ -3,6 +3,8 @@ package valid
 import (
 	"errors"
 	"fmt"
+	"log"
+	"net"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -25,6 +27,41 @@ var TagMap = map[string]ValidatorFunc{
 	"length":      Length,
 	"rune_length": RuneLength,
 	"range":       Range,
+	"contains":    Contains,
+
+	"webhook_url": IsWebhookURL,
+}
+
+var reservedIPNets []*net.IPNet
+
+func init() {
+	// construct lookup table of reserved IP addresses for webhook URL validation
+	reservedCIDRs := []string{
+		"0.0.0.0/8",
+		"10.0.0.0/8",
+		"100.64.0.0/10",
+		"127.0.0.0/8",
+		"169.254.0.0/16",
+		"172.16.0.0/12",
+		"192.0.0.0/24",
+		"192.0.2.0/24",
+		"192.88.99.0/24",
+		"192.168.0.0/16",
+		"198.18.0.0/15",
+		"198.51.100.0/24",
+		"203.0.113.0/24",
+		"224.0.0.0/4",
+		"240.0.0.0/4",
+		"255.255.255.255/32",
+	}
+	for _, cidr := range reservedCIDRs {
+		_, ipnet, err := net.ParseCIDR(cidr)
+		if err != nil {
+			log.Fatalf("CIDR parse error: %s", err)
+		}
+
+		reservedIPNets = append(reservedIPNets, ipnet)
+	}
 }
 
 func IsRequired(i interface{}, parent interface{}, params []string) error {
@@ -126,6 +163,29 @@ func IsAlpha(i interface{}, parent interface{}, params []string) error {
 	return nil
 }
 
+func Contains(i interface{}, parent interface{}, params []string) error {
+	if len(params) == 0 {
+		return errors.New("expected at least 1 param to compare against")
+	}
+
+	str, ok := i.(string)
+	if !ok {
+		return errors.New("expected string type")
+	}
+
+	match := false
+	for _, candidate := range params {
+		if candidate == str {
+			match = true
+		}
+	}
+	if !match {
+		return fmt.Errorf("%s did not match any of %s", i, strings.Join(params, ","))
+	}
+
+	return nil
+}
+
 func Length(i interface{}, parent interface{}, params []string) error {
 	str, ok := i.(string)
 	if !ok {
@@ -220,6 +280,47 @@ func inRangeInt(val int, params []string) error {
 
 	if val > max {
 		return fmt.Errorf("greather than the maximum value of %d", max)
+	}
+
+	return nil
+}
+
+// IsWebhookURL checks that the given value is a valid url to be used as a webhook.
+// It first checks that i is a valid url via IsURL
+// It then looks up the ip addresses of the host and ensures that the ip does not
+// match the range reservedIPNets defined in the init of this package
+// this makes sure that a user cannot set a webhook that could possibly access areas
+// of our internal system
+func IsWebhookURL(i interface{}, parent interface{}, params []string) error {
+
+	err := IsURL(i, parent, params)
+	if err != nil {
+		return err
+	}
+
+	key, ok := i.(string)
+	if !ok {
+		return errors.New("expected string type")
+	}
+
+	parsedURL, err := url.Parse(key)
+	if err != nil {
+		return errors.New("invalid URL")
+	}
+
+	addrs, err := net.LookupHost(parsedURL.Hostname())
+	if err != nil {
+		return errors.New("failed to lookup host")
+	}
+
+	for _, ipResolved := range addrs {
+		ip := net.ParseIP(ipResolved)
+
+		for _, ipReserved := range reservedIPNets {
+			if ipReserved.Contains(ip) {
+				return errors.New("URL resolves to reserved IP")
+			}
+		}
 	}
 
 	return nil

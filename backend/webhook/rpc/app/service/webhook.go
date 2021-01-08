@@ -2,9 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/db"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
@@ -16,6 +20,20 @@ func (s *webhookImpl) Insert(ctx context.Context, r *webhookpb.InsertParams) (*w
 	}
 	return &webhookpb.InsertReply{
 		Webhook: dbWebhookToWebhook(dbWebhook),
+	}, nil
+}
+
+func (s *webhookImpl) FindByID(ctx context.Context, r *webhookpb.FindByIDParams) (*webhookpb.FindByIDReply, error) {
+	w, err := s.db.FindWebhookByID(ctx, r.AccountId, r.WebhookId)
+	if err != nil {
+		if errors.As(err, &errorlib.NotFoundErr{}) {
+			err = status.Error(codes.NotFound, err.Error())
+		}
+		return nil, err
+	}
+
+	return &webhookpb.FindByIDReply{
+		Webhook: dbWebhookToWebhook(w),
 	}, nil
 }
 

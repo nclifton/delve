@@ -107,6 +107,11 @@ func New(opts *Options) *API {
 	router.POST("/v1/mms", NewRoute(api, authChain, MMSPOST))
 
 	router.POST("/v1/webhook/test", NewRoute(api, authChain, TestPublishOptOutWebhookPOST))
+	router.POST("/v1/webhook", NewRoute(api, authChain, WebhookCreatePOST))
+	router.PUT("/v1/webhook/:id", NewRoute(api, authChain, WebhookUpdatePUT))
+	router.GET("/v1/webhook/:id", NewRoute(api, authChain, WebhookGET))
+	router.GET("/v1/webhook", NewRoute(api, authChain, WebhookListGET))
+	router.DELETE("/v1/webhook/:id", NewRoute(api, authChain, WebhookDELETE))
 
 	return api
 }

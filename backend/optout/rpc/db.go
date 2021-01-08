@@ -2,9 +2,8 @@ package rpc
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/burstsms/mtmo-tp/backend/lib/errors"
+	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
 	types "github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -45,7 +44,7 @@ func (db *db) FindOptOutByLinkID(ctx context.Context, linkID string) (*types.Opt
 		&optOut.UpdatedAt,
 	); err != nil {
 		if err == pgx.ErrNoRows {
-			return &types.OptOut{}, errors.NotFoundErr{Err: fmt.Errorf("optOut not found")}
+			return &types.OptOut{}, errorlib.NotFoundErr{Message: "optOut not found"}
 		}
 		return &types.OptOut{}, err
 	}

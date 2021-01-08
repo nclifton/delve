@@ -18,6 +18,12 @@ message NoReply {}
 message FindParams {
     string Account_id = 1;
 }
+
+message FindByIDParams {
+  string Account_id = 1;
+  string Webhook_id = 2;
+}
+
 message Webhook {
     int64 Id = 1;
     string Account_id = 2;
@@ -31,6 +37,10 @@ message Webhook {
 
 message FindReply {
     repeated Webhook Webhooks = 1;
+}
+
+message FindByIDReply {
+    Webhook Webhook = 1;
 }
 
 message InsertParams {
@@ -103,7 +113,7 @@ message PublishSMSStatusUpdateParams {
 
 message PublishMOParams {
     string Account_id = 1;
-    string SMS_id = 2; 
+    string SMS_id = 2;
     string Message = 3;
     string Recipient = 4;
     string Sender = 5;
@@ -112,7 +122,7 @@ message PublishMOParams {
 }
 
 message PublishLinkHitParams {
-	string URL = 1;           
+	string URL = 1;
 	int32 Hits = 2;
 	google.protobuf.Timestamp Timestamp = 3;
 	Message SourceMessage = 4;
@@ -121,6 +131,7 @@ message PublishLinkHitParams {
 
 service Service {
     rpc Find(FindParams) returns (FindReply);
+    rpc FindByID(FindByIDParams) returns (FindByIDReply);
     rpc Insert(InsertParams) returns (InsertReply);
     rpc Delete(DeleteParams) returns (NoReply);
     rpc Update(UpdateParams) returns (UpdateReply);

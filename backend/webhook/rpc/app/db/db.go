@@ -19,6 +19,7 @@ type Webhook struct {
 type DB interface {
 	InsertWebhook(ctx context.Context, accountID, event, name, url string, rateLimit int32) (Webhook, error)
 	FindWebhook(ctx context.Context, accountID string) ([]Webhook, error)
+	FindWebhookByID(ctx context.Context, accountID string, webhookID string) (Webhook, error)
 	FindWebhookByEvent(ctx context.Context, accountID string, event string) ([]Webhook, error)
 	DeleteWebhook(ctx context.Context, id int64, accountID string) error
 	UpdateWebhook(ctx context.Context, id int64, accountID, event, name, url string, rateLimit int32) (Webhook, error)

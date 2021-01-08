@@ -1,9 +1,9 @@
-package errors
+package errorlib
 
 type NotFoundErr struct {
-	Err error
+	Message string
 }
 
 func (e NotFoundErr) Error() string {
-	return e.Err.Error()
+	return e.Message
 }

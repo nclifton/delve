@@ -11,59 +11,57 @@ func TestIsURL(t *testing.T) {
 		param    string
 		expected bool
 	}{
-		{"http://foo.bar#com", true},
-		{"http://foobar.com", true},
-		{"https://foobar.com", true},
-		{"foobar.com", true},
-		{"http://foobar.coffee/", true},
-		{"http://foobar.中文网/", true},
-		{"http://foobar.org/", true},
-		{"http://foobar.ORG", true},
-		{"http://foobar.org:8080/", true},
-		{"ftp://foobar.ru/", true},
-		{"ftp.foo.bar", true},
-		{"http://user:pass@www.foobar.com/", true},
-		{"http://user:pass@www.foobar.com/path/file", true},
-		{"http://127.0.0.1/", true},
-		{"http://duckduckgo.com/?q=%2F", true},
-		{"http://localhost:3000/", true},
-		{"http://foobar.com/?foo=bar#baz=qux", true},
-		{"http://foobar.com?foo=bar", true},
-		{"http://www.xn--froschgrn-x9a.net/", true},
-		{"http://foobar.com/a-", true},
-		{"http://foobar.پاکستان/", true},
-		{"http://foobar.c_o_m", false},
-		{"http://_foobar.com", false},
-		{"http://foo_bar.com", true},
-		{"http://user:pass@foo_bar_bar.bar_foo.com", true},
-		{"", true}, // allowing because we shoudl use "required" validator to check this
-		{"xyz://foobar.com", false},
-		{".com", false},
-		{"rtmp://foobar.com", false},
-		{"http://localhost:3000/", true},
-		{"http://foobar.com#baz=qux", true},
-		{"http://foobar.com/t$-_.+!*\\'(),", true},
-		{"http://www.foobar.com/~foobar", true},
-		{"http://www.-foobar.com/", false},
-		{"http://www.foo---bar.com/", false},
-		{"http://r6---snnvoxuioq6.googlevideo.com", true},
-		{"mailto:someone@example.com", true},
-		{"irc://irc.server.org/channel", false},
-		{"irc://#channel@network", true},
-		{"/abs/test/dir", false},
-		{"./rel/test/dir", false},
-		{"http://foo^bar.org", false},
-		{"http://foo&*bar.org", false},
-		{"http://foo&bar.org", false},
-		{"http://foo bar.org", false},
-		{"http://foo.bar.org", true},
-		{"http://www.foo.bar.org", true},
-		{"http://www.foo.co.uk", true},
-		{"foo", false},
-		{"http://.foo.com", false},
-		{"http://,foo.com", false},
-		{",foo.com", false},
-		{"http://myservice.:9093/", true},
+		{"http://foo.bar#com", true},                        // with hash tag
+		{"http://foobar.com", true},                         // simple http
+		{"https://foobar.com", true},                        // simple https
+		{"foobar.com", true},                                // with no scheme
+		{"http://foobar.coffee/", true},                     // with longer than 3 char tld
+		{"http://foobar.中文网/", true},                        // with unicode tld
+		{"http://foobar.org/", true},                        // allow orgs
+		{"http://foobar.ORG", true},                         // allow uppercase
+		{"http://foobar.org:8080/", true},                   // allow with port spec
+		{"ftp://foobar.ru/", true},                          // ftp schemes are valid
+		{"ftp.foo.bar", true},                               // with no scheme
+		{"http://user:pass@www.foobar.com/", true},          // url with auth valid
+		{"http://user:pass@www.foobar.com/path/file", true}, // url with auth and file path
+		{"http://127.0.0.1/", true},                         // ip allowed
+		{"http://duckduckgo.com/?q=%2F", true},              // query string
+		{"http://localhost:3000/", true},                    // single hostname
+		{"http://foobar.com/?foo=bar#baz=qux", true},        // query string and hashtag
+		{"http://foobar.com?foo=bar", true},                 // query string
+		{"http://www.xn--froschgrn-x9a.net/", true},         // -- chars
+		{"http://foobar.com/a-", true},                      // - chars
+		{"http://foobar.پاکستان/", true},                    // unicode tld
+		{"http://foobar.c_o_m", false},                      // - in tld
+		{"http://_foobar.com", false},                       // hostname starting with _
+		{"http://foo_bar.com", true},                        // _ in hostname
+		{"http://user:pass@foo_bar_bar.bar_foo.com", true},  // auth with _ in hostnames
+		{"", true},                                        // allowing because we shoudl use "required" validator to check this
+		{"xyz://foobar.com", false},                       // invalid scheme
+		{".com", false},                                   // just a tld
+		{"rtmp://foobar.com", false},                      // rtmp scheme
+		{"http://foobar.com#baz=qux", true},               // hashtag
+		{"http://foobar.com/t$-_.+!*\\'(),", true},        // allowed chars
+		{"http://www.foobar.com/~foobar", true},           // tilde in path
+		{"http://www.-foobar.com/", false},                // - as start of hostname
+		{"http://www.foo---bar.com/", false},              // multiple ---
+		{"http://r6---snnvoxuioq6.googlevideo.com", true}, // wtf ?
+		{"mailto:someone@example.com", true},              // mailto scheme
+		{"irc://irc.server.org/channel", false},           // irc scheme
+		{"irc://#channel@network", true},                  // irc scheme
+		{"/abs/test/dir", false},                          // just a path
+		{"./rel/test/dir", false},                         // just a path
+		{"http://foo^bar.org", false},                     // ^ in host
+		{"http://foo&*bar.org", false},                    // * in host
+		{"http://foo&bar.org", false},                     // & in  host
+		{"http://foo bar.org", false},                     // <space> in host
+		{"http://www.foo.bar.org", true},                  // 4 domain tld
+		{"http://www.foo.co.uk", true},                    // 4 domain tld
+		{"foo", false},                                    // single word
+		{"http://.foo.com", false},                        // missing subdomain
+		{"http://,foo.com", false},                        // domain starting with ,
+		{",foo.com", false},                               // domain starting with ,
+		{"http://myservice.:9093/", true},                 // domain ending with .
 		// according to issues #62 #66
 		{"https://pbs.twimg.com/profile_images/560826135676588032/j8fWrmYY_normal.jpeg", true},
 		// according to #125
@@ -110,6 +108,29 @@ func TestIsURL(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestContains(t *testing.T) {
+	t.Parallel()
+
+	t.Run("missing params", func(t *testing.T) {
+		if err := Contains("narf", nil, []string{}); err == nil {
+			t.Error("expected range params error")
+		}
+	})
+
+	t.Run("has match", func(t *testing.T) {
+		if err := Contains("narf", nil, []string{"blah", "blop", "narf"}); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("no match", func(t *testing.T) {
+		if err := Contains("narfty", nil, []string{"blah", "blop", "narf"}); err == nil {
+			t.Error("expected no match error")
+		}
+	})
+
 }
 
 func TestFloatRange(t *testing.T) {
@@ -195,4 +216,28 @@ func TestIntRange(t *testing.T) {
 		}
 
 	})
+}
+
+func TestIsWebhookURL(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"https://webhook.site/c7935814-fdc5-4c31-a04e-3b123a671228", true},            // http real domain
+		{"https://mike:moose@webhook.site/c7935814-fdc5-4c31-a04e-3b123a671228", true}, // http real domain with auth
+		{"http://mike:moose@webhook.site/c7935814-fdc5-4c31-a04e-3b123a671228", true},  // http real domain with auth
+		{"http://mike:moose@127.0.0.1/c7935814-fdc5-4c31-a04e-3b123a671228", false},    // http with auth and reserved ip of 127.0.0.1
+		{"http://mike:moose@localhost/c7935814-fdc5-4c31-a04e-3b123a671228", false},    // http with auth and reserved ip of 127.0.0.1 via hostname
+	}
+	for _, test := range tests {
+		err := IsWebhookURL(test.param, nil, nil)
+		if (err == nil) != test.expected {
+			t.Errorf("Expected IsWebhookURL(%q) to be %v, got %v", test.param, test.expected, (err == nil))
+			if err != nil {
+				t.Errorf("IsWebhookURL(%q): %s", test.param, err.Error())
+			}
+		}
+	}
 }
