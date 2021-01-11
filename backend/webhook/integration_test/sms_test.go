@@ -25,9 +25,9 @@ type ExpectedSMSStatusRequestBody struct {
 func Test_PublishSMSStatusUpdate(t *testing.T) {
 	log.Println("test PublishSMSStatusUpdate")
 
-	setup := setupForPublishSMSStatusUpdate(t)
-	defer setup.teardown(t)
-	client := setup.getClient(t)
+	i := setupForPublishSMSStatusUpdate(t)
+	defer i.teardown(t)
+	client := i.getClient(t)
 	timestampNow := timestamppb.Now()
 
 	type wantErr struct {
@@ -53,12 +53,12 @@ func Test_PublishSMSStatusUpdate(t *testing.T) {
 				StatusUpdatedAt: timestampNow,
 			},
 			want: ExpectedRequests{
-				numberOfRequests: 1,
-				waitMilliseconds: 500,
-				methods:          []string{"POST"},
-				contentTypes:     []string{"application/json"},
-				bodies: []string{
-					setup.marshalJson(t,
+				NumberOfRequests: 1,
+				WaitMilliseconds: 500,
+				Methods:          []string{"POST"},
+				ContentTypes:     []string{"application/json"},
+				Bodies: []string{
+					jsonString(t,
 						ExpectedSMSStatusRequestBody{
 							service.EventSMSStatus,
 							ExpectedSMSStatusData{
@@ -75,8 +75,8 @@ func Test_PublishSMSStatusUpdate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			log.Printf("test: %s", tt.name)
-			setup.resetHttpRequests(t)
-			got, err := client.PublishSMSStatusUpdate(setup.ctx, tt.params)
+			i.ResetHttpRequests()
+			got, err := client.PublishSMSStatusUpdate(i.ctx, tt.params)
 			if tt.wantErr.status != nil && err != nil {
 				errStatus, ok := status.FromError(err)
 				assert.Equal(t, ok, tt.wantErr.ok, "grpc ok")
@@ -84,22 +84,20 @@ func Test_PublishSMSStatusUpdate(t *testing.T) {
 			} else if err != nil {
 				t.Fatalf("unexpected error: %+v", err)
 			}
-			setup.waitForRequests(t, tt.want)
+			i.WaitForRequests(tt.want)
 			assert.ObjectsAreEqual(webhookpb.NoReply{}, got)
-			setup.assertRequests(t, tt.want)
+			i.AssertRequests(tt.want)
 		})
 	}
 
 }
 
 func setupForPublishSMSStatusUpdate(t *testing.T) *testDeps {
-	setup := newSetup(t, tfx, listener)
-	setup.startHttpServer(t)
-	setup.startWorker(t)
-	setup.adb.HaveInDatabase("webhook",
+	i := newSetup(t, tfx)
+	i.HaveInDatabase("webhook",
 		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
-		[]interface{}{32767, "42", service.EventSMSStatus, "name1", setup.httpServer.URL, 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
-	return setup
+		[]interface{}{32767, "42", service.EventSMSStatus, "name1", i.webhookURL, 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
+	return i
 }
 
 type ExpectedLastMessage = service.PublishMessageData
@@ -112,20 +110,24 @@ type ExpectedMOStatusRequestBody struct {
 func Test_PublishMO(t *testing.T) {
 	log.Println("test PublishOptOut")
 
-	setup := setupForPublishMO(t)
-	defer setup.teardown(t)
-	client := setup.getClient(t)
+	i := setupForPublishMO(t)
+	defer i.teardown(t)
+	client := i.getClient(t)
 	timestampNow := timestamppb.Now()
 
 	type wantErr struct {
 		status *status.Status
 		ok     bool
 	}
+	type want struct {
+		reply    *webhookpb.NoReply
+		requests ExpectedRequests
+	}
 
 	tests := []struct {
 		name    string
 		params  *webhookpb.PublishMOParams
-		want    ExpectedRequests
+		want    want
 		wantErr wantErr
 	}{
 		{
@@ -148,40 +150,41 @@ func Test_PublishMO(t *testing.T) {
 					ContentURLs: []string{"http://example.com/dickpic.png"},
 				},
 			},
-			want: ExpectedRequests{
-				numberOfRequests: 1,
-				waitMilliseconds: 500,
-				methods:          []string{"POST"},
-				contentTypes:     []string{"application/json"},
-				bodies: []string{
-					setup.marshalJson(t,
-						ExpectedMOStatusRequestBody{
-							service.EventMOStatus,
-							ExpectedMOStatusData{
-								SMS_id:       "xxy",
-								Recipient:    "35426378914",
-								Sender:       "46354078643",
-								Message:      "General Kenobi",
-								Timestamp:    timestampNow.AsTime().Format(time.RFC3339),
-								Last_message: ExpectedLastMessage{
-									Type:         "sms",
-									Id:           "21",
-									Recipient:    "46354078643",
-									Sender:       "35426378914",
-									Subject:      "Greetings",
-									Message:      "Hello there",
-									Content_urls: []string{"http://example.com/dickpic.png"},
-									Message_ref:  "abc",
-								},
-							}})}},
+			want: want{
+				reply: &webhookpb.NoReply{},
+				requests: ExpectedRequests{
+					NumberOfRequests: 1,
+					WaitMilliseconds: 500,
+					Methods:          []string{"POST"},
+					ContentTypes:     []string{"application/json"},
+					Bodies: []string{
+						jsonString(t,
+							ExpectedMOStatusRequestBody{
+								service.EventMOStatus,
+								ExpectedMOStatusData{
+									SMS_id:    "xxy",
+									Recipient: "35426378914",
+									Sender:    "46354078643",
+									Message:   "General Kenobi",
+									Timestamp: timestampNow.AsTime().Format(time.RFC3339),
+									Last_message: ExpectedLastMessage{
+										Type:         "sms",
+										Id:           "21",
+										Recipient:    "46354078643",
+										Sender:       "35426378914",
+										Subject:      "Greetings",
+										Message:      "Hello there",
+										Content_urls: []string{"http://example.com/dickpic.png"},
+										Message_ref:  "abc",
+									}}})}}},
 			wantErr: wantErr{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			log.Printf("test: %s", tt.name)
-			setup.resetHttpRequests(t)
-			got, err := client.PublishMO(setup.ctx, tt.params)
+			i.ResetHttpRequests()
+			got, err := client.PublishMO(i.ctx, tt.params)
 			if tt.wantErr.status != nil && err != nil {
 				errStatus, ok := status.FromError(err)
 				assert.Equal(t, ok, tt.wantErr.ok, "grpc ok")
@@ -189,20 +192,18 @@ func Test_PublishMO(t *testing.T) {
 			} else if err != nil {
 				t.Fatalf("unexpected error: %+v", err)
 			}
-			setup.waitForRequests(t, tt.want)
-			assert.ObjectsAreEqual(webhookpb.NoReply{}, got)
-			setup.assertRequests(t, tt.want)
+			assert.ObjectsAreEqual(tt.want.reply, got)
+			i.WaitForRequests(tt.want.requests)
+			i.AssertRequests(tt.want.requests)
 		})
 	}
 
 }
 
 func setupForPublishMO(t *testing.T) *testDeps {
-	setup := newSetup(t, tfx, listener)
-	setup.startHttpServer(t)
-	setup.startWorker(t)
-	setup.adb.HaveInDatabase("webhook",
+	i := newSetup(t, tfx)
+	i.HaveInDatabase("webhook",
 		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
-		[]interface{}{32767, "42", service.EventMOStatus, "name1", setup.httpServer.URL, 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
-	return setup
+		[]interface{}{32767, "42", service.EventMOStatus, "name1", i.webhookURL, 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
+	return i
 }

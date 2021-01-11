@@ -20,9 +20,9 @@ type AssertDb struct {
 	conn            *pgx.Conn
 }
 
-func New(test *testing.T, connStr string) *AssertDb {
+func New(t *testing.T, connStr string) *AssertDb {
 	adb := &AssertDb{
-		t:               test,
+		t:               t,
 		connStr:         connStr,
 		haveTableRowIds: make(map[string][]int64),
 	}

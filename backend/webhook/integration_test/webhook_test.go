@@ -13,37 +13,56 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/test/bufconn"
 
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/run"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
+	"github.com/burstsms/mtmo-tp/backend/webhook/worker"
 
-	"github.com/burstsms/mtmo-tp/backend/webhook/integration_test/assertdb"
-	"github.com/burstsms/mtmo-tp/backend/webhook/integration_test/fixtures"
+	"github.com/burstsms/mtmo-tp/backend/lib/assertdb"
+	"github.com/burstsms/mtmo-tp/backend/lib/fixtures"
 )
 
 var tfx *fixtures.TestFixtures
-var listener *bufconn.Listener
 
 func TestMain(m *testing.M) {
 	tfx = fixtures.New()
-	tfx.SetupPostgres("webhook", getWebhookEnv().MigrationRoot)
+	tfx.SetupPostgres("webhook")
 	tfx.SetupRabbit()
 	tfx.SetupRedis()
-	listener = startGrpcServer(tfx)
+	tfx.GRPCStart(run.Server)
+	tfx.StartWorker(webhookWorkerRunFunc(tfx))
 	code := m.Run()
 	defer os.Exit(code)
 	defer tfx.Teardown()
 }
 
+//TODO this should be moved out of here and split between the fixtures package and the webhook worker package using a worker builder package similar to servicebuilder
+func webhookWorkerRunFunc (tfx *fixtures.TestFixtures) func(){
+	wkr := worker.New()
+	wkr.Env = &worker.WebhookEnv{
+		RPCPort:         0,
+		RPCHost:         "",
+		RabbitURL:       tfx.Rabbit.ConnStr,
+		ClientTimeout:   3,
+		WorkerQueueName: "webhook.post",
+		RedisURL:        tfx.Redis.Address,
+		NRName:          "",
+		NRLicense:       "",
+		NRTracing:       false,
+	}
+	wkr.IgnoreClosedQueueConnection = true
+	return wkr.Run
+}
+
 func setupForInsert(t *testing.T) *testDeps {
-	return newSetup(t, tfx, listener)
+	return newSetup(t, tfx)
 }
 
 func Test_Insert(t *testing.T) {
-	setup := setupForInsert(t)
+	i := setupForInsert(t)
 	log.Println("test Insert")
-	defer setup.teardown(t)
-	client := setup.getClient(t)
+	defer i.teardown(t)
+	client := i.getClient(t)
 
 	type wantErr struct {
 		status *status.Status
@@ -74,7 +93,7 @@ func Test_Insert(t *testing.T) {
 				assert.Check(t, response.Webhook.GetCreatedAt().AsTime().After(testStartTime), "CreatedAt")
 				assert.Check(t, response.Webhook.GetUpdatedAt().AsTime().After(testStartTime), "UpdatedAt")
 
-				setup.adb.SeeInDatabase("webhook", assertdb.Criteria{
+				i.SeeInDatabase("webhook", assertdb.Criteria{
 					{"account_id", "1"},
 					{"event", "event"},
 					{"name", "name"},
@@ -88,7 +107,7 @@ func Test_Insert(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := client.Insert(setup.ctx, tt.params)
+			got, err := client.Insert(i.ctx, tt.params)
 			if tt.wantErr.status != nil && err != nil {
 				errStatus, ok := status.FromError(err)
 				assert.Equal(t, ok, tt.wantErr.ok, "grpc ok")
@@ -102,13 +121,13 @@ func Test_Insert(t *testing.T) {
 }
 
 func setupForFind(t *testing.T) *testDeps {
-	setup := newSetup(t, tfx, listener)
+	setup := newSetup(t, tfx)
 
-	setup.adb.HaveInDatabase("webhook",
+	setup.HaveInDatabase("webhook",
 		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
 		[]interface{}{32767, "42", "event1", "name1", "url1", 2, "2021-01-12 22:41:42", "2021-01-13 22:25:25"})
 
-	setup.adb.HaveInDatabase("webhook",
+	setup.HaveInDatabase("webhook",
 		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
 		[]interface{}{32768, "42", "event", "name", "url", 1, "2021-01-12 22:42:42", "2021-01-13 22:24:24"})
 		
@@ -118,9 +137,9 @@ func setupForFind(t *testing.T) *testDeps {
 func Test_Find(t *testing.T) {
 	log.Println("test Find")
 
-	setup := setupForFind(t)
-	defer setup.teardown(t)
-	client := setup.getClient(t)
+	i := setupForFind(t)
+	defer i.teardown(t)
+	client := i.getClient(t)
 
 	type wantErr struct {
 		status *status.Status
@@ -171,7 +190,7 @@ func Test_Find(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := client.Find(setup.ctx, tt.params)
+			got, err := client.Find(i.ctx, tt.params)
 			if tt.wantErr.status != nil && err != nil {
 				errStatus, ok := status.FromError(err)
 				assert.Equal(t, ok, tt.wantErr.ok, "grpc ok")
@@ -185,8 +204,8 @@ func Test_Find(t *testing.T) {
 }
 
 func setupForUpdate(t *testing.T) *testDeps {
-	setup := newSetup(t, tfx, listener)
-	setup.adb.HaveInDatabase("webhook",
+	setup := newSetup(t, tfx)
+	setup.HaveInDatabase("webhook",
 		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
 		[]interface{}{32767, "42", "event1", "name1", "url1", 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
 	return setup
@@ -195,9 +214,9 @@ func setupForUpdate(t *testing.T) *testDeps {
 func Test_Update(t *testing.T) {
 	log.Println("test Update")
 
-	setup := setupForUpdate(t)
-	defer setup.teardown(t)
-	client := setup.getClient(t)
+	i := setupForUpdate(t)
+	defer i.teardown(t)
+	client := i.getClient(t)
 
 	type wantErr struct {
 		status *status.Status
@@ -229,7 +248,7 @@ func Test_Update(t *testing.T) {
 				assert.Equal(t, response.Webhook.GetRateLimit(), int32(50), "RateLimit")
 				assert.Equal(t, response.Webhook.GetCreatedAt().AsTime().Format(assertdb.SQLDateTime), "2020-01-12 22:41:42", "CreatedAt")
 				assert.Check(t, response.Webhook.GetUpdatedAt().AsTime().Format(assertdb.SQLDateTime) > "2020-01-12 22:41:42", "UpdatedAt")
-				setup.adb.SeeInDatabase("webhook", assertdb.Criteria{
+				i.SeeInDatabase("webhook", assertdb.Criteria{
 					{"id", 32767},
 					{"account_id", "42"},
 					{"event", "event2"},
@@ -252,7 +271,7 @@ func Test_Update(t *testing.T) {
 				RateLimit: int32(50),
 			},
 			want: func(response *webhookpb.UpdateReply) {
-				setup.adb.DontSeeInDatabase("webhook", assertdb.Criteria{
+				i.DontSeeInDatabase("webhook", assertdb.Criteria{
 					{"id", 32776},
 				})
 			},
@@ -272,7 +291,7 @@ func Test_Update(t *testing.T) {
 				RateLimit: int32(50),
 			},
 			want: func(response *webhookpb.UpdateReply) {
-				setup.adb.DontSeeInDatabase("webhook", assertdb.Criteria{
+				i.DontSeeInDatabase("webhook", assertdb.Criteria{
 					{"id", 32767},
 					{"account_id", "43"},
 				})
@@ -285,7 +304,7 @@ func Test_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := client.Update(setup.ctx, tt.params)
+			got, err := client.Update(i.ctx, tt.params)
 			if tt.wantErr.status != nil && err != nil {
 				errStatus, ok := status.FromError(err)
 				assert.Equal(t, ok, tt.wantErr.ok, "grpc ok")
@@ -300,8 +319,8 @@ func Test_Update(t *testing.T) {
 }
 
 func setupForDelete(t *testing.T) *testDeps {
-	setup := newSetup(t, tfx, listener)
-	setup.adb.HaveInDatabase("webhook",
+	setup := newSetup(t, tfx)
+	setup.HaveInDatabase("webhook",
 		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
 		[]interface{}{32767, "42", "event1", "name1", "url1", 2, "2021-01-12 22:41:42", "2021-01-13 22:25:25"})
 	return setup
@@ -310,9 +329,9 @@ func setupForDelete(t *testing.T) *testDeps {
 func Test_Delete(t *testing.T) {
 	log.Println("test Delete")
 
-	setup := setupForDelete(t)
-	defer setup.teardown(t)
-	client := setup.getClient(t)
+	i := setupForDelete(t)
+	defer i.teardown(t)
+	client := i.getClient(t)
 
 	type wantErr struct {
 		status *status.Status
@@ -331,7 +350,7 @@ func Test_Delete(t *testing.T) {
 				AccountId: "42",
 			},
 			want: func(*webhookpb.NoReply) {
-				setup.adb.DontSeeInDatabase("webhook", assertdb.Criteria{
+				i.DontSeeInDatabase("webhook", assertdb.Criteria{
 					{"id", 32767},
 				})
 			},
@@ -344,7 +363,7 @@ func Test_Delete(t *testing.T) {
 				AccountId: "42",
 			},
 			want: func(*webhookpb.NoReply) {
-				setup.adb.DontSeeInDatabase("webhook", assertdb.Criteria{
+				i.DontSeeInDatabase("webhook", assertdb.Criteria{
 					{"id", 32777},
 				})
 			},
@@ -357,7 +376,7 @@ func Test_Delete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := client.Delete(setup.ctx, tt.params)
+			got, err := client.Delete(i.ctx, tt.params)
 			if tt.wantErr.status != nil && err != nil {
 				errStatus, ok := status.FromError(err)
 				assert.Equal(t, ok, tt.wantErr.ok, "grpc ok")

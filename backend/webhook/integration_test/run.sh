@@ -5,11 +5,11 @@ pushd $DIR &> /dev/null
 
 export RABBIT_EXCHANGE=webhook
 export RABBIT_EXCHANGE_TYPE=direct
-export WEBHOOK_MIGRATION_ROOT="file://../migration/sql"
-export INTEGRATION_TEST_FIXTURE_POSTGRES_USER=gnomock
-export INTEGRATION_TEST_FIXTURE_POSTGRES_USER_PASSWORD=gnomick
-export INTEGRATION_TEST_FIXTURE_RABBITMQ_USER=gnomock
-export INTEGRATION_TEST_FIXTURE_RABBITMQ_USER_PASSWORD=gnomick
+export MIGRATION_ROOT="file://../migration/sql"
+export TEST_FIXTURE_POSTGRES_USER=gnomock
+export TEST_FIXTURE_POSTGRES_USER_PASSWORD=gnomick
+export TEST_FIXTURE_RABBITMQ_USER=gnomock
+export TEST_FIXTURE_RABBITMQ_USER_PASSWORD=gnomick
 
 go test -timeout 30s -tags integration -run ^Test_.*$
 

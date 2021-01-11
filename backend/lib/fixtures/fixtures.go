@@ -3,6 +3,7 @@ package fixtures
 import (
 	"fmt"
 	"log"
+	"net"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -20,6 +21,7 @@ type FixturesEnv struct {
 	PostgresUserPassword string `envconfig:"POSTGRES_USER_PASSWORD"`
 	RabbitmqUser         string `envconfig:"RABBITMQ_USER"`
 	RabbitmqUserPassword string `envconfig:"RABBITMQ_USER_PASSWORD"`
+	MigrationRoot        string `envconfig:"MIGRATION_ROOT"`
 }
 type TestFixtures struct {
 	env      *FixturesEnv
@@ -32,23 +34,24 @@ type TestFixtures struct {
 	Redis struct {
 		Address string
 	}
-	teardowns []func()
+	teardowns    []func()
+	GRPCListener net.Listener
 }
 
 func New() *TestFixtures {
 
 	log.Println("setup fixtures")
 	var env FixturesEnv
-	if err := envconfig.Process("INTEGRATION_TEST_FIXTURE", &env); err != nil {
+	if err := envconfig.Process("TEST_FIXTURE", &env); err != nil {
 		log.Fatal("failed to read env vars:", err)
 	}
 
 	return &TestFixtures{env: &env}
 }
 
-func (tf *TestFixtures) SetupPostgres(dbName string, migrationRoot string) {
+func (tf *TestFixtures) SetupPostgres(dbName string) {
 	tf.setupPostgresContainer(dbName)
-	tf.migrate(migrationRoot)
+	tf.migrate()
 }
 func (tf *TestFixtures) SetupRabbit() {
 	tf.setupRabbitContainer()
@@ -70,7 +73,7 @@ func (tf *TestFixtures) setupPostgresContainer(dbName string) {
 		postgres.WithDatabase(dbName),
 	)
 
-	container, err := gnomock.Start(pg)
+	container, err := gnomock.Start(pg, gnomock.WithContainerName("postgres-fixture"))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -89,9 +92,9 @@ func (tf *TestFixtures) setupPostgresContainer(dbName string) {
 
 }
 
-func (tf *TestFixtures) migrate(sourceUrl string) {
+func (tf *TestFixtures) migrate() {
 	m, err := migrate.New(
-		sourceUrl,
+		tf.env.MigrationRoot,
 		tf.Postgres.ConnStr,
 	)
 	if err != nil {
@@ -109,7 +112,7 @@ func (tf *TestFixtures) setupRabbitContainer() {
 	p := rabbitmq.Preset(
 		rabbitmq.WithUser(tf.env.RabbitmqUser, tf.env.RabbitmqUserPassword),
 	)
-	container, err := gnomock.Start(p)
+	container, err := gnomock.Start(p, gnomock.WithContainerName("rabbit-fixture"))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -135,7 +138,7 @@ func (tf *TestFixtures) setupRedisContainer() {
 	// Setup Redis
 	p := redis.Preset(redis.WithValues(vs))
 
-	container, err := gnomock.Start(p)
+	container, err := gnomock.Start(p, gnomock.WithContainerName("redis-fixture"))
 	if err != nil {
 		log.Fatal(err.Error())
 	}

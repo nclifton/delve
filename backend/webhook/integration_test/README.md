@@ -15,13 +15,13 @@ go test -timeout 30s -tags integration -run ^Test_.*$  github.com/burstsms/mtmo-
 ## Notes:
 requires environment variables set for the tests
 ```
-        WEBHOOK_RABBIT_EXCHANGE=webhook
-        WEBHOOK_RABBIT_EXCHANGE_TYPE=direct
-        WEBHOOK_MIGRATION_ROOT="file://../migration/sql"
-        INTEGRATION_TEST_FIXTURE_POSTGRES_USER=gnomock
-        INTEGRATION_TEST_FIXTURE_POSTGRES_USER_PASSWORD=gnomick
-        INTEGRATION_TEST_FIXTURE_RABBITMQ_USER=gnomock
-        INTEGRATION_TEST_FIXTURE_RABBITMQ_USER_PASSWORD=gnomick
+        RABBIT_EXCHANGE=webhook
+        RABBIT_EXCHANGE_TYPE=direct
+        MIGRATION_ROOT="file://../migration/sql"
+        TEST_FIXTURE_POSTGRES_USER=gnomock
+        TEST_FIXTURE_POSTGRES_USER_PASSWORD=gnomick
+        TEST_FIXTURE_RABBITMQ_USER=gnomock
+        TEST_FIXTURE_RABBITMQ_USER_PASSWORD=gnomick
 
 ```
 
