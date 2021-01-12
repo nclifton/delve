@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const requestId = "request-id"
+const spanId = "span-id"
 const traceId = "trace-id"
 const functionName = "function-name"
 
@@ -46,21 +46,21 @@ var (
 
 // WithFields
 func (l *StandardLogger) Fields(ctx context.Context, fields Fields) *logrus.Entry {
-	request, trace := getRequestAndTraceId(ctx)
+	span, trace := getSpanAndTraceId(ctx)
 
 	return l.WithFields(logrus.Fields{
-		requestId: request,
-		traceId:   trace,
+		spanId:  span,
+		traceId: trace,
 	}).WithFields(logrus.Fields(fields))
 
 }
 
 // Info Logger
 func (l *StandardLogger) Info(ctx context.Context, FuncName string, InfoMessage string) {
-	request, trace := getRequestAndTraceId(ctx)
+	span, trace := getSpanAndTraceId(ctx)
 
 	l.WithFields(logrus.Fields{
-		requestId:    request,
+		spanId:       span,
 		traceId:      trace,
 		functionName: FuncName,
 	}).Infof(Info.message, InfoMessage)
@@ -68,10 +68,10 @@ func (l *StandardLogger) Info(ctx context.Context, FuncName string, InfoMessage 
 
 // Error Logger
 func (l *StandardLogger) Error(ctx context.Context, FuncName string, ErrorMessage string) {
-	request, trace := getRequestAndTraceId(ctx)
+	span, trace := getSpanAndTraceId(ctx)
 
 	l.WithFields(logrus.Fields{
-		requestId:    request,
+		spanId:       span,
 		traceId:      trace,
 		functionName: FuncName,
 	}).Errorf(Info.message, ErrorMessage)
@@ -79,10 +79,10 @@ func (l *StandardLogger) Error(ctx context.Context, FuncName string, ErrorMessag
 
 // Warning Logger
 func (l *StandardLogger) Warning(ctx context.Context, FuncName string, WarningMessage string) {
-	request, trace := getRequestAndTraceId(ctx)
+	span, trace := getSpanAndTraceId(ctx)
 
 	l.WithFields(logrus.Fields{
-		requestId:    request,
+		spanId:       span,
 		traceId:      trace,
 		functionName: FuncName,
 	}).Warningf(Info.message, WarningMessage)
@@ -90,10 +90,10 @@ func (l *StandardLogger) Warning(ctx context.Context, FuncName string, WarningMe
 
 // Debug Logger
 func (l *StandardLogger) Debug(ctx context.Context, FuncName string, DebugMessage string) {
-	request, trace := getRequestAndTraceId(ctx)
+	span, trace := getSpanAndTraceId(ctx)
 
 	l.WithFields(logrus.Fields{
-		requestId:    request,
+		spanId:       span,
 		traceId:      trace,
 		functionName: FuncName,
 	}).Debugf(Info.message, DebugMessage)
@@ -101,12 +101,16 @@ func (l *StandardLogger) Debug(ctx context.Context, FuncName string, DebugMessag
 
 // endregion
 
-func getRequestAndTraceId(ctx context.Context) (requestId, traceId string) {
+func getSpanAndTraceId(ctx context.Context) (spanId, traceId string) {
 	sp := opentracing.SpanFromContext(ctx)
 
-	requestId = fmt.Sprint(sp)
+	if sp == nil {
+		return "", ""
+	}
 
-	str := strings.Split(requestId, ":")
+	spanId = fmt.Sprint(sp)
+
+	str := strings.Split(spanId, ":")
 	if len(str) > 0 {
 		traceId = str[0]
 	}
