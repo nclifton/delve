@@ -1,9 +1,8 @@
-# Webhook
+# Sender
 
-Webhook service
+Sender service
 
 ## Sender Integration Test
-
-Tests the operations of the webhook service
+Tests the operations of the sender service
 
 see [integration test readme](./integration_test/README.md)

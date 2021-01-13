@@ -1,0 +1,8 @@
+BEGIN;
+
+DROP TABLE IF EXISTS sender;
+DROP INDEX IF EXISTS sender_account_id;
+DROP TYPE IF EXISTS provider_key;
+DROP EXTENSION IF EXISTS "uuid-ossp";
+
+COMMIT;

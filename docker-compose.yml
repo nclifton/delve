@@ -305,6 +305,21 @@ services:
       WEBHOOK_POSTGRES_SSL: disable
       WEBHOOK_POSTGRES_NAME: webhook
 
+  senderpostgressetup:
+    build:
+      context: .
+      dockerfile: backend/sender/migration/infra/Dockerfile
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/backend
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_SSL: disable
+      POSTGRES_NAME: sender
+
   tracklinkpostgressetup:
     build:
       context: .
@@ -349,6 +364,21 @@ services:
       - backend/webhook/rpc/infra/values/dev-values.env
     depends_on:
       - rabbitmq
+      - postgres
+  sender:
+    build:
+      context: .
+      dockerfile: ops/dev/docker-compose/DockerfileDomain.dev
+    hostname: sender
+    entrypoint: ["/go/bin/modd", "--file=./sender/rpc/modd.conf"]
+    tty: true
+    volumes:
+      - ./backend:/backend
+    ports:
+      - "10015:10015"
+    env_file:
+      - backend/sender/rpc/infra/values/dev-values.env
+    depends_on:
       - postgres
 
 volumes:

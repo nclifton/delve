@@ -24,14 +24,14 @@ type Env struct {
 	NRTracing bool   `envconfig:"NR_TRACING"`
 }
 
-func Migrate(dbName string) {
+func Migrate() {
 	ctx := context.Background()
 	stLog := logger.NewLogger()
 
 	stLog.Info(ctx, "Migrate", "Starting service...")
 
 	var env Env
-	err := envconfig.Process(dbName, &env)
+	err := envconfig.Process("", &env)
 	if err != nil {
 		stLog.Fatalf(ctx, "Migrate", "Failed to read env vars: %s", err)
 	}

@@ -88,7 +88,7 @@ func (tf *TestFixtures) setupPostgresContainer(dbName string) {
 	tf.Postgres.ConnStr = fmt.Sprintf(
 		"postgresql://%s:%s@%s:%d/%s?sslmode=%s",
 		tf.env.PostgresUser, tf.env.PostgresUserPassword,
-		container.Host, container.DefaultPort(), "webhook", "disable")
+		container.Host, container.DefaultPort(), dbName, "disable")
 
 }
 

@@ -1,0 +1,30 @@
+/* 
+* sender.proto
+*
+* definition of the sender rpc service
+*/
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb";
+
+package senderpb;
+
+message NoParams {}
+message NoReply {}
+
+message Sender {
+    string Id = 1;
+    string Account_id = 2;
+    string Address = 3;
+    string MMS_provider_key = 4;
+    repeated string Channels = 5;
+    string Country = 6;
+    string Comment = 7;
+    google.protobuf.Timestamp Created_at = 8;
+    google.protobuf.Timestamp Updated_at = 9;
+}
+
+service Service {}

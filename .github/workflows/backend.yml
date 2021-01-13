@@ -32,6 +32,7 @@ jobs:
           DOCKER_API_VERSION: 1.39
         run: |
           ./backend/webhook/integration_test/run.sh
+          ./backend/sender/integration_test/run.sh
 
       - name: Build
         run: |
