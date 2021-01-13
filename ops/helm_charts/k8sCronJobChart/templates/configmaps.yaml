@@ -4,7 +4,6 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{required "value 'name' is required" .Values.name}}
-  namespace: {{required "value 'namespace' is required" .Values.namespace}}
   labels:
     app.kubernetes.io/name: {{required "value 'name' is required" .Values.name | quote}}
     helm.sh/chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
@@ -23,7 +22,6 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{required "value 'name' is required" .Values.name}}
-  namespace: {{required "value 'namespace' is required" .Values.namespace}}
   labels:
     app.kubernetes.io/name: {{required "value 'name' is required" .Values.name | quote}}
     helm.sh/chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
@@ -43,7 +41,6 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{required "value 'name' is required" .Values.name}}-dockercfg
-  namespace: {{required "value 'namespace' is required" .Values.namespace}}
   labels:
     app.kubernetes.io/name: {{required "value 'name' is required" .Values.name | quote}}
     helm.sh/chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"

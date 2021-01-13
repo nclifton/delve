@@ -7,4 +7,4 @@ version: 1.16.0
 dependencies:
   - name: k8sServiceChart
     version: 0.1.0
-    repository: file://../../../../../ops/helm_charts/k8sServiceChart
+    repository: file://../../../../ops/helm_charts/k8sServiceChart

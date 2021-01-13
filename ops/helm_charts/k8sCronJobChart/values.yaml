@@ -2,9 +2,13 @@
 name: job-name
 # Component is the group of services (domain) the service belongs to
 component: service-name
+replicas: 1
 # TODO: Only use ${app.name} here once we move to Harness completely
 namespace: sendsei
-replicas: 1
+namespaceAnnotations:
+  "linkerd.io/inject": "enabled"
+  "config.linkerd.io/trace-collector": "linkerd-collector.linkerd:55678"
+  "config.alpha.linkerd.io/trace-collector-service-account": "linkerd-collector"
 
 # TODO: Only use ${artifact.metadata.image} here once we move to Harness completely
 image:

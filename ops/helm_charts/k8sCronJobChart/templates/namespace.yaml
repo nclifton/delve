@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{required "value 'namespace' is required" .Values.namespace}}
+  {{- if .Values.namespaceAnnotations}}
+  annotations:
+    {{- range $key, $value := .Values.namespaceAnnotations}}
+    {{$key}}: {{$value | quote}}
+    {{- end}}
+  {{- end}}
