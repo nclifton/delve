@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	ErrInvalidMobileNumber    = errors.New("invalid mobile number")
+	ErrInvalidMobileNumber    = errors.New("Invalid mobile number")
 	ErrInvalidPhoneNumber     = errors.New("Invalid mobile number")
 	ErrInvalidSender          = errors.New("Invalid sender")
 	ErrInvalidSMSTooManyParts = errors.New("SMS is too long")

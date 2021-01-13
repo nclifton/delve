@@ -165,18 +165,19 @@ type JSONErrors struct {
 }
 
 func (r *Route) WriteValidatorError(err error) {
-	r.Write(&JSONErrors{Error: "Validation Error", ErrorData: valid.ErrorsByField(err)}, http.StatusOK)
+	r.Write(&JSONErrors{Error: "Validation Error", ErrorData: valid.ErrorsByField(err)}, http.StatusBadRequest)
 }
 
 // RequireAccountIDContext ensures we have authed on this request and account is loaded
 // Returns the user and accountid
 func (r *Route) RequireAccountContext() (*account.Account, error) {
 	account, ok := context.Get(r.r, "account").(*account.Account)
-	if !ok {
-		return nil, errors.New("no such account")
+	if ok {
+		return account, nil
 	}
 
-	return account, nil
+	r.WriteError("Unauthorized", http.StatusUnauthorized)
+	return nil, errors.New("Unauthorized")
 }
 
 // helper to fetch value from query string

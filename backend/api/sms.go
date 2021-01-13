@@ -2,9 +2,9 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
+	"github.com/burstsms/mtmo-tp/backend/sms/biz"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 )
 
@@ -47,10 +47,19 @@ func SMSPOST(r *Route) {
 		AlarisURL:  account.AlarisURL,
 		TrackLinks: req.TrackLinks,
 	})
+
 	if err != nil {
-		// handler rpc error
-		log.Printf("Could not send SMS: %s", err.Error())
-		r.WriteError("Could not process sms", http.StatusInternalServerError)
+		switch err {
+		case biz.ErrInvalidMobileNumber,
+			biz.ErrInvalidPhoneNumber,
+			biz.ErrInvalidSender,
+			biz.ErrInvalidSMSTooManyParts,
+			biz.ErrInsufficientBalance:
+			r.WriteError(err.Error(), http.StatusBadRequest)
+		default:
+			r.WriteError(err.Error(), http.StatusInternalServerError)
+
+		}
 		return
 	}
 
