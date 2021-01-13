@@ -1,6 +1,7 @@
 package tecloo
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -58,7 +59,7 @@ func TestDRSend(t *testing.T) {
 		api := NewTeclooAPI(&TeclooAPIOptions{TemplatePath: `templates`, DREndpoint: s.URL, Client: s.Client()})
 		loghook := test.NewLocal(api.log.Logger)
 
-		api.sendDRRequest(&submit)
+		api.sendDRRequest(context.Background(), &submit)
 
 		logentry := loghook.AllEntries()[len(loghook.Entries)-1]
 		assert.Equal(t, "MM7 DR", logentry.Message)

@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/opentracing/opentracing-go"
@@ -12,6 +13,8 @@ import (
 const spanId = "span-id"
 const traceId = "trace-id"
 const functionName = "function-name"
+
+// TODO: replace fn args with runtime.Caller to log stack info?
 
 // Event stores messages to log later, from our standard interface
 type Event struct {
@@ -56,47 +59,78 @@ func (l *StandardLogger) Fields(ctx context.Context, fields Fields) *logrus.Entr
 }
 
 // Info Logger
-func (l *StandardLogger) Info(ctx context.Context, FuncName string, InfoMessage string) {
+func (l *StandardLogger) Info(ctx context.Context, fn string, message string) {
 	span, trace := getSpanAndTraceId(ctx)
 
 	l.WithFields(logrus.Fields{
 		spanId:       span,
 		traceId:      trace,
-		functionName: FuncName,
-	}).Infof(Info.message, InfoMessage)
+		functionName: fn,
+	}).Infof(Info.message, message)
+}
+
+// Infof Logger
+func (l *StandardLogger) Infof(ctx context.Context, fn string, message string, args ...interface{}) {
+	l.Info(ctx, fn, fmt.Sprintf(message, args...))
 }
 
 // Error Logger
-func (l *StandardLogger) Error(ctx context.Context, FuncName string, ErrorMessage string) {
+func (l *StandardLogger) Error(ctx context.Context, fn string, message string) {
 	span, trace := getSpanAndTraceId(ctx)
 
 	l.WithFields(logrus.Fields{
 		spanId:       span,
 		traceId:      trace,
-		functionName: FuncName,
-	}).Errorf(Info.message, ErrorMessage)
+		functionName: fn,
+	}).Errorf(Info.message, message)
+}
+
+// Errorf Logger
+func (l *StandardLogger) Errorf(ctx context.Context, fn string, message string, args ...interface{}) {
+	l.Error(ctx, fn, fmt.Sprintf(message, args...))
+}
+
+// Fatal Logger
+func (l *StandardLogger) Fatal(ctx context.Context, fn string, message string) {
+	l.Error(ctx, fn, message)
+	os.Exit(1)
+}
+
+// Fatalf Logger
+func (l *StandardLogger) Fatalf(ctx context.Context, fn string, message string, args ...interface{}) {
+	l.Fatal(ctx, fn, fmt.Sprintf(message, args...))
 }
 
 // Warning Logger
-func (l *StandardLogger) Warning(ctx context.Context, FuncName string, WarningMessage string) {
+func (l *StandardLogger) Warning(ctx context.Context, fn string, message string) {
 	span, trace := getSpanAndTraceId(ctx)
 
 	l.WithFields(logrus.Fields{
 		spanId:       span,
 		traceId:      trace,
-		functionName: FuncName,
-	}).Warningf(Info.message, WarningMessage)
+		functionName: fn,
+	}).Warningf(Info.message, message)
+}
+
+// Warningf Logger
+func (l *StandardLogger) Warningf(ctx context.Context, fn string, message string, args ...interface{}) {
+	l.Warning(ctx, fn, fmt.Sprintf(message, args...))
 }
 
 // Debug Logger
-func (l *StandardLogger) Debug(ctx context.Context, FuncName string, DebugMessage string) {
+func (l *StandardLogger) Debug(ctx context.Context, fn string, message string) {
 	span, trace := getSpanAndTraceId(ctx)
 
 	l.WithFields(logrus.Fields{
 		spanId:       span,
 		traceId:      trace,
-		functionName: FuncName,
-	}).Debugf(Info.message, DebugMessage)
+		functionName: fn,
+	}).Debugf(Info.message, message)
+}
+
+// Debugf Logger
+func (l *StandardLogger) Debugf(ctx context.Context, fn string, message string, args ...interface{}) {
+	l.Debug(ctx, fn, fmt.Sprintf(message, args...))
 }
 
 // endregion

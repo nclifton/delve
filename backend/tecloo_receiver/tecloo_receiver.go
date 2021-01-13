@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"text/template"
 
+	"github.com/julienschmidt/httprouter"
+	"github.com/justinas/alice"
+
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
-	"github.com/julienschmidt/httprouter"
-	"github.com/justinas/alice"
 )
 
 type TeclooReceiverAPIOptions struct {

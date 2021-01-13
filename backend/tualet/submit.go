@@ -6,9 +6,10 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/google/uuid"
+
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/sms/biz"
-	"github.com/google/uuid"
 )
 
 type submitParams struct {
@@ -137,7 +138,7 @@ func SubmitGET(r *Route) {
 				MCC:        `61`,
 				MNC:        `6142`,
 			}
-			r.api.sendDLRRequest(&dlrParams)
+			r.api.sendDLRRequest(r.r.Context(), &dlrParams)
 
 		}
 
@@ -163,7 +164,7 @@ func SubmitGET(r *Route) {
 
 		r.Write(data, http.StatusOK)
 
-		r.api.sendDLRRequest(&dlrParams)
+		r.api.sendDLRRequest(r.r.Context(), &dlrParams)
 	}
 
 }

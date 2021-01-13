@@ -31,7 +31,7 @@ func NewGRPCServerFromEnv() grpcServer {
 
 	var config Config
 	if err := envconfig.Process("", &config); err != nil {
-		stLog.Fatalf("failed to read env vars: %s", err)
+		stLog.Fatalf(context.Background(), "NewGRPCServerFromEnv", "failed to read env vars: %s", err)
 	}
 
 	return grpcServer{conf: config,

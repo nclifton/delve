@@ -11,9 +11,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/google/uuid"
+
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/mm7utils"
-	"github.com/google/uuid"
 )
 
 var (
@@ -26,7 +27,7 @@ var (
 )
 
 func SubmitPOST(r *Route) {
-	contentType, response, err := r.api.parseSubmit(r.r.Header.Get(`Content-Type`), r.r.Body)
+	contentType, response, err := r.api.parseSubmit(r.r.Context(), r.r.Header.Get(`Content-Type`), r.r.Body)
 	if err != nil {
 		r.WriteError(err.Error(), http.StatusBadRequest)
 	}
@@ -41,12 +42,10 @@ func SubmitPOST(r *Route) {
 
 }
 
-func (api *TeclooAPI) parseSubmit(contentType string, body io.Reader) (string, *bytes.Buffer, error) {
-	ctx := context.Background()
-
+func (api *TeclooAPI) parseSubmit(ctx context.Context, contentType string, body io.Reader) (string, *bytes.Buffer, error) {
 	parts, err := mm7utils.ProcessMultiPart(contentType, body)
 	if err != nil {
-		api.log.Errorf("Invalid Request: %s", err)
+		api.log.Errorf(ctx, "parseSubmit", "Invalid Request: %s", err)
 	}
 
 	var recipient string
@@ -121,7 +120,7 @@ func (api *TeclooAPI) parseSubmit(contentType string, body io.Reader) (string, *
 		MessageID:     uuid.String()}, api.templates.SubmitResponse)
 
 	if status == "1000" {
-		api.sendDRRequest(&DRParams{
+		api.sendDRRequest(ctx, &DRParams{
 			TransactionID: transactionid,
 			Recipient:     recipient,
 			Sender:        sender,

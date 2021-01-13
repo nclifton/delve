@@ -51,7 +51,7 @@ func InboundPOST(r *Route) {
 	if strings.HasPrefix(requestContentType, "multipart/") {
 		status, err := processDeliverRequest(requestContentType, body)
 		if err != nil {
-			r.api.log.Errorf("Invalid Request: %s", err)
+			r.api.log.Errorf(r.r.Context(), "InboundPOST", "Invalid Request: %s", err)
 		}
 
 		response, contentType, _ := mm7utils.GenerateMM7DeliverResponse(mm7utils.DeliverResponseParams{
@@ -72,7 +72,7 @@ func InboundPOST(r *Route) {
 	if strings.HasPrefix(requestContentType, "application/") {
 		status, transactionID, err := processDeliveryReportRequest(requestContentType, body)
 		if err != nil {
-			r.api.log.Errorf("Invalid Request: %s", err)
+			r.api.log.Errorf(r.r.Context(), "InboundPOST", "Invalid Request: %s", err)
 		}
 
 		response, contentType, _ := mm7utils.GenerateMM7DeliveryReportResponse(mm7utils.DeliveryReportResponseParams{

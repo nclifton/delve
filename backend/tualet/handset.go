@@ -11,9 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/sms/biz"
-	"github.com/google/uuid"
 )
 
 type handsetParams struct {
@@ -23,7 +24,6 @@ type handsetParams struct {
 }
 
 func checkMOParams(params url.Values) (int, string, handsetParams) {
-
 	status := http.StatusOK
 	response := "spoof MO"
 
@@ -106,7 +106,7 @@ func HandsetGET(r *Route) {
 
 			req, err := http.NewRequest("POST", r.api.opts.MOEndpoint, strings.NewReader(data.Encode()))
 			if err != nil {
-				r.api.log.Errorf("Could not create DLR request: %s", err)
+				r.api.log.Errorf(r.r.Context(), "HandsetGET", "Could not create DLR request: %s", err)
 				return
 			}
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -114,14 +114,14 @@ func HandsetGET(r *Route) {
 
 			resp, err := r.api.client.Do(req)
 			if err != nil {
-				r.api.log.Errorf("Could not do DLR request: %s", err)
+				r.api.log.Errorf(r.r.Context(), "HandsetGET", "Could not do DLR request: %s", err)
 				return
 			}
 			defer resp.Body.Close()
 
 			if resp.StatusCode != http.StatusOK {
 				body, _ := ioutil.ReadAll(resp.Body)
-				r.api.log.Errorf("Not OK response from %s, with code: %d, body %s", r.api.opts.DLREndpoint, resp.StatusCode, string(body))
+				r.api.log.Errorf(r.r.Context(), "HandsetGET", "Not OK response from %s, with code: %d, body %s", r.api.opts.DLREndpoint, resp.StatusCode, string(body))
 				return
 			}
 		}(part, msg)

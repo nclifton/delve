@@ -1,6 +1,7 @@
 package tualet
 
 import (
+	"context"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -19,8 +20,7 @@ type DLRParams struct {
 	MNC        string
 }
 
-func (api *TualetAPI) sendDLRRequest(params *DLRParams) {
-
+func (api *TualetAPI) sendDLRRequest(ctx context.Context, params *DLRParams) {
 	rand.Seed(time.Now().UnixNano())
 
 	if api.opts.DLREndpoint != "" {
@@ -64,7 +64,7 @@ func (api *TualetAPI) sendDLRRequest(params *DLRParams) {
 
 			req, err := http.NewRequest("POST", api.opts.DLREndpoint, strings.NewReader(data.Encode()))
 			if err != nil {
-				api.log.Errorf("Could not create DLR request: %s", err)
+				api.log.Errorf(ctx, "sendDLRRequest", "Could not create DLR request: %s", err)
 				return
 			}
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -72,14 +72,14 @@ func (api *TualetAPI) sendDLRRequest(params *DLRParams) {
 
 			resp, err := api.client.Do(req)
 			if err != nil {
-				api.log.Errorf("Could not do DLR request: %s", err)
+				api.log.Errorf(ctx, "sendDLRRequest", "Could not do DLR request: %s", err)
 				return
 			}
 			defer resp.Body.Close()
 
 			if resp.StatusCode != http.StatusOK {
 				body, _ := ioutil.ReadAll(resp.Body)
-				api.log.Errorf("Not OK response from %s, with code: %d, body %s", api.opts.DLREndpoint, resp.StatusCode, string(body))
+				api.log.Errorf(ctx, "sendDLRRequest", "Not OK response from %s, with code: %d, body %s", api.opts.DLREndpoint, resp.StatusCode, string(body))
 				return
 			}
 		}()

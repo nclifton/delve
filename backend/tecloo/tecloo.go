@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"text/template"
 
+	"github.com/julienschmidt/httprouter"
+
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
-	"github.com/julienschmidt/httprouter"
 
 	"github.com/justinas/alice"
 )

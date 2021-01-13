@@ -62,18 +62,18 @@ func HandsetPOST(r *Route) {
 	if r.api.opts.DREndpoint != "" {
 		body, contentType, err := mm7utils.GenerateMM7DeliverRequest(delivery, r.api.templates.SendDelivery, req.Message, images)
 		if err != nil {
-			r.api.log.Errorf("Could not generate MM7 Delivery body: %s", err)
+			r.api.log.Errorf(r.r.Context(), "HandsetPOST", "Could not generate MM7 Delivery body: %s", err)
 		}
 
 		req, err := http.NewRequest("POST", r.api.opts.DREndpoint, bytes.NewReader(body.Bytes()))
 		req.Header.Set("Content-Type", contentType)
 		if err != nil {
-			r.api.log.Errorf("Could not create DR request: %s", err)
+			r.api.log.Errorf(r.r.Context(), "HandsetPOST", "Could not create DR request: %s", err)
 		}
 
 		_, err = r.api.client.Do(req)
 		if err != nil {
-			r.api.log.Errorf("Could not do DR request: %s", err)
+			r.api.log.Errorf(r.r.Context(), "HandsetPOST", "Could not do DR request: %s", err)
 		}
 	}
 	r.api.log.Fields(r.r.Context(), logger.Fields{

@@ -31,9 +31,7 @@ var drStatusCodes = map[string]string{
 	"1009": "Unrecognized",
 }
 
-func (api *TeclooAPI) sendDRRequest(params *DRParams) {
-	ctx := context.Background()
-
+func (api *TeclooAPI) sendDRRequest(ctx context.Context, params *DRParams) {
 	var status = "1000"
 
 	if _, ok := drStatusCodes[params.Status]; ok {
@@ -62,12 +60,12 @@ func (api *TeclooAPI) sendDRRequest(params *DRParams) {
 		req, err := http.NewRequest("POST", api.opts.DREndpoint, bytes.NewReader(body.Bytes()))
 		req.Header.Set("Content-Type", contentType)
 		if err != nil {
-			api.log.Errorf("Could not create DR request: %s", err)
+			api.log.Errorf(ctx, "sendDRRequest", "Could not create DR request: %s", err)
 		}
 
 		_, err = api.client.Do(req)
 		if err != nil {
-			api.log.Errorf("Could not do DR request: %s", err)
+			api.log.Errorf(ctx, "sendDRRequest", "Could not do DR request: %s", err)
 		}
 	}
 
