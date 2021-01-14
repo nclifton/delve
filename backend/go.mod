@@ -15,6 +15,7 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/jackc/pgconn v1.7.2
+	github.com/jackc/pgtype v1.6.1
 	github.com/jackc/pgx/v4 v4.9.2
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/justinas/alice v1.2.0
