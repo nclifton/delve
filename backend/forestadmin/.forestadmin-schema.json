@@ -101,6 +101,21 @@
       "inverseOf": null,
       "validations": []
     }, {
+      "field": "mms",
+      "type": ["String"],
+      "defaultValue": null,
+      "enums": null,
+      "integration": null,
+      "isFilterable": false,
+      "isPrimaryKey": false,
+      "isReadOnly": true,
+      "isRequired": false,
+      "isSortable": false,
+      "isVirtual": true,
+      "reference": "mms.account_id",
+      "inverseOf": null,
+      "validations": []
+    }, {
       "field": "mmsProviderKey",
       "type": "String",
       "defaultValue": "fake",
@@ -162,6 +177,21 @@
       "isSortable": true,
       "isVirtual": false,
       "reference": null,
+      "inverseOf": null,
+      "validations": []
+    }, {
+      "field": "sms",
+      "type": ["String"],
+      "defaultValue": null,
+      "enums": null,
+      "integration": null,
+      "isFilterable": false,
+      "isPrimaryKey": false,
+      "isReadOnly": true,
+      "isRequired": false,
+      "isSortable": false,
+      "isVirtual": true,
+      "reference": "sms.account_id",
       "inverseOf": null,
       "validations": []
     }, {
@@ -396,23 +426,19 @@
       "validations": []
     }, {
       "field": "id",
-      "type": "Number",
+      "type": "String",
       "defaultValue": null,
       "enums": null,
       "integration": null,
       "isFilterable": true,
       "isPrimaryKey": true,
       "isReadOnly": false,
-      "isRequired": true,
+      "isRequired": false,
       "isSortable": true,
       "isVirtual": false,
       "reference": null,
       "inverseOf": null,
-      "validations": [{
-        "message": null,
-        "type": "is present",
-        "value": null
-      }]
+      "validations": []
     }, {
       "field": "message",
       "type": "String",
@@ -678,23 +704,19 @@
       }]
     }, {
       "field": "id",
-      "type": "Number",
+      "type": "String",
       "defaultValue": null,
       "enums": null,
       "integration": null,
       "isFilterable": true,
       "isPrimaryKey": true,
       "isReadOnly": false,
-      "isRequired": true,
+      "isRequired": false,
       "isSortable": true,
       "isVirtual": false,
       "reference": null,
       "inverseOf": null,
-      "validations": [{
-        "message": null,
-        "type": "is present",
-        "value": null
-      }]
+      "validations": []
     }, {
       "field": "message",
       "type": "String",

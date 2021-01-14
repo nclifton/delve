@@ -24,6 +24,16 @@ collection("account", {
       type: ["String"],
       reference: "webhook.account_id",
     },
+    {
+      field: "mms",
+      type: ["String"],
+      reference: "mms.account_id",
+    },
+    {
+      field: "sms",
+      type: ["String"],
+      reference: "sms.account_id",
+    },
   ],
   segments: [],
 });

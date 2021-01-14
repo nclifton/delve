@@ -8,6 +8,8 @@ const models = require("../models");
 
 const account = models.sequelize.account.models;
 const webhookDb = models.sequelize.webhook.models;
+const smsDb = models.sequelize.sms.models;
+const mmsDb = models.sequelize.mms.models;
 const sequelize = models.sequelize;
 
 const router = express.Router();
@@ -124,17 +126,157 @@ router.get(
   permissionMiddlewareCreator.list(),
   (request, response, next) => {
     const accountId = request.params.recordId;
+    const limit = parseInt(request.query.page.size, 10) || 20;
+    const offset = (parseInt(request.query.page.number, 10) - 1) * limit;
     const recordSerializer = new RecordSerializer(webhookDb.webhook);
 
-    webhookDb.webhook
-      .findAll({ where: { account_id: accountId } })
-      .then((records) =>
-        recordSerializer.serialize(records, { count: records.length })
+    let countQuery = `
+      SELECT count(*)
+      FROM webhook
+      WHERE account_id = '${accountId}'
+    `;
+
+    let findQuery = `
+      SELECT webhook.*
+      FROM webhook
+      WHERE account_id = '${accountId}'
+    `;
+
+    if (request.query.search) {
+      filter = `AND (
+        name ILIKE '%${request.query.search}%'
+        OR event ILIKE '%${request.query.search}%'
+        OR url ILIKE '%${request.query.search}%'
+      )`;
+      countQuery += filter;
+      findQuery += filter;
+    }
+
+    findQuery += `
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
+
+    const countqry = sequelize.webhook.query(countQuery, {
+      type: sequelize.webhook.QueryTypes.SELECT,
+    });
+    const findqry = sequelize.webhook.query(findQuery, {
+      type: sequelize.webhook.QueryTypes.SELECT,
+    });
+
+    Promise.all([countqry, findqry])
+      .then(([count, records]) =>
+        recordSerializer.serialize(records, { count: count[0].count })
       )
       .then((recordsSerialize) => response.send(recordsSerialize))
       .catch(next);
   }
 );
+
+router.get(
+  "/account/:recordId/relationships/sms",
+  permissionMiddlewareCreator.list(),
+  (request, response, next) => {
+    const accountId = request.params.recordId;
+    const limit = parseInt(request.query.page.size, 10) || 20;
+    const offset = (parseInt(request.query.page.number, 10) - 1) * limit;
+    const recordSerializer = new RecordSerializer(smsDb.sms);
+
+    let countQuery = `
+      SELECT count(*)
+      FROM sms
+      WHERE account_id = '${accountId}'
+    `;
+
+    let findQuery = `
+      SELECT sms.*
+      FROM sms
+      WHERE account_id = '${accountId}'
+    `;
+
+    if (request.query.search) {
+      filter = `AND (
+        ARRAY[message_ref, status, message_id, sender, recipient, country] && ARRAY[LOWER('${request.query.search}'), UPPER('${request.query.search}')]
+        OR message ILIKE '%${request.query.search}%'
+      )`;
+      countQuery += filter;
+      findQuery += filter;
+    }
+
+    findQuery += `
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
+
+    const countqry = sequelize.sms.query(countQuery, {
+      type: sequelize.sms.QueryTypes.SELECT,
+    });
+    const findqry = sequelize.sms.query(findQuery, {
+      type: sequelize.sms.QueryTypes.SELECT,
+    });
+
+    Promise.all([countqry, findqry])
+      .then(([count, records]) =>
+        recordSerializer.serialize(records, { count: count[0].count })
+      )
+      .then((recordsSerialize) => response.send(recordsSerialize))
+      .catch(next);
+  }
+);
+
+router.get(
+  "/account/:recordId/relationships/mms",
+  permissionMiddlewareCreator.list(),
+  (request, response, next) => {
+    const accountId = request.params.recordId;
+    console.log(request.query);
+    const limit = parseInt(request.query.page.size, 10) || 20;
+    const offset = (parseInt(request.query.page.number, 10) - 1) * limit;
+    const recordSerializer = new RecordSerializer(mmsDb.mms);
+
+    let countQuery = `
+      SELECT count(*)
+      FROM mms
+      WHERE account_id = '${accountId}'
+    `;
+
+    let findQuery = `
+      SELECT mms.*
+      FROM mms
+      WHERE account_id = '${accountId}'
+    `;
+
+    if (request.query.search) {
+      filter = `AND (
+        ARRAY[message_ref, status, message_id, sender, recipient, country] && ARRAY[LOWER('${request.query.search}'), UPPER('${request.query.search}')]
+        OR subject ILIKE '%${request.query.search}%'
+        OR message ILIKE '%${request.query.search}%'
+      )`;
+      countQuery += filter;
+      findQuery += filter;
+    }
+
+    findQuery += `
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
+
+    const countqry = sequelize.mms.query(countQuery, {
+      type: sequelize.mms.QueryTypes.SELECT,
+    });
+    const findqry = sequelize.mms.query(findQuery, {
+      type: sequelize.mms.QueryTypes.SELECT,
+    });
+
+    Promise.all([countqry, findqry])
+      .then(([count, records]) =>
+        recordSerializer.serialize(records, { count: count[0].count })
+      )
+      .then((recordsSerialize) => response.send(recordsSerialize))
+      .catch(next);
+  }
+);
+
 var CSV_OPTIONS = {
   formatters: {
     date: function date(value) {

@@ -8,10 +8,10 @@ module.exports = (sequelize, DataTypes) => {
     "mms",
     {
       id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         primaryKey: true,
         allowNull: false,
-        autoIncrement: true,
+        defaultValue: Sequelize.literal("uuid_generate_v4()"),
       },
       createdAt: {
         type: DataTypes.DATE,
