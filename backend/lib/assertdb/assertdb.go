@@ -15,7 +15,7 @@ const SQLDateTime = "2006-01-02 15:04:05"
 type AssertDb struct {
 	t               *testing.T
 	connStr         string
-	haveTableRowIds map[string][]int64
+	haveTableRowIds map[string][]interface{}
 	ctx             context.Context
 	conn            *pgx.Conn
 }
@@ -24,7 +24,7 @@ func New(t *testing.T, connStr string) *AssertDb {
 	adb := &AssertDb{
 		t:               t,
 		connStr:         connStr,
-		haveTableRowIds: make(map[string][]int64),
+		haveTableRowIds: make(map[string][]interface{}),
 	}
 	adb.getConnection()
 	return adb
@@ -93,7 +93,7 @@ func (adb *AssertDb) HaveInDatabase(table string, names string, arguments []inte
 	sql := fmt.Sprintf(`INSERT INTO "%s" (%s) VALUES (%s) RETURNING id`,
 		table, names, strings.Join(values, ","))
 
-	insertId := int64(0)
+	var insertId interface{}
 	err := adb.conn.QueryRow(adb.ctx, sql, arguments...).Scan(&insertId)
 	if err != nil {
 		adb.t.Fatalf("Unable to insert into table %s\nerror: %+v\n", table, err)

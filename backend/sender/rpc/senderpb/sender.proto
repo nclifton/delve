@@ -27,4 +27,15 @@ message Sender {
     google.protobuf.Timestamp Updated_at = 9;
 }
 
-service Service {}
+message FindByAddressParams {
+    string Account_id = 1;
+    string Address = 2; 
+}
+
+message FindByAddressReply {
+    Sender Sender = 1;
+}
+
+service Service {
+    rpc FindByAddress(FindByAddressParams) returns (FindByAddressReply);
+}

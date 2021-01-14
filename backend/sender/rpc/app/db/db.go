@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"time"
 )
 
@@ -16,4 +17,6 @@ type Sender struct {
 	UpdatedAt      time.Time
 }
 
-type DB interface{}
+type DB interface {
+	SenderFindByAddress(ctx context.Context, accountId, address string) (Sender, error)
+}

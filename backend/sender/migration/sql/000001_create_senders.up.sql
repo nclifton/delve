@@ -6,12 +6,16 @@ CREATE TYPE provider_key AS ENUM (
   'optus',
   'mgage'
 );
+CREATE TYPE channel AS ENUM (
+  'mms',
+  'sms'
+);
 CREATE TABLE IF NOT EXISTS sender (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   account_id UUID,
   address TEXT NOT NULL,
-  mms_provider_key TEXT,
-  channels TEXT[],
+  mms_provider_key provider_key,
+  channels channel[],
   country TEXT NOT NULL,
   comment TEXT,
   created_at TIMESTAMP NOT NULL,
