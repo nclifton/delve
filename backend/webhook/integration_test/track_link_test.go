@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/assertdb"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/service"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
@@ -108,9 +109,15 @@ func Test_PublishLinkHit(t *testing.T) {
 }
 
 func setupForPublishLinkHit(t *testing.T) *testDeps {
-	I := newSetup(t, tfx)
-	I.HaveInDatabase("webhook",
-		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
-		[]interface{}{32767, "42", service.EventLinkHitStatus, "name1", I.webhookURL, 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
-	return I
+	s := newSetup(t, tfx)
+	s.HaveInDatabase("webhook", assertdb.Row{
+		"id":         32767,
+		"account_id": "42",
+		"event":      service.EventLinkHitStatus,
+		"name":       "name1",
+		"url":        s.webhookURL,
+		"rate_limit": 2,
+		"created_at": "2020-01-12 22:41:42",
+		"updated_at": "2020-01-12 22:41:42"})
+	return s
 }

@@ -37,7 +37,7 @@ func TestMain(m *testing.M) {
 }
 
 //TODO this should be moved out of here and split between the fixtures package and the webhook worker package using a worker builder package similar to servicebuilder
-func webhookWorkerRunFunc (tfx *fixtures.TestFixtures) func(){
+func webhookWorkerRunFunc(tfx *fixtures.TestFixtures) func() {
 	wkr := worker.New()
 	wkr.Env = &worker.WebhookEnv{
 		RPCPort:         0,
@@ -94,12 +94,12 @@ func Test_Insert(t *testing.T) {
 				assert.Check(t, response.Webhook.GetUpdatedAt().AsTime().After(testStartTime), "UpdatedAt")
 
 				i.SeeInDatabase("webhook", assertdb.Criteria{
-					{"account_id", "1"},
-					{"event", "event"},
-					{"name", "name"},
-					{"url", "url"},
-					{"created_at >", testStartTime.Format(assertdb.SQLDateTime)},
-					{"updated_at >", testStartTime.Format(assertdb.SQLDateTime)},
+					"account_id": "1",
+					"event": "event",
+					"name": "name",
+					"url": "url",
+					"created_at >": testStartTime.Format(assertdb.SQLTimestampWithoutTimeZone),
+					"updated_at >": testStartTime.Format(assertdb.SQLTimestampWithoutTimeZone),
 				})
 
 			},
@@ -123,14 +123,26 @@ func Test_Insert(t *testing.T) {
 func setupForFind(t *testing.T) *testDeps {
 	setup := newSetup(t, tfx)
 
-	setup.HaveInDatabase("webhook",
-		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
-		[]interface{}{32767, "42", "event1", "name1", "url1", 2, "2021-01-12 22:41:42", "2021-01-13 22:25:25"})
+	setup.HaveInDatabase("webhook", assertdb.Row{
+		"id":         32767,
+		"account_id": "42",
+		"event":      "event1",
+		"name":       "name1",
+		"url":        "url1",
+		"rate_limit": 2,
+		"created_at": "2021-01-12 22:41:42",
+		"updated_at": "2021-01-13 22:25:25"})
 
-	setup.HaveInDatabase("webhook",
-		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
-		[]interface{}{32768, "42", "event", "name", "url", 1, "2021-01-12 22:42:42", "2021-01-13 22:24:24"})
-		
+	setup.HaveInDatabase("webhook", assertdb.Row{
+		"id":         32768,
+		"account_id": "42",
+		"event":      "event",
+		"name":       "name",
+		"url":        "url",
+		"rate_limit": 1,
+		"created_at": "2021-01-12 22:42:42",
+		"updated_at": "2021-01-13 22:24:24"})
+
 	return setup
 }
 
@@ -164,8 +176,8 @@ func Test_Find(t *testing.T) {
 				assert.Equal(t, response.Webhooks[0].GetEvent(), "event1", "Event")
 				assert.Equal(t, response.Webhooks[0].GetURL(), "url1", "URL")
 				assert.Equal(t, response.Webhooks[0].GetRateLimit(), int32(2), "RateLimit")
-				assert.Equal(t, response.Webhooks[0].GetCreatedAt().AsTime().Format(assertdb.SQLDateTime), "2021-01-12 22:41:42", "CreatedAt")
-				assert.Equal(t, response.Webhooks[0].GetUpdatedAt().AsTime().Format(assertdb.SQLDateTime), "2021-01-13 22:25:25", "UpdatedAt")
+				assert.Equal(t, response.Webhooks[0].GetCreatedAt().AsTime().Format(assertdb.SQLTimestampWithoutTimeZone), "2021-01-12 22:41:42", "CreatedAt")
+				assert.Equal(t, response.Webhooks[0].GetUpdatedAt().AsTime().Format(assertdb.SQLTimestampWithoutTimeZone), "2021-01-13 22:25:25", "UpdatedAt")
 
 				assert.Equal(t, response.Webhooks[1].GetId(), int64(32768), "Id")
 				assert.Equal(t, response.Webhooks[1].GetAccountId(), "42", "AccountId")
@@ -173,8 +185,8 @@ func Test_Find(t *testing.T) {
 				assert.Equal(t, response.Webhooks[1].GetEvent(), "event", "Event")
 				assert.Equal(t, response.Webhooks[1].GetURL(), "url", "URL")
 				assert.Equal(t, response.Webhooks[1].GetRateLimit(), int32(1), "RateLimit")
-				assert.Equal(t, response.Webhooks[1].GetCreatedAt().AsTime().Format(assertdb.SQLDateTime), "2021-01-12 22:42:42", "CreatedAt")
-				assert.Equal(t, response.Webhooks[1].GetUpdatedAt().AsTime().Format(assertdb.SQLDateTime), "2021-01-13 22:24:24", "UpdatedAt")
+				assert.Equal(t, response.Webhooks[1].GetCreatedAt().AsTime().Format(assertdb.SQLTimestampWithoutTimeZone), "2021-01-12 22:42:42", "CreatedAt")
+				assert.Equal(t, response.Webhooks[1].GetUpdatedAt().AsTime().Format(assertdb.SQLTimestampWithoutTimeZone), "2021-01-13 22:24:24", "UpdatedAt")
 			},
 		},
 		{
@@ -205,9 +217,16 @@ func Test_Find(t *testing.T) {
 
 func setupForUpdate(t *testing.T) *testDeps {
 	setup := newSetup(t, tfx)
-	setup.HaveInDatabase("webhook",
-		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
-		[]interface{}{32767, "42", "event1", "name1", "url1", 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
+	setup.HaveInDatabase("webhook", assertdb.Row{
+		"id":         32767,
+		"account_id": "42",
+		"event":      "event1",
+		"name":       "name1",
+		"url":        "url1",
+		"rate_limit": 2,
+		"created_at": "2020-01-12 22:41:42",
+		"updated_at": "2020-01-12 22:41:42"})
+
 	return setup
 }
 
@@ -246,16 +265,16 @@ func Test_Update(t *testing.T) {
 				assert.Equal(t, response.Webhook.GetName(), "name2", "Name")
 				assert.Equal(t, response.Webhook.GetURL(), "url2", "URL")
 				assert.Equal(t, response.Webhook.GetRateLimit(), int32(50), "RateLimit")
-				assert.Equal(t, response.Webhook.GetCreatedAt().AsTime().Format(assertdb.SQLDateTime), "2020-01-12 22:41:42", "CreatedAt")
-				assert.Check(t, response.Webhook.GetUpdatedAt().AsTime().Format(assertdb.SQLDateTime) > "2020-01-12 22:41:42", "UpdatedAt")
+				assert.Equal(t, response.Webhook.GetCreatedAt().AsTime().Format(assertdb.SQLTimestampWithoutTimeZone), "2020-01-12 22:41:42", "CreatedAt")
+				assert.Check(t, response.Webhook.GetUpdatedAt().AsTime().Format(assertdb.SQLTimestampWithoutTimeZone) > "2020-01-12 22:41:42", "UpdatedAt")
 				i.SeeInDatabase("webhook", assertdb.Criteria{
-					{"id", 32767},
-					{"account_id", "42"},
-					{"event", "event2"},
-					{"name", "name2"},
-					{"url", "url2"},
-					{"created_at", "2020-01-12 22:41:42"},
-					{"updated_at >", "2020-01-12 22:41:42"},
+					"id": 32767,
+					"account_id": "42",
+					"event": "event2",
+					"name": "name2",
+					"url": "url2",
+					"created_at": "2020-01-12 22:41:42",
+					"updated_at >": "2020-01-12 22:41:42",
 				})
 
 			},
@@ -272,7 +291,7 @@ func Test_Update(t *testing.T) {
 			},
 			want: func(response *webhookpb.UpdateReply) {
 				i.DontSeeInDatabase("webhook", assertdb.Criteria{
-					{"id", 32776},
+					"id": 32776,
 				})
 			},
 			wantErr: wantErr{
@@ -292,8 +311,8 @@ func Test_Update(t *testing.T) {
 			},
 			want: func(response *webhookpb.UpdateReply) {
 				i.DontSeeInDatabase("webhook", assertdb.Criteria{
-					{"id", 32767},
-					{"account_id", "43"},
+					"id": 32767,
+					"account_id": "43",
 				})
 			},
 			wantErr: wantErr{
@@ -320,9 +339,15 @@ func Test_Update(t *testing.T) {
 
 func setupForDelete(t *testing.T) *testDeps {
 	setup := newSetup(t, tfx)
-	setup.HaveInDatabase("webhook",
-		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
-		[]interface{}{32767, "42", "event1", "name1", "url1", 2, "2021-01-12 22:41:42", "2021-01-13 22:25:25"})
+	setup.HaveInDatabase("webhook", assertdb.Row{
+		"id":         32767,
+		"account_id": "42",
+		"event":      "event1",
+		"name":       "name1",
+		"url":        "url1",
+		"rate_limit": 2,
+		"created_at": "2021-01-12 22:41:42",
+		"updated_at": "2021-01-13 22:25:25"})
 	return setup
 }
 
@@ -351,7 +376,7 @@ func Test_Delete(t *testing.T) {
 			},
 			want: func(*webhookpb.NoReply) {
 				i.DontSeeInDatabase("webhook", assertdb.Criteria{
-					{"id", 32767},
+					"id": 32767,
 				})
 			},
 		},
@@ -364,7 +389,7 @@ func Test_Delete(t *testing.T) {
 			},
 			want: func(*webhookpb.NoReply) {
 				i.DontSeeInDatabase("webhook", assertdb.Criteria{
-					{"id", 32777},
+					"id": 32777,
 				})
 			},
 			wantErr: wantErr{

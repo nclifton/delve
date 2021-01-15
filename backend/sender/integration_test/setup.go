@@ -30,7 +30,7 @@ func newSetup(t *testing.T, tfx *fixtures.TestFixtures) *testDeps {
 	}
 	dates := make([]time.Time, 20)
 	for i := range dates {
-		dates[i], _ = time.Parse(assertdb.SQLDateTime, "2020-01-13 14:52:21")
+		dates[i], _ = time.Parse(assertdb.SQLTimestampWithoutTimeZone, "2020-01-13 14:52:21")
 	}
 
 	return &testDeps{

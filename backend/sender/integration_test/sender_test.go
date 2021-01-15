@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/burstsms/mtmo-tp/backend/lib/assertdb"
 	"github.com/burstsms/mtmo-tp/backend/lib/fixtures"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/app/run"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
@@ -113,18 +116,16 @@ func Test_FindByAddress(t *testing.T) {
 func setupForFind(t *testing.T) *testDeps {
 	s := newSetup(t, tfx)
 
-	s.HaveInDatabase("sender",
-		"id, account_id, address, mms_provider_key, channels, country, comment, created_at, updated_at",
-		[]interface{}{
-			s.uuids[0],
-			s.uuids[1],
-			"FISH",
-			"optus",
-			[]string{"mms", "sms"},
-			"AU",
-			"Slartibartfast",
-			s.dates[0],
-			s.dates[0]})
+	s.HaveInDatabase("sender", assertdb.Row{
+		"id":               s.uuids[0],
+		"account_id":       s.uuids[1],
+		"address":          "FISH",
+		"mms_provider_key": "optus",
+		"channels":         []string{"mms", "sms"},
+		"country":          "AU",
+		"comment":          "Slartibartfast",
+		"created_at":       s.dates[0],
+		"updated_at":       s.dates[0]})
 
 	return s
 }

@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/assertdb"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/service"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
@@ -94,9 +95,15 @@ func Test_PublishSMSStatusUpdate(t *testing.T) {
 
 func setupForPublishSMSStatusUpdate(t *testing.T) *testDeps {
 	i := newSetup(t, tfx)
-	i.HaveInDatabase("webhook",
-		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
-		[]interface{}{32767, "42", service.EventSMSStatus, "name1", i.webhookURL, 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
+	i.HaveInDatabase("webhook", assertdb.Row{
+		"id":         32767,
+		"account_id": "42",
+		"event":      service.EventSMSStatus,
+		"name":       "name1",
+		"url":        i.webhookURL,
+		"rate_limit": 2,
+		"created_at": "2020-01-12 22:41:42",
+		"updated_at": "2020-01-12 22:41:42"})
 	return i
 }
 
@@ -202,8 +209,14 @@ func Test_PublishMO(t *testing.T) {
 
 func setupForPublishMO(t *testing.T) *testDeps {
 	i := newSetup(t, tfx)
-	i.HaveInDatabase("webhook",
-		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
-		[]interface{}{32767, "42", service.EventMOStatus, "name1", i.webhookURL, 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
+	i.HaveInDatabase("webhook", assertdb.Row{
+		"id":         32767,
+		"account_id": "42",
+		"event":      service.EventMOStatus,
+		"name":       "name1",
+		"url":        i.webhookURL,
+		"rate_limit": 2,
+		"created_at": "2020-01-12 22:41:42",
+		"updated_at": "2020-01-12 22:41:42"})
 	return i
 }

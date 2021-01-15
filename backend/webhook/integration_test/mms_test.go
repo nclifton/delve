@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/assertdb"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/service"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
@@ -30,7 +31,7 @@ func Test_PublishMMSStatusUpdate(t *testing.T) {
 	timestampNow := timestamppb.Now()
 
 	type want struct {
-		reply *webhookpb.NoReply
+		reply    *webhookpb.NoReply
 		requests ExpectedRequests
 	}
 
@@ -40,9 +41,9 @@ func Test_PublishMMSStatusUpdate(t *testing.T) {
 	}
 
 	tests := []struct {
-		name   string
-		params *webhookpb.PublishMMSStatusUpdateParams
-		want want
+		name    string
+		params  *webhookpb.PublishMMSStatusUpdateParams
+		want    want
 		wantErr wantErr
 	}{
 		{
@@ -60,23 +61,23 @@ func Test_PublishMMSStatusUpdate(t *testing.T) {
 			want: want{
 				reply: &webhookpb.NoReply{},
 				requests: ExpectedRequests{
-						NumberOfRequests: 1,
-						WaitMilliseconds: 500,
-						Methods:          []string{"POST"},
-						ContentTypes:     []string{"application/json"},
-						Bodies: []string{
-							jsonString(t,
-								ExpectedMMSStatusUpdateRequestBody{
-									service.EventMMSStatus,
-									ExpectedMMSStatusUpdateData{
-										MMS_id:            "xxy",
-										Message_ref:       "123",
-										Recipient:         "35426378914",
-										Sender:            "46354078643",
-										Status:            "done",
-										Status_updated_at: timestampNow.AsTime().Format(time.RFC3339),
-									}}),
-						}}},
+					NumberOfRequests: 1,
+					WaitMilliseconds: 500,
+					Methods:          []string{"POST"},
+					ContentTypes:     []string{"application/json"},
+					Bodies: []string{
+						jsonString(t,
+							ExpectedMMSStatusUpdateRequestBody{
+								service.EventMMSStatus,
+								ExpectedMMSStatusUpdateData{
+									MMS_id:            "xxy",
+									Message_ref:       "123",
+									Recipient:         "35426378914",
+									Sender:            "46354078643",
+									Status:            "done",
+									Status_updated_at: timestampNow.AsTime().Format(time.RFC3339),
+								}}),
+					}}},
 			wantErr: wantErr{},
 		},
 	}
@@ -101,11 +102,24 @@ func Test_PublishMMSStatusUpdate(t *testing.T) {
 
 func setupForPublishMMSStatusUpdate(t *testing.T) *testDeps {
 	i := newSetup(t, tfx)
-	i.HaveInDatabase("webhook",
-		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
-		[]interface{}{32767, "42", service.EventMMSStatus, "name1", i.webhookURL, 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
-	i.HaveInDatabase("webhook",
-		"id, account_id, event, name, url, rate_limit, created_at, updated_at",
-		[]interface{}{32768, "44", service.EventOptOutStatus, "name1", i.webhookURL, 2, "2020-01-12 22:41:42", "2020-01-12 22:41:42"})
+	i.HaveInDatabase("webhook", assertdb.Row{
+		"id":         32767,
+		"account_id": "42",
+		"event":      service.EventMMSStatus,
+		"name":       "name1",
+		"url":        i.webhookURL,
+		"rate_limit": 2,
+		"created_at": "2020-01-12 22:41:42",
+		"updated_at": "2020-01-12 22:41:42"})
+
+	i.HaveInDatabase("webhook", assertdb.Row{
+		"id":         32768,
+		"account_id": "44",
+		"event":      service.EventOptOutStatus,
+		"name":       "name1",
+		"url":        i.webhookURL,
+		"rate_limit": 2,
+		"created_at": "2020-01-12 22:41:42",
+		"updated_at": "2020-01-12 22:41:42"})
 	return i
 }
