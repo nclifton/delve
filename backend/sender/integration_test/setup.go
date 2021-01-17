@@ -29,8 +29,9 @@ func newSetup(t *testing.T, tfx *fixtures.TestFixtures) *testDeps {
 		uuids[i] = uuid.New().String()
 	}
 	dates := make([]time.Time, 20)
+	date , _:= time.Parse(assertdb.SQLTimestampWithoutTimeZone, "2020-01-13 14:52:21")
 	for i := range dates {
-		dates[i], _ = time.Parse(assertdb.SQLTimestampWithoutTimeZone, "2020-01-13 14:52:21")
+		dates[i] = date.Add(time.Duration(-24 * i) * time.Hour)
 	}
 
 	return &testDeps{

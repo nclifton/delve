@@ -18,6 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
 	FindByAddress(ctx context.Context, in *FindByAddressParams, opts ...grpc.CallOption) (*FindByAddressReply, error)
+	FindByAccountId(ctx context.Context, in *FindByAccountIdParams, opts ...grpc.CallOption) (*FindByAccountIdReply, error)
 }
 
 type serviceClient struct {
@@ -37,11 +38,21 @@ func (c *serviceClient) FindByAddress(ctx context.Context, in *FindByAddressPara
 	return out, nil
 }
 
+func (c *serviceClient) FindByAccountId(ctx context.Context, in *FindByAccountIdParams, opts ...grpc.CallOption) (*FindByAccountIdReply, error) {
+	out := new(FindByAccountIdReply)
+	err := c.cc.Invoke(ctx, "/senderpb.Service/FindByAccountId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
 type ServiceServer interface {
 	FindByAddress(context.Context, *FindByAddressParams) (*FindByAddressReply, error)
+	FindByAccountId(context.Context, *FindByAccountIdParams) (*FindByAccountIdReply, error)
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -51,6 +62,9 @@ type UnimplementedServiceServer struct {
 
 func (UnimplementedServiceServer) FindByAddress(context.Context, *FindByAddressParams) (*FindByAddressReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByAddress not implemented")
+}
+func (UnimplementedServiceServer) FindByAccountId(context.Context, *FindByAccountIdParams) (*FindByAccountIdReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindByAccountId not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -83,6 +97,24 @@ func _Service_FindByAddress_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Service_FindByAccountId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindByAccountIdParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).FindByAccountId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/senderpb.Service/FindByAccountId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).FindByAccountId(ctx, req.(*FindByAccountIdParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Service_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "senderpb.Service",
 	HandlerType: (*ServiceServer)(nil),
@@ -90,6 +122,10 @@ var _Service_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindByAddress",
 			Handler:    _Service_FindByAddress_Handler,
+		},
+		{
+			MethodName: "FindByAccountId",
+			Handler:    _Service_FindByAccountId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

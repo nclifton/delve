@@ -54,3 +54,45 @@ func (db *sqlDB) SenderFindByAddress(ctx context.Context, accountId, address str
 	}
 	return s, nil
 }
+
+func (db *sqlDB) SenderFindByAccountId(ctx context.Context, accountId string) ([]Sender, error) {
+	rows, err := db.sql.Query(
+		ctx,
+		`select id, account_id, address, mms_provider_key, channels, country, comment, created_at, updated_at
+		from sender
+		where account_id = $1
+		limit 100`,
+		accountId,
+	)
+	if err != nil {
+		return []Sender{}, err
+	}
+	defer rows.Close()
+
+	ss := []Sender{}
+	for rows.Next() {
+		s := Sender{}
+		var channels pgtype.EnumArray
+		err := rows.Scan(
+			&s.ID,
+			&s.AccountID,
+			&s.Address,
+			&s.MMSProviderKey,
+			&channels,
+			&s.Country,
+			&s.Comment,
+			&s.CreatedAt,
+			&s.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		err = channels.AssignTo(&s.Channels)
+		if err != nil {
+			return nil, err
+		}
+		ss = append(ss, s)
+	}
+
+	return ss, nil
+}

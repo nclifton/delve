@@ -36,6 +36,15 @@ message FindByAddressReply {
     Sender Sender = 1;
 }
 
+message FindByAccountIdParams {
+    string Account_id = 1;
+}
+
+message FindByAccountIdReply {
+    repeated Sender Senders = 1;
+}
+
 service Service {
     rpc FindByAddress(FindByAddressParams) returns (FindByAddressReply);
+    rpc FindByAccountId(FindByAccountIdParams) returns (FindByAccountIdReply);
 }
