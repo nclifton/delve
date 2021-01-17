@@ -10,6 +10,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	"github.com/burstsms/mtmo-tp/backend/lib/servicebuilder"
 	optOutRPC "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 	smsRPC "github.com/burstsms/mtmo-tp/backend/sms/rpc"
 	tracklinkRPC "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
@@ -26,6 +27,8 @@ type Env struct {
 	RabbitExchangeType string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	WebhookRPCHost     string `envconfig:"WEBHOOK_RPC_HOST"`
 	WebhookRPCPort     int    `envconfig:"WEBHOOK_RPC_PORT"`
+	SenderRPCHost      string `envconfig:"SENDER_RPC_HOST"`
+	SenderRPCPort      int    `envconfig:"SENDER_RPC_PORT"`
 	AccountRPCHost     string `envconfig:"ACCOUNT_RPC_HOST"`
 	AccountRPCPort     int    `envconfig:"ACCOUNT_RPC_PORT"`
 	TrackLinkDomain    string `envconfig:"TRACKLINK_DOMAIN"`
@@ -74,6 +77,9 @@ func main() {
 	wrpc := webhookpb.NewServiceClient(
 		servicebuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
 	)
+	srpc := senderpb.NewServiceClient(
+		servicebuilder.NewClientConn(env.SenderRPCHost, env.SenderRPCPort, tracer),
+	)
 	arpc := accountRPC.New(env.AccountRPCHost, env.AccountRPCPort)
 	tlrpc := tracklinkRPC.NewClient(env.TrackLinkRPCHost, env.TrackLinkRPCPort)
 	orpc := optOutRPC.NewClient(env.OptOutRPCHost, env.OptOutRPCPort)
@@ -83,12 +89,12 @@ func main() {
 		OptOutLinkDomain: env.OptOutLinkDomain,
 	}
 
-	srpc, err := smsRPC.NewService(features, env.PostgresURL, rabbitmq, wrpc, arpc, tlrpc, env.RedisURL, orpc)
+	smsrpc, err := smsRPC.NewService(features, env.PostgresURL, rabbitmq, wrpc, arpc, tlrpc, env.RedisURL, orpc, srpc)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
 	}
 
-	server, err := rpc.NewServer(srpc, port)
+	server, err := rpc.NewServer(smsrpc, port)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
 	}

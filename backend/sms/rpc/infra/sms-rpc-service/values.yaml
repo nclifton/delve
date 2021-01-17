@@ -74,6 +74,8 @@ k8sServiceChart:
       RABBIT_EXCHANGE_TYPE: "direct"
       WEBHOOK_RPC_HOST: "webhook-rpc-service"
       WEBHOOK_RPC_PORT: "10002"
+      SENDER_RPC_HOST: "sender-rpc-service"
+      SENDER_RPC_PORT: "10015"
       ACCOUNT_RPC_HOST: "account-rpc-service"
       ACCOUNT_RPC_PORT: "10001"
       TRACKLINK_DOMAIN: "track.${environmentVariable.dns}"

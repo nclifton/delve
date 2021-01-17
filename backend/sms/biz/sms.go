@@ -6,7 +6,10 @@ import (
 	"regexp"
 	"unicode/utf16"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
 	"github.com/burstsms/mtmo-tp/backend/lib/number"
+	"github.com/burstsms/mtmo-tp/backend/lib/stringutil"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
 
 type SMSOptions struct {
@@ -31,10 +34,26 @@ func IsValidSMS(message string, opt SMSOptions) (int, error) {
 	// message length
 	smsCount := CountSMSParts(message, opt)
 	if smsCount > opt.MaxParts {
-		return smsCount, ErrInvalidSMSTooManyParts
+		return smsCount, errorlib.ErrInvalidSMSTooManyParts
 	}
 
 	return smsCount, nil
+}
+
+func IsValidSender(sender *senderpb.Sender, address, country string) error {
+	if sender == nil {
+		return errorlib.ErrInvalidSenderNotFound
+	}
+	if sender.Address != address {
+		return errorlib.ErrInvalidSenderAddress
+	}
+	if sender.Country != country {
+		return errorlib.ErrInvalidSenderCountry
+	}
+	if !stringutil.Includes(sender.Channels, "sms") {
+		return errorlib.ErrInvalidSenderChannel
+	}
+	return nil
 }
 
 var gsmRegex = regexp.MustCompile(`[|^€{}[\]~]`)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 	"google.golang.org/grpc"
 
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
@@ -29,6 +30,7 @@ type optOutSvc interface {
 
 type ConfigSvc struct {
 	Webhook   webhookSvc
+	Sender    senderpb.ServiceClient
 	TrackLink tracklinkSvc
 	OptOut    optOutSvc
 }

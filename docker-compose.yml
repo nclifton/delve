@@ -57,6 +57,9 @@ services:
       - WEBHOOK_REDIS_URL=redis:6379
       - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
 
+      - SENDER_RPC_HOST=sender
+      - SENDER_RPC_PORT=10015
+
       - MMS_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mms
       - MMS_RABBIT_EXCHANGE=mms
       - MMS_RABBIT_EXCHANGE_TYPE=direct

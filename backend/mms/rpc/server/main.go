@@ -10,6 +10,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/servicebuilder"
 	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc"
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 
@@ -24,6 +25,8 @@ type Env struct {
 	RabbitExchangeType string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	WebhookRPCHost     string `envconfig:"WEBHOOK_RPC_HOST"`
 	WebhookRPCPort     int    `envconfig:"WEBHOOK_RPC_PORT"`
+	SenderRPCHost      string `envconfig:"SENDER_RPC_HOST"`
+	SenderRPCPort      int    `envconfig:"SENDER_RPC_PORT"`
 	TrackLinkRPCHost   string `envconfig:"TRACK_LINK_RPC_HOST"`
 	TrackLinkRPCPort   int    `envconfig:"TRACK_LINK_RPC_PORT"`
 	OptOutRPCHost      string `envconfig:"OPT_OUT_RPC_HOST"`
@@ -73,6 +76,9 @@ func main() {
 	svc := mmsRPC.ConfigSvc{
 		Webhook: webhookpb.NewServiceClient(
 			servicebuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+		),
+		Sender: senderpb.NewServiceClient(
+			servicebuilder.NewClientConn(env.SenderRPCHost, env.SenderRPCPort, tracer),
 		),
 		TrackLink: tracklink.NewClient(env.TrackLinkRPCHost, env.TrackLinkRPCPort),
 		OptOut:    optOut.NewClient(env.OptOutRPCHost, env.OptOutRPCPort),

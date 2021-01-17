@@ -5,9 +5,12 @@ import (
 	"log"
 
 	"github.com/google/uuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 	"github.com/burstsms/mtmo-tp/backend/sms/biz"
 	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
@@ -16,8 +19,22 @@ import (
 )
 
 func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
+	ctx := context.Background()
 	uid := uuid.New().String()
 	message := p.Message
+
+	sender, err := s.senderRPC.FindByAddress(ctx, &senderpb.FindByAddressParams{
+		AccountId: p.AccountID,
+		Address:   p.Sender,
+	})
+	errStatus, ok := status.FromError(err)
+	if ok && errStatus.Code() != codes.NotFound {
+		return err
+	}
+	err = biz.IsValidSender(sender.Sender, p.Sender, p.Country)
+	if err != nil {
+		return err
+	}
 
 	if p.TrackLinks {
 		rsp, err := s.tracklinkRPC.GenerateTrackLinks(tracklink.GenerateTrackLinksParams{

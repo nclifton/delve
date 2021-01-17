@@ -7,6 +7,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
@@ -16,6 +17,7 @@ const Name = "SMS"
 type SMSService struct {
 	db           *db
 	webhookRPC   webhookpb.ServiceClient
+	senderRPC    senderpb.ServiceClient
 	accountRPC   *account.Client
 	tracklinkRPC *tracklink.Client
 	optOutRPC    *optOut.Client
@@ -48,7 +50,8 @@ func NewService(
 	account *account.Client,
 	tracklink *tracklink.Client,
 	redisURL string,
-	optOut *optOut.Client) (rpc.Service, error) {
+	optOut *optOut.Client,
+	sender senderpb.ServiceClient) (rpc.Service, error) {
 
 	gob.Register(map[string]interface{}{})
 	db, err := NewDB(postgresURL, rabbitmq, redisURL)
@@ -60,6 +63,7 @@ func NewService(
 			db:           db,
 			name:         Name,
 			webhookRPC:   webhook,
+			senderRPC:    sender,
 			accountRPC:   account,
 			tracklinkRPC: tracklink,
 			features:     features,

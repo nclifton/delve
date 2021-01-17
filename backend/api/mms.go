@@ -2,9 +2,9 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 )
 
@@ -32,12 +32,6 @@ func MMSPOST(r *Route) {
 		return
 	}
 
-	validSender := checkValidSender(req.Sender, account.SenderMMS)
-	if !validSender {
-		r.WriteError(fmt.Sprintf("Sender: %s is not valid for account: %s(%s)", req.Sender, account.Name, account.ID), http.StatusBadRequest)
-		return
-	}
-
 	providerKey := account.MMSProviderKey
 	if providerKey == "" {
 		r.WriteError("failed sending MMS Incorrectly configured provider", http.StatusInternalServerError)
@@ -53,12 +47,19 @@ func MMSPOST(r *Route) {
 		Country:     req.Country,
 		MessageRef:  req.MessageRef,
 		ContentURLs: req.ContentURLs,
-		ProviderKey: providerKey,
 		TrackLinks:  req.TrackLinks,
 	})
+
+	// TODO: implement more errors for mms
 	if err != nil {
-		log.Printf("Failed sending MMS: %s", err)
-		r.WriteError("failed sending MMS", http.StatusInternalServerError)
+		switch err {
+		case errorlib.ErrInvalidSenderNotFound,
+			errorlib.ErrInvalidSenderChannel,
+			errorlib.ErrInvalidSenderCountry:
+			r.WriteError(err.Error(), http.StatusBadRequest)
+		default:
+			r.WriteError(err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 

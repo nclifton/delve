@@ -7,20 +7,36 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/number"
+	"github.com/burstsms/mtmo-tp/backend/mms/biz"
 	"github.com/burstsms/mtmo-tp/backend/mms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/mms/worker"
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 	tracklink "github.com/burstsms/mtmo-tp/backend/track_link/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
 func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 	ctx := context.Background()
-
 	uid := uuid.New().String()
+
+	sender, err := s.svc.Sender.FindByAddress(ctx, &senderpb.FindByAddressParams{
+		AccountId: p.AccountID,
+		Address:   p.Sender,
+	})
+	errStatus, ok := status.FromError(err)
+	if ok && errStatus.Code() != codes.NotFound {
+		return err
+	}
+	err = biz.IsValidSender(sender.Sender, p.Sender, p.Country)
+	if err != nil {
+		return err
+	}
 
 	message := p.Message
 	if p.TrackLinks {
@@ -87,8 +103,8 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 
 	newMMS.Status = `pending`
 	newMMS.ProviderKey = `fake`
-	if p.ProviderKey != "" {
-		newMMS.ProviderKey = p.ProviderKey
+	if sender.Sender.MMSProviderKey != "" {
+		newMMS.ProviderKey = sender.Sender.MMSProviderKey
 	}
 	log.Printf("newMMS: %+v, Params: %+v", newMMS, p)
 

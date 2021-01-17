@@ -20,8 +20,8 @@ k8sServiceChart:
 
   # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
   serviceType: ClusterIP
-  servicePort: 10002
-  serviceTargetPort: 10002
+  servicePort: 10015
+  serviceTargetPort: 10015
   # For Headless Services (e.g. RabbitMQ Consumers) 
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   #serviceClusterIP: None
@@ -73,7 +73,7 @@ k8sServiceChart:
       RABBIT_EXCHANGE: "sender"
       RABBIT_EXCHANGE_TYPE: "direct"
       RPC_HOST: "sender"
-      RPC_PORT: "10002"
+      RPC_PORT: "10015"
       JAEGER_AGENT_HOST: "jaeger"
       JAEGER_AGENT_PORT: "6831"
       JAEGER_SAMPLER_TYPE: "const"

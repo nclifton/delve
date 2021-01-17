@@ -30,7 +30,6 @@ type SendParams struct {
 	MessageRef  string
 	ContentURLs []string
 	TrackLinks  bool
-	ProviderKey string
 }
 
 type SendReply struct {
