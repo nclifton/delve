@@ -2,6 +2,10 @@
 k8sServiceChart:
   name: forestadmin
   namespace: tp
+  # Harness can create a namespace if not exists so this is set to true in Harness.
+  # Helm install will error if the namespace already exists so set this to false
+  # and create the namespace first in deploy_services.sh when manually deploying.
+  createNamespace: ${environmentVariable.createNamespace}
   # Component is the group of services (domain) the service belongs to
   component: admin
   replicas: 2

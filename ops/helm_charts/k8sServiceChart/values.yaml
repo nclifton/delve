@@ -4,7 +4,11 @@ name: service-name
 component: service-name
 replicas: 1
 # TODO: Only use ${app.name} here once we move to Harness completely
-namespace: sendsei
+namespace: tp
+# Harness can create a namespace if not exists so this is set to true in Harness.
+# Helm install will error if the namespace already exists so set this to false
+# and create the namespace first in deploy_services.sh when manually deploying.
+createNamespace: ${environmentVariable.createNamespace}
 namespaceAnnotations:
   "linkerd.io/inject": "enabled"
   "config.linkerd.io/trace-collector": "linkerd-collector.linkerd:55678"
@@ -93,3 +97,15 @@ env: {}
 #    key1: value1
 #  secrets:
 #    key2: value2
+
+# TODO: Remove this and use defined env vars above
+#existingConfigMapName: service-config
+#existingSecretName: staging
+
+# Old configuration to support config toml files (optional)
+# All new services can delete this as they use env vars defined above
+#config:
+#  name: backend-config
+#  key: config
+#  mountPath: /config
+#  filename: config.toml

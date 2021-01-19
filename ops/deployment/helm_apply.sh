@@ -52,6 +52,9 @@ sed -i -e 's/${env.name}/tp-'"${ENV}"'/g' ${CHART_DIR}/.generated-values.yaml
 # Set Environment URL
 sed -i -e 's/${environmentVariable.dns}/'"${ENV_DNS}"'/g' ${CHART_DIR}/.generated-values.yaml
 
+# Set Create Namespace
+sed -i -e 's/${environmentVariable.createNamespace}/false/g' ${CHART_DIR}/.generated-values.yaml
+
 # Set Image Tag
 sed -i -e 's/${artifact.buildNo}/'"${IMAGE_TAG}"'/g' ${CHART_DIR}/.generated-values.yaml
 

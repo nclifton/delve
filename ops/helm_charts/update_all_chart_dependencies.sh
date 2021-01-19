@@ -17,5 +17,6 @@ for service_path in ${service_paths}; do
     infra="${ROOTDIR}/${service_path}/infra"
     dir=$(find ${infra} -mindepth 1 -maxdepth 1 -type d | egrep -v "values")
 
+    echo "Updating chart deps for ${dir}"
     helm dependency update ${dir} --skip-refresh
 done
