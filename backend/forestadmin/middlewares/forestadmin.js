@@ -17,6 +17,7 @@ module.exports = async function (app) {
         models.sequelize.webhook,
         models.sequelize.sms,
         models.sequelize.mms,
+        models.sequelize.sender,
       ],
     })
   );

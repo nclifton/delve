@@ -2,12 +2,14 @@ const express = require("express");
 const {
   PermissionMiddlewareCreator,
   RecordSerializer,
+  RecordUpdater,
 } = require("forest-express-sequelize");
 const { default: Axios } = require("axios");
 const models = require("../models");
 
 const account = models.sequelize.account.models;
 const webhookDb = models.sequelize.webhook.models;
+const senderDb = models.sequelize.sender.models;
 const smsDb = models.sequelize.sms.models;
 const mmsDb = models.sequelize.mms.models;
 const sequelize = models.sequelize;
@@ -162,6 +164,100 @@ router.get(
     });
     const findqry = sequelize.webhook.query(findQuery, {
       type: sequelize.webhook.QueryTypes.SELECT,
+    });
+
+    Promise.all([countqry, findqry])
+      .then(([count, records]) =>
+        recordSerializer.serialize(records, { count: count[0].count })
+      )
+      .then((recordsSerialize) => response.send(recordsSerialize))
+      .catch(next);
+  }
+);
+
+router.post(
+  "/account/:recordId/relationships/senders",
+  permissionMiddlewareCreator.create(),
+  (request, response, next) => {
+    const accountId = request.params.recordId;
+    const recordSerializer = new RecordSerializer(senderDb.sender);
+
+    senderDb.sender
+      .findAll({ where: { account_id: accountId } })
+      .then((records) =>
+        recordSerializer.serialize(records, { count: records.length })
+      )
+      .then((recordsSerialize) => response.send(recordsSerialize))
+      .catch(next);
+  }
+);
+
+router.delete(
+  "/account/:recordId/relationships/senders",
+  permissionMiddlewareCreator.delete(),
+  (request, response, next) => {
+    const accountId = request.params.recordId;
+    const recordUpdater = new RecordUpdater(senderDb.sender);
+
+    request.body.data.forEach((selected)=>{
+      senderDb.sender
+      .findAll({ where: { id: selected.id, account_id: accountId } })
+      .then(() => {
+        recordToUpdate = {
+          id: selected.id,
+          ref_account_id: null,
+          account_id: null,
+        };
+        return recordUpdater.update(recordToUpdate, selected.id);
+      })
+      .catch(next);
+    })
+
+  }
+);
+
+router.get(
+  "/account/:recordId/relationships/senders",
+  permissionMiddlewareCreator.list(),
+  (request, response, next) => {
+    const accountId = request.params.recordId;
+    const limit = parseInt(request.query.page.size, 10) || 20;
+    const offset = (parseInt(request.query.page.number, 10) - 1) * limit;
+    const recordSerializer = new RecordSerializer(senderDb.sender);
+
+    let countQuery = `
+      SELECT count(*)
+      FROM sender
+      WHERE account_id = '${accountId}'
+    `;
+
+    let findQuery = `
+      SELECT sender.*
+      FROM sender
+      WHERE account_id = '${accountId}'
+    `;
+
+    if (request.query.search) {
+      filter = `AND (
+        address ILIKE '%${request.query.search}%'
+        OR country ILIKE '%${request.query.search}%'
+        OR channels ILIKE '%${request.query.search}%'
+        OR mms_provider_key ILIKE '%${request.query.search}%'
+      )`;
+      countQuery += filter;
+      findQuery += filter;
+    }
+
+    findQuery += `
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
+
+    const countqry = sequelize.sender.query(countQuery, {
+      type: sequelize.sender.QueryTypes.SELECT,
+    });
+    const findqry = sequelize.sender.query(findQuery, {
+      type: sequelize.sender.QueryTypes.SELECT,
     });
 
     Promise.all([countqry, findqry])

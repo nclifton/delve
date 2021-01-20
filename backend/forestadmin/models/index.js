@@ -19,6 +19,10 @@ let databases = [
     name: "mms",
     connectionString: process.env.MMS_POSTGRES_URL,
   },
+  {
+    name: "sender",
+    connectionString: process.env.SENDER_POSTGRES_URL,
+  }
 ];
 
 const sequelize = {};

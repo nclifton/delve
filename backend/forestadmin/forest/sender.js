@@ -1,43 +1,23 @@
 const { collection } = require("forest-express-sequelize");
+const models = require("../models");
+
+const dbAccount = models.sequelize.account.models;
 
 // This file allows you to add to your Forest UI:
 // - Smart actions: https://docs.forestadmin.com/documentation/reference-guide/actions/create-and-manage-smart-actions
 // - Smart fields: https://docs.forestadmin.com/documentation/reference-guide/fields/create-and-manage-smart-fields
 // - Smart relationships: https://docs.forestadmin.com/documentation/reference-guide/relationships/create-a-smart-relationship
 // - Smart segments: https://docs.forestadmin.com/documentation/reference-guide/segments/smart-segments
-collection("account", {
-  actions: [
-    {
-      name: "Export global usage report",
-      type: "global",
-      download: true,
-    },
-    {
-      name: "Export account usage report",
-      type: "bulk",
-      download: true,
-    },
-  ],
+collection("sender", {
+  actions: [],
   fields: [
     {
-      field: "webhooks",
-      type: ["String"],
-      reference: "webhook.account_id",
-    },
-    {
-      field: "mms",
-      type: ["String"],
-      reference: "mms.account_id",
-    },
-    {
-      field: "sms",
-      type: ["String"],
-      reference: "sms.account_id",
-    },
-    {
-      field: "senders",
-      type: ["String"],
-      reference: "sender.account_id",
+      field: "account_id",
+      type: "String",
+      reference: "account.id",
+      get: function (sender) {
+        return dbAccount.account.findByPk(sender.ref_account_id);
+      },
     },
   ],
   segments: [],

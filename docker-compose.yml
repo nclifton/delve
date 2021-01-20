@@ -235,6 +235,7 @@ services:
       - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
       - SMS_POSTGRES_URL=postgresql://postgres:example@postgres/sms
       - MMS_POSTGRES_URL=postgresql://postgres:example@postgres/mms
+      - SENDER_POSTGRES_URL=postgresql://postgres:example@postgres/sender
       - FOREST_AUTH_SECRET=8d3d9df0260ad4414d18d77b5d16d585b636234357e56fac
       - FOREST_ENV_SECRET=470bdd45ada20f90a83f13c795b3422d5b8baf1198e81118b3e5fa2484579837
       - FOREST_ADMIN_API=http://backend:10014/v1

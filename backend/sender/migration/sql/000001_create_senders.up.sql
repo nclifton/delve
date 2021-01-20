@@ -12,7 +12,7 @@ CREATE TYPE channel AS ENUM (
 );
 CREATE TABLE IF NOT EXISTS sender (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  account_id UUID,
+  account_id TEXT,
   address TEXT NOT NULL,
   mms_provider_key provider_key,
   channels channel[],
