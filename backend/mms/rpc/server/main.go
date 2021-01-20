@@ -7,7 +7,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
-	"github.com/burstsms/mtmo-tp/backend/lib/servicebuilder"
+	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
 	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc"
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
@@ -75,10 +75,10 @@ func main() {
 
 	svc := mmsRPC.ConfigSvc{
 		Webhook: webhookpb.NewServiceClient(
-			servicebuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+			rpcbuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
 		),
 		Sender: senderpb.NewServiceClient(
-			servicebuilder.NewClientConn(env.SenderRPCHost, env.SenderRPCPort, tracer),
+			rpcbuilder.NewClientConn(env.SenderRPCHost, env.SenderRPCPort, tracer),
 		),
 		TrackLink: tracklink.NewClient(env.TrackLinkRPCHost, env.TrackLinkRPCPort),
 		OptOut:    optOut.NewClient(env.OptOutRPCHost, env.OptOutRPCPort),

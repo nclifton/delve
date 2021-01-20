@@ -6,7 +6,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
-	"github.com/burstsms/mtmo-tp/backend/lib/servicebuilder"
+	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
 	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	ooRPC "github.com/burstsms/mtmo-tp/backend/optout/rpc"
 	smsRPC "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
@@ -58,7 +58,7 @@ func main() {
 	defer closer.Close()
 
 	wrpc := webhookpb.NewServiceClient(
-		servicebuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+		rpcbuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
 	)
 	smsrpc := smsRPC.New(env.SMSRPCHost, env.SMSRPCPort)
 	mmsrpc := mmsRPC.New(env.MMSRPCHost, env.MMSRPCPort)

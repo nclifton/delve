@@ -6,7 +6,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
-	"github.com/burstsms/mtmo-tp/backend/lib/servicebuilder"
+	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
 	mmsRPC "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	smsRPC "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	tlrpc "github.com/burstsms/mtmo-tp/backend/track_link/rpc"
@@ -60,7 +60,7 @@ func main() {
 	mmsrpc := mmsRPC.New(env.MMSRPCHost, env.MMSRPCPort)
 	smsrpc := smsRPC.New(env.SMSRPCHost, env.SMSRPCPort)
 	wrpc := webhookpb.NewServiceClient(
-		servicebuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+		rpcbuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
 	)
 
 	srpc, err := tlrpc.NewService(env.PostgresURL, env.TrackDomain, mmsrpc, smsrpc, wrpc)

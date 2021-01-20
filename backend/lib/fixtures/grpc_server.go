@@ -9,12 +9,12 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/burstsms/mtmo-tp/backend/lib/servicebuilder"
+	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
 )
 
-func (tfx *TestFixtures) GRPCStart(registerCB func(deps servicebuilder.Deps) error) {
+func (tfx *TestFixtures) GRPCStart(registerCB func(deps rpcbuilder.Deps) error) {
 
-	s := servicebuilder.NewGRPCServer(servicebuilder.Config{
+	s := rpcbuilder.NewGRPCServer(rpcbuilder.Config{
 		RPCHost:                     "",
 		RPCPort:                     "",
 		RabbitURL:                   tfx.Rabbit.ConnStr,
@@ -27,7 +27,7 @@ func (tfx *TestFixtures) GRPCStart(registerCB func(deps servicebuilder.Deps) err
 
 	// start in a go routine
 	go func() {
-		err := s.GRPCStart(registerCB)
+		err := s.Start(registerCB)
 		if err != nil {
 			log.Fatal(err)
 		}

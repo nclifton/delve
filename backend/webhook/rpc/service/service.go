@@ -2,8 +2,8 @@ package service
 
 import (
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
-	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/db"
-	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/queue"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/db"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/queue"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 

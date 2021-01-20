@@ -8,7 +8,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/api"
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
-	"github.com/burstsms/mtmo-tp/backend/lib/servicebuilder"
+	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
@@ -70,7 +70,7 @@ func main() {
 		SMSClient:     sms.New(env.SMSHost, env.SMSPort),
 		MMSClient:     mms.New(env.MMSHost, env.MMSPort),
 		WebhookClient: webhookpb.NewServiceClient(
-			servicebuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+			rpcbuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
 		),
 		NrApp: newrelicM,
 	})

@@ -7,7 +7,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/db"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/db"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 

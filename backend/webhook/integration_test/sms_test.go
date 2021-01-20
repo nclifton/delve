@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/assertdb"
-	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/service"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/service"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 

@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/queue"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/queue"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 	"github.com/burstsms/mtmo-tp/backend/webhook/worker/msg"
 )

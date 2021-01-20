@@ -1,4 +1,4 @@
-package servicebuilder
+package rpcbuilder
 
 import (
 	"fmt"

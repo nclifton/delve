@@ -1,4 +1,4 @@
-package servicebuilder
+package rpcbuilder
 
 import (
 	"context"
@@ -184,7 +184,7 @@ func (g *grpcServer) setupDeps(ctx context.Context) error {
 	return nil
 }
 
-func (g *grpcServer) GRPCStart(registerCB func(deps Deps) error) error {
+func (g *grpcServer) Start(registerCB func(deps Deps) error) error {
 	ctx := context.Background()
 
 	if err := g.setupDeps(ctx); err != nil {

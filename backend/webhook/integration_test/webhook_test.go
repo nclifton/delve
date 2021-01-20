@@ -14,12 +14,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/app/run"
+	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/builder"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 	"github.com/burstsms/mtmo-tp/backend/webhook/worker"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/assertdb"
 	"github.com/burstsms/mtmo-tp/backend/lib/fixtures"
+	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
 )
 
 var tfx *fixtures.TestFixtures
@@ -29,14 +30,22 @@ func TestMain(m *testing.M) {
 	tfx.SetupPostgres("webhook")
 	tfx.SetupRabbit()
 	tfx.SetupRedis()
-	tfx.GRPCStart(run.Server)
+	tfx.GRPCStart(webhookRPCRunFunc())
 	tfx.StartWorker(webhookWorkerRunFunc(tfx))
 	code := m.Run()
 	defer os.Exit(code)
 	defer tfx.Teardown()
 }
 
-//TODO this should be moved out of here and split between the fixtures package and the webhook worker package using a worker builder package similar to servicebuilder
+func webhookRPCRunFunc() func(deps rpcbuilder.Deps) error {
+	b := builder.NewBuilderFromEnv()
+
+	// mocks/custom config is set here
+
+	return b.Run
+}
+
+//TODO this should be moved out of here and split between the fixtures package and the webhook worker package using a worker builder package similar to rpcbuilder
 func webhookWorkerRunFunc(tfx *fixtures.TestFixtures) func() {
 	wkr := worker.New()
 	wkr.Env = &worker.WebhookEnv{
@@ -94,10 +103,10 @@ func Test_Insert(t *testing.T) {
 				assert.Check(t, response.Webhook.GetUpdatedAt().AsTime().After(testStartTime), "UpdatedAt")
 
 				i.SeeInDatabase("webhook", assertdb.Criteria{
-					"account_id": "1",
-					"event": "event",
-					"name": "name",
-					"url": "url",
+					"account_id":   "1",
+					"event":        "event",
+					"name":         "name",
+					"url":          "url",
 					"created_at >": testStartTime.Format(assertdb.SQLTimestampWithoutTimeZone),
 					"updated_at >": testStartTime.Format(assertdb.SQLTimestampWithoutTimeZone),
 				})
@@ -268,12 +277,12 @@ func Test_Update(t *testing.T) {
 				assert.Equal(t, response.Webhook.GetCreatedAt().AsTime().Format(assertdb.SQLTimestampWithoutTimeZone), "2020-01-12 22:41:42", "CreatedAt")
 				assert.Check(t, response.Webhook.GetUpdatedAt().AsTime().Format(assertdb.SQLTimestampWithoutTimeZone) > "2020-01-12 22:41:42", "UpdatedAt")
 				i.SeeInDatabase("webhook", assertdb.Criteria{
-					"id": 32767,
-					"account_id": "42",
-					"event": "event2",
-					"name": "name2",
-					"url": "url2",
-					"created_at": "2020-01-12 22:41:42",
+					"id":           32767,
+					"account_id":   "42",
+					"event":        "event2",
+					"name":         "name2",
+					"url":          "url2",
+					"created_at":   "2020-01-12 22:41:42",
 					"updated_at >": "2020-01-12 22:41:42",
 				})
 
@@ -311,7 +320,7 @@ func Test_Update(t *testing.T) {
 			},
 			want: func(response *webhookpb.UpdateReply) {
 				i.DontSeeInDatabase("webhook", assertdb.Criteria{
-					"id": 32767,
+					"id":         32767,
 					"account_id": "43",
 				})
 			},
