@@ -3,6 +3,10 @@ package api
 import (
 	"net/http"
 
+	"github.com/julienschmidt/httprouter"
+	"github.com/justinas/alice"
+	"github.com/opentracing/opentracing-go"
+
 	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/api/middleware/auth"
 	"github.com/burstsms/mtmo-tp/backend/api/middleware/context"
@@ -10,11 +14,9 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
-	"github.com/julienschmidt/httprouter"
-	"github.com/justinas/alice"
-	"github.com/opentracing/opentracing-go"
 )
 
 // Options will hold some state for our http handler
@@ -25,6 +27,7 @@ type Options struct {
 	SMSClient     *sms.Client
 	MMSClient     *mms.Client
 	WebhookClient webhookpb.ServiceClient
+	SenderClient  senderpb.ServiceClient
 	NrApp         func(http.Handler) http.Handler
 }
 
@@ -33,6 +36,7 @@ type RPCClients struct {
 	sms     *sms.Client
 	mms     *mms.Client
 	webhook webhookpb.ServiceClient
+	sender  senderpb.ServiceClient
 }
 
 // API wraps an instance of our api app
@@ -55,6 +59,7 @@ func New(opts *Options) *API {
 		sms:     opts.SMSClient,
 		mms:     opts.MMSClient,
 		webhook: opts.WebhookClient,
+		sender:  opts.SenderClient,
 	}
 
 	api := &API{
@@ -110,8 +115,10 @@ func New(opts *Options) *API {
 	router.POST("/v1/webhook", NewRoute(api, authChain, WebhookCreatePOST))
 	router.PUT("/v1/webhook/:id", NewRoute(api, authChain, WebhookUpdatePUT))
 	router.GET("/v1/webhook/:id", NewRoute(api, authChain, WebhookGET))
-	router.GET("/v1/webhook", NewRoute(api, authChain, WebhookListGET))
 	router.DELETE("/v1/webhook/:id", NewRoute(api, authChain, WebhookDELETE))
+	router.GET("/v1/webhook", NewRoute(api, authChain, WebhookListGET))
+
+	router.GET("/v1/sender", NewRoute(api, authChain, SenderListGET))
 
 	return api
 }

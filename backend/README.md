@@ -18,3 +18,11 @@ Well behaved developers will have all the project's containers running using the
 
 
 PS: But if a developer wants to live dangerously and without friends, and wants to use local protobuf code generation they must ensure the `protoc` version is consistent with the version being used in the docker service container. Failure to do so will rain death and damnation upon themselves and their family.
+
+## Public API
+
+### API Specs:
+
+ - [SMS](./api/specs/sms.md)
+ - [Webhook](./api/specs/webhook.md)
+ - [Sender](./api/specs/sender.md)

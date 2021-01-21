@@ -10,6 +10,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 
@@ -34,6 +35,9 @@ type Env struct {
 
 	WebhookRPCHost string `envconfig:"WEBHOOK_HOST"`
 	WebhookRPCPort int    `envconfig:"WEBHOOK_PORT"`
+
+	SenderRPCHost string `envconfig:"SENDER_HOST"`
+	SenderRPCPort int    `envconfig:"SENDER_PORT"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
@@ -71,6 +75,9 @@ func main() {
 		MMSClient:     mms.New(env.MMSHost, env.MMSPort),
 		WebhookClient: webhookpb.NewServiceClient(
 			rpcbuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+		),
+		SenderClient: senderpb.NewServiceClient(
+			servicebuilder.NewClientConn(env.SenderRPCHost, env.SenderRPCPort, tracer),
 		),
 		NrApp: newrelicM,
 	})

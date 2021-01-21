@@ -44,6 +44,8 @@ services:
       - API_MMS_PORT=10007
       - API_WEBHOOK_HOST=webhook
       - API_WEBHOOK_PORT=10002
+      - API_SENDER_HOST=sender
+      - API_SENDER_PORT=10015
 
       - ACCOUNT_RPC_PORT=10001
       - ACCOUNT_RPC_HOST=backend
@@ -56,9 +58,6 @@ services:
       - WEBHOOK_CLIENT_TIMEOUT=3
       - WEBHOOK_REDIS_URL=redis:6379
       - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
-
-      - SENDER_RPC_HOST=sender
-      - SENDER_RPC_PORT=10015
 
       - MMS_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mms
       - MMS_RABBIT_EXCHANGE=mms

@@ -1,9 +1,9 @@
-## GET Webhooks
+## Get Webhook List
 
 Request
 
 ```
-GET /v1/webhooks
+GET /v1/webhook
 ```
 
 Response
@@ -27,7 +27,7 @@ Content-Type: application/json
 }
 ```
 
-## Create Webhook
+## Create a Webhook
 
 Request
 
@@ -60,7 +60,7 @@ Content-Type: application/json
 
 ```
 
-## Update Webhook
+## Update a Webhook
 
 Request
 
@@ -93,7 +93,7 @@ Content-Type: application/json
 
 ```
 
-## GET Single Webhook
+## Get a Single Webhook
 
 Request
 
@@ -119,7 +119,7 @@ Content-Type: application/json
 
 ```
 
-## DELETE Single Webhook
+## Delete a Single Webhook
 
 Request
 
