@@ -21,6 +21,9 @@
         },
         {
             "name": "webhook"
+        },
+        {
+            "name": "sender"
         }
     ],
     "permissions": [
@@ -55,6 +58,13 @@
         {
             "user": "burstsms",
             "vhost": "mm7",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        },
+        {
+            "user": "burstsms",
+            "vhost": "sender",
             "configure": ".*",
             "write": ".*",
             "read": ".*"

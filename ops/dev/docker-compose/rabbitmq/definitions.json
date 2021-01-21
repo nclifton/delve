@@ -1,48 +1,66 @@
 {
-  "users": [
-    {
-      "name": "tp",
-      "password_hash": "yo8NL1IfbIKd3xAMc6gV+BPDsW8/kO6jPdL1Fnq0tyYQg2/L",
-      "hashing_algorithm": "rabbit_password_hashing_sha256",
-      "tags": "administrator"
-    }
-  ],
-  "vhosts": [
-    { "name": "mms" },
-    { "name": "mm7" },
-    { "name": "sms" },
-    { "name": "webhook" }
-  ],
-  "permissions": [
-    {
-      "user": "tp",
-      "vhost": "sms",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    },
-    {
-      "user": "tp",
-      "vhost": "webhook",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    },
-    {
-      "user": "tp",
-      "vhost": "mms",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    },
-    {
-      "user": "tp",
-      "vhost": "mm7",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    }
-  ],
-  "parameters": [],
-  "policies": []
+    "users": [
+        {
+            "name": "tp",
+            "password_hash": "yo8NL1IfbIKd3xAMc6gV+BPDsW8/kO6jPdL1Fnq0tyYQg2/L",
+            "hashing_algorithm": "rabbit_password_hashing_sha256",
+            "tags": "administrator"
+        }
+    ],
+    "vhosts": [
+        {
+            "name": "mms"
+        },
+        {
+            "name": "mm7"
+        },
+        {
+            "name": "sms"
+        },
+        {
+            "name": "webhook"
+        },
+        {
+            "name": "sender"
+        }
+    ],
+    "permissions": [
+        {
+            "user": "tp",
+            "vhost": "sms",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        },
+        {
+            "user": "tp",
+            "vhost": "webhook",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        },
+        {
+            "user": "tp",
+            "vhost": "mms",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        },
+        {
+            "user": "tp",
+            "vhost": "mm7",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        },
+        {
+            "user": "tp",
+            "vhost": "sender",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        }
+    ],
+    "parameters": [],
+    "policies": []
 }
