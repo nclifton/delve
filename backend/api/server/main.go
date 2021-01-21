@@ -77,7 +77,7 @@ func main() {
 			rpcbuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
 		),
 		SenderClient: senderpb.NewServiceClient(
-			servicebuilder.NewClientConn(env.SenderRPCHost, env.SenderRPCPort, tracer),
+			rpcbuilder.NewClientConn(env.SenderRPCHost, env.SenderRPCPort, tracer),
 		),
 		NrApp: newrelicM,
 	})
