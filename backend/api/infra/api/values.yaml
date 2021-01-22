@@ -87,3 +87,7 @@ k8sServiceChart:
       SMS_PORT: "10009"
       MMS_HOST: "mms-rpc-service"
       MMS_PORT: "10007"
+      WEBHOOK_HOST: "webhook-rpc-service"
+      WEBHOOK_PORT: "10002"
+      SENDER_HOST: "sender-rpc-service"
+      SENDER_PORT: "10015"

@@ -76,7 +76,7 @@ k8sServiceChart:
       NR_TRACING: "true"
       POST_RABBIT_EXCHANGE: "webhook"
       POST_RABBIT_EXCHANGE_TYPE: "direct"
-      RPC_HOST: "webhook"
+      RPC_HOST: "webhook-rpc-service"
       RPC_PORT: "10002"
       JAEGER_AGENT_HOST: "jaeger"
       JAEGER_AGENT_PORT: "6831"

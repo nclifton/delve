@@ -42,7 +42,7 @@ services:
       - API_SMS_PORT=10009
       - API_MMS_HOST=backend
       - API_MMS_PORT=10007
-      - API_WEBHOOK_HOST=webhook
+      - API_WEBHOOK_HOST=webhook-rpc-service
       - API_WEBHOOK_PORT=10002
       - API_SENDER_HOST=sender-rpc-service
       - API_SENDER_PORT=10015
@@ -66,7 +66,7 @@ services:
       - MMS_RPC_HOST=backend
       - MMS_RPC_PORT=10007
       - MMS_POSTGRES_URL=postgresql://postgres:example@postgres/mms
-      - MMS_WEBHOOK_RPC_HOST=webhook
+      - MMS_WEBHOOK_RPC_HOST=webhook-rpc-service
       - MMS_WEBHOOK_RPC_PORT=10002
       - MMS_TRACK_LINK_RPC_HOST=backend
       - MMS_TRACK_LINK_RPC_PORT=10010
@@ -121,7 +121,7 @@ services:
       - SMS_CLIENT_TIMEOUT=3
       - SMS_REDIS_URL=redis:6379
       - SMS_ALARIS_URL=http://backend:10006/api
-      - SMS_WEBHOOK_RPC_HOST=webhook
+      - SMS_WEBHOOK_RPC_HOST=webhook-rpc-service
       - SMS_WEBHOOK_RPC_PORT=10002
       - SMS_TRACK_LINK_RPC_HOST=backend
       - SMS_TRACK_LINK_RPC_PORT=10010
@@ -144,7 +144,7 @@ services:
       - TRACK_LINK_INBOUND_PORT=10013
       - TRACK_LINK_POSTGRES_URL=postgresql://postgres:example@postgres/track_link
       - TRACK_LINK_TRACKLINK_DOMAIN=localhost:10010
-      - TRACK_LINK_WEBHOOK_RPC_HOST=webhook
+      - TRACK_LINK_WEBHOOK_RPC_HOST=webhook-rpc-service
       - TRACK_LINK_WEBHOOK_RPC_PORT=10002
 
       - JAEGER_AGENT_HOST=jaeger
@@ -357,11 +357,11 @@ services:
       OPTOUT_POSTGRES_PASSWORD: example
       OPTOUT_POSTGRES_SSL: disable
       OPTOUT_POSTGRES_NAME: optout
-  webhook:
+  webhook-rpc-service:
     build:
       context: .
       dockerfile: ops/dev/docker-compose/DockerfileDomain.dev
-    hostname: webhook
+    hostname: webhook-rpc-service
     entrypoint: ["/go/bin/modd", "--file=./webhook/rpc/modd.conf"]
     tty: true
     volumes:
