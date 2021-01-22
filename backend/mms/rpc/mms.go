@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
 	"github.com/burstsms/mtmo-tp/backend/lib/number"
 	"github.com/burstsms/mtmo-tp/backend/mms/biz"
 	"github.com/burstsms/mtmo-tp/backend/mms/rpc/types"
@@ -29,8 +30,11 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 		AccountId: p.AccountID,
 		Address:   p.Sender,
 	})
-	errStatus, ok := status.FromError(err)
-	if ok && errStatus.Code() != codes.NotFound {
+	if err != nil {
+		errStatus, ok := status.FromError(err)
+		if ok && errStatus.Code() == codes.NotFound {
+			return errorlib.ErrInvalidSenderNotFound
+		}
 		return err
 	}
 	err = biz.IsValidSender(sender.Sender, p.Sender, p.Country)

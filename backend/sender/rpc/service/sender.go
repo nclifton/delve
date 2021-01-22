@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
-	"github.com/burstsms/mtmo-tp/backend/sender/rpc/app/db"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/db"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
 

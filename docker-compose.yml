@@ -44,7 +44,7 @@ services:
       - API_MMS_PORT=10007
       - API_WEBHOOK_HOST=webhook
       - API_WEBHOOK_PORT=10002
-      - API_SENDER_HOST=sender
+      - API_SENDER_HOST=sender-rpc-service
       - API_SENDER_PORT=10015
 
       - ACCOUNT_RPC_PORT=10001
@@ -72,6 +72,9 @@ services:
       - MMS_TRACK_LINK_RPC_PORT=10010
       - MMS_OPT_OUT_RPC_HOST=backend
       - MMS_OPT_OUT_RPC_PORT=10011
+      - MMS_SENDER_RPC_HOST=sender-rpc-service
+      - MMS_SENDER_RPC_PORT=10015
+
 
       - MM7_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
       - MM7_RABBIT_EXCHANGE=mm7
@@ -124,6 +127,8 @@ services:
       - SMS_TRACK_LINK_RPC_PORT=10010
       - SMS_OPT_OUT_RPC_HOST=backend
       - SMS_OPT_OUT_RPC_PORT=10011
+      - SMS_SENDER_RPC_HOST=sender-rpc-service
+      - SMS_SENDER_RPC_PORT=10015
       - OPTOUTLINK_DOMAIN=localhost:10010
       - TRACKLINK_DOMAIN=localhost:10010
 
@@ -368,11 +373,11 @@ services:
     depends_on:
       - rabbitmq
       - postgres
-  sender:
+  sender-rpc-service:
     build:
       context: .
       dockerfile: ops/dev/docker-compose/DockerfileDomain.dev
-    hostname: sender
+    hostname: sender-rpc-service
     entrypoint: ["/go/bin/modd", "--file=./sender/rpc/modd.conf"]
     tty: true
     volumes:

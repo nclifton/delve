@@ -32,12 +32,6 @@ func MMSPOST(r *Route) {
 		return
 	}
 
-	providerKey := account.MMSProviderKey
-	if providerKey == "" {
-		r.WriteError("failed sending MMS Incorrectly configured provider", http.StatusInternalServerError)
-		return
-	}
-
 	res, err := r.api.mms.Send(mms.SendParams{
 		AccountID:   account.ID,
 		Subject:     req.Subject,

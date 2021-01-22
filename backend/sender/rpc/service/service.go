@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
-	"github.com/burstsms/mtmo-tp/backend/sender/rpc/app/db"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/db"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
 

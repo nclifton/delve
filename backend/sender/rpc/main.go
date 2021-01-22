@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
-	"github.com/burstsms/mtmo-tp/backend/sender/rpc/app/run"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/run"
 )
 
 func main() {

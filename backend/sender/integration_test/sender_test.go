@@ -14,7 +14,7 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/assertdb"
 	"github.com/burstsms/mtmo-tp/backend/lib/fixtures"
-	"github.com/burstsms/mtmo-tp/backend/sender/rpc/app/run"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/run"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
 

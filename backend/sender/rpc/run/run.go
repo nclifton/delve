@@ -2,9 +2,9 @@ package run
 
 import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
-	"github.com/burstsms/mtmo-tp/backend/sender/rpc/app/db"
-	"github.com/burstsms/mtmo-tp/backend/sender/rpc/app/service"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/db"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/service"
 )
 
 func Server(deps rpcbuilder.Deps) error {
