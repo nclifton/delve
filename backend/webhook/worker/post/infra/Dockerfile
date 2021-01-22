@@ -19,7 +19,7 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /src
 COPY ./backend .
 
-RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/webhook/worker/post/cmd
+RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/webhook/worker/post
 
 # Final stage: the running container
 FROM scratch

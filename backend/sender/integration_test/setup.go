@@ -22,6 +22,7 @@ type testDeps struct {
 	dates []time.Time
 }
 
+
 func newSetup(t *testing.T, tfx *fixtures.TestFixtures) *testDeps {
 
 	uuids := make([]string, 20)

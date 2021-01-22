@@ -52,13 +52,16 @@ services:
       - ACCOUNT_POSTGRES_URL=postgresql://postgres:example@postgres/account
       - ACCOUNT_REDIS_URL=redis:6379
 
+      - WEBHOOK_WORKER_NAME=webhook.post
       - WEBHOOK_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/webhook
       - WEBHOOK_RABBIT_EXCHANGE=webhook
       - WEBHOOK_RABBIT_EXCHANGE_TYPE=direct
       - WEBHOOK_CLIENT_TIMEOUT=3
       - WEBHOOK_REDIS_URL=redis:6379
       - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
-
+      - WEBHOOK_TRACER_DISABLE=true
+      - WEBHOOK_RABBIT_IGNORE_CLOSED_QUEUE_CONN=true
+  
       - MMS_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mms
       - MMS_RABBIT_EXCHANGE=mms
       - MMS_RABBIT_EXCHANGE_TYPE=direct

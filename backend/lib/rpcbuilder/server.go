@@ -20,24 +20,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-func NewGRPCServer(config Config) grpcServer {
-	return grpcServer{conf: config,
-		log: logger.NewLogger(),
-	}
-}
-
-func NewGRPCServerFromEnv() grpcServer {
-	stLog := logger.NewLogger()
-
-	var config Config
-	if err := envconfig.Process("", &config); err != nil {
-		stLog.Fatalf(context.Background(), "NewGRPCServerFromEnv", "failed to read env vars: %s", err)
-	}
-
-	return grpcServer{conf: config,
-		log: stLog}
-}
-
 type Config struct {
 	RPCHost     string `envconfig:"RPC_HOST"`
 	RPCPort     string `envconfig:"RPC_PORT"`
@@ -66,6 +48,28 @@ type grpcServer struct {
 	lis        net.Listener
 	server     *grpc.Server
 	serverOpts []grpc.ServerOption
+}
+
+type Service interface {
+	Run(deps Deps) error
+}
+
+func NewGRPCServer(config Config) grpcServer {
+	return grpcServer{conf: config,
+		log: logger.NewLogger(),
+	}
+}
+
+func NewGRPCServerFromEnv() grpcServer {
+	stLog := logger.NewLogger()
+
+	var config Config
+	if err := envconfig.Process("", &config); err != nil {
+		stLog.Fatalf(context.Background(), "NewGRPCServerFromEnv", "failed to read env vars: %s", err)
+	}
+
+	return grpcServer{conf: config,
+		log: stLog}
 }
 
 func (g *grpcServer) TracerClose() error {
@@ -217,7 +221,6 @@ func (g *grpcServer) Start(registerCB func(deps Deps) error) error {
 			g.log.Fields(ctx, logger.Fields{
 				"host": g.conf.RPCHost,
 				"port": g.conf.RPCPort}).Fatalf("Failed to start grpc server")
-
 		}
 	}()
 

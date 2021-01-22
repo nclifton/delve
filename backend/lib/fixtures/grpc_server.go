@@ -12,7 +12,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
 )
 
-func (tfx *TestFixtures) GRPCStart(registerCB func(deps rpcbuilder.Deps) error) {
+func (tfx *TestFixtures) GRPCStart(service rpcbuilder.Service) {
 
 	s := rpcbuilder.NewGRPCServer(rpcbuilder.Config{
 		RPCHost:                     "",
@@ -27,7 +27,7 @@ func (tfx *TestFixtures) GRPCStart(registerCB func(deps rpcbuilder.Deps) error) 
 
 	// start in a go routine
 	go func() {
-		err := s.Start(registerCB)
+		err := s.Start(service.Run)
 		if err != nil {
 			log.Fatal(err)
 		}

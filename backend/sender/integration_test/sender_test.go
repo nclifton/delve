@@ -14,7 +14,8 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/assertdb"
 	"github.com/burstsms/mtmo-tp/backend/lib/fixtures"
-	"github.com/burstsms/mtmo-tp/backend/sender/rpc/run"
+	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/builder"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
 
@@ -23,10 +24,14 @@ var tfx *fixtures.TestFixtures
 func TestMain(m *testing.M) {
 	tfx = fixtures.New()
 	tfx.SetupPostgres("sender")
-	tfx.GRPCStart(run.Server)
+	tfx.GRPCStart(senderRPCService())
 	code := m.Run()
 	defer os.Exit(code)
 	defer tfx.Teardown()
+}
+
+func senderRPCService() rpcbuilder.Service {
+	return builder.NewBuilderFromEnv()
 }
 
 func Test_FindByAddress(t *testing.T) {
@@ -71,24 +76,31 @@ func Test_FindByAddress(t *testing.T) {
 			wantErr: wantErr{},
 		},
 		{
-			name: "not found Address",
+			name: "not found sender Address: MICE",
 			params: &senderpb.FindByAddressParams{
 				AccountId: s.uuids[1],
-				Address:   "CHIPS",
+				Address:   "MICE",
 			},
-			want: want{reply: nil},
+			want: want{
+				reply: &senderpb.FindByAddressReply{
+					Sender: nil,
+				},
+			},
 			wantErr: wantErr{
 				status: status.New(codes.NotFound, "sender not found"),
 				ok:     true, // the grpc service did respond
 			},
 		},
 		{
-			name: "not found Account",
+			name: fmt.Sprintf("not found sender Account: %s", s.uuids[2]),
 			params: &senderpb.FindByAddressParams{
 				AccountId: s.uuids[2],
 				Address:   "FISH",
 			},
-			want: want{reply: nil},
+			want: want{
+				reply: &senderpb.FindByAddressReply{
+					Sender: nil,
+				}},
 			wantErr: wantErr{
 				status: status.New(codes.NotFound, "sender not found"),
 				ok:     true, // the grpc service did respond

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
-	"github.com/burstsms/mtmo-tp/backend/webhook/worker/msg"
+	"github.com/burstsms/mtmo-tp/backend/webhook/worker/post/msg"
 )
 
 func (s *webhookImpl) PublishOptOut(ctx context.Context, p *webhookpb.PublishOptOutParams) (*webhookpb.NoReply, error) {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/queue"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
-	"github.com/burstsms/mtmo-tp/backend/webhook/worker/msg"
+	"github.com/burstsms/mtmo-tp/backend/webhook/worker/post/msg"
 )
 
 func (s *webhookImpl) PublishMMSStatusUpdate(ctx context.Context, p *webhookpb.PublishMMSStatusUpdateParams) (*webhookpb.NoReply, error) {

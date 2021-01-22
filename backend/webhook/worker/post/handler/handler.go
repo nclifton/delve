@@ -1,4 +1,4 @@
-package post
+package handler
 
 import (
 	"bytes"
@@ -10,12 +10,12 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
-	"github.com/burstsms/mtmo-tp/backend/webhook/worker/msg"
+	"github.com/burstsms/mtmo-tp/backend/webhook/worker/post/msg"
 )
 
-type Webhook struct {
+type handler struct {
 	log     *logger.StandardLogger
-	client  *http.Client
+	client  HTTPClient
 	limiter Limiter
 }
 
@@ -23,19 +23,19 @@ type Limiter interface {
 	Allow(url string, rate float64, burst int) bool
 }
 
-type Publisher interface {
-	Publish(msg interface{}) error
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
 }
 
-func NewHandler(client *http.Client, limiter Limiter) *Webhook {
-	return &Webhook{logger.NewLogger(), client, limiter}
+func New(client HTTPClient, limiter Limiter) *handler {
+	return &handler{logger.NewLogger(), client, limiter}
 }
 
-func (h *Webhook) OnFinalFailure(ctx context.Context, body []byte) error {
+func (h *handler) OnFinalFailure(ctx context.Context, body []byte) error {
 	return nil
 }
 
-func (h *Webhook) Handle(ctx context.Context, body []byte, headers map[string]interface{}) error {
+func (h *handler) Handle(ctx context.Context, body []byte, headers map[string]interface{}) error {
 	data := &msg.WebhookMessageSpec{}
 
 	err := json.NewDecoder(bytes.NewReader(body)).Decode(&data)

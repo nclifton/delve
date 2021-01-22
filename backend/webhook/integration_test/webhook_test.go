@@ -16,11 +16,13 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/builder"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
-	"github.com/burstsms/mtmo-tp/backend/webhook/worker"
+	"github.com/burstsms/mtmo-tp/backend/webhook/worker/post/postbuilder"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/assertdb"
 	"github.com/burstsms/mtmo-tp/backend/lib/fixtures"
+	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
+	"github.com/burstsms/mtmo-tp/backend/lib/workerbuilder"
 )
 
 var tfx *fixtures.TestFixtures
@@ -30,37 +32,37 @@ func TestMain(m *testing.M) {
 	tfx.SetupPostgres("webhook")
 	tfx.SetupRabbit()
 	tfx.SetupRedis()
-	tfx.GRPCStart(webhookRPCRunFunc())
-	tfx.StartWorker(webhookWorkerRunFunc(tfx))
+	tfx.GRPCStart(webhookRPCService())
+	tfx.StartWorker("webhook-post-worker", webhookPostService())
 	code := m.Run()
 	defer os.Exit(code)
 	defer tfx.Teardown()
 }
 
-func webhookRPCRunFunc() func(deps rpcbuilder.Deps) error {
-	b := builder.NewBuilderFromEnv()
-
-	// mocks/custom config is set here
-
-	return b.Run
+func webhookRPCService() rpcbuilder.Service {
+	return builder.NewBuilder(builder.Config{
+		PostRabbitExchange:     "webhook",
+		PostRabbitExchangeType: "direct",
+	})
 }
 
-//TODO this should be moved out of here and split between the fixtures package and the webhook worker package using a worker builder package similar to rpcbuilder
-func webhookWorkerRunFunc(tfx *fixtures.TestFixtures) func() {
-	wkr := worker.New()
-	wkr.Env = &worker.WebhookEnv{
-		RPCPort:         0,
-		RPCHost:         "",
-		RabbitURL:       tfx.Rabbit.ConnStr,
-		ClientTimeout:   3,
-		WorkerQueueName: "webhook.post",
-		RedisURL:        tfx.Redis.Address,
-		NRName:          "",
-		NRLicense:       "",
-		NRTracing:       false,
+func webhookPostService() workerbuilder.Service {
+
+	service := postbuilder.New(postbuilder.Config{
+		ClientTimeout:         3,
+		RedisURL:              tfx.Redis.Address,
+		RabbitExchange:        "webhook",
+		RabbitExchangeType:    "direct",
+		RabbitPrefetchedCount: 1,
+	})
+
+	limiter, err := redis.NewLimiter(tfx.Redis.Address)
+	if err != nil {
+		log.Fatal(err)
 	}
-	wkr.IgnoreClosedQueueConnection = true
-	return wkr.Run
+	service.SetLimiter(limiter)
+
+	return service
 }
 
 func setupForInsert(t *testing.T) *testDeps {

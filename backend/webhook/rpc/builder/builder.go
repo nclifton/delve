@@ -13,7 +13,20 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-func NewBuilderFromEnv() *webhookBuilder {
+type Config struct {
+	PostRabbitExchange     string `envconfig:"POST_RABBIT_EXCHANGE"`
+	PostRabbitExchangeType string `envconfig:"POST_RABBIT_EXCHANGE_TYPE"`
+}
+
+type builder struct {
+	conf Config
+}
+
+func NewBuilder(config Config) *builder {
+	return &builder{conf: config}
+}
+
+func NewBuilderFromEnv() *builder {
 	stLog := logger.NewLogger()
 
 	var config Config
@@ -21,22 +34,13 @@ func NewBuilderFromEnv() *webhookBuilder {
 		stLog.Fatalf(context.Background(), "envconfig.Process", "failed to read env vars: %s", err)
 	}
 
-	return &webhookBuilder{conf: config}
+	return NewBuilder(config)
 }
 
-type Config struct {
-	PostRabbitExchange     string `envconfig:"POST_RABBIT_EXCHANGE"`
-	PostRabbitExchangeType string `envconfig:"POST_RABBIT_EXCHANGE_TYPE"`
-}
-
-type webhookBuilder struct {
-	conf Config
-}
-
-func (wb *webhookBuilder) Run(deps rpcbuilder.Deps) error {
+func (b *builder) Run(deps rpcbuilder.Deps) error {
 	rqueue := queue.NewRabbitQueue(deps.RabbitConn, rabbit.PublishOptions{
-		Exchange:     wb.conf.PostRabbitExchange,
-		ExchangeType: wb.conf.PostRabbitExchangeType,
+		Exchange:     b.conf.PostRabbitExchange,
+		ExchangeType: b.conf.PostRabbitExchangeType,
 		Tracer:       deps.Tracer,
 	})
 	pdb := db.NewSQLDB(deps.PostgresConn)

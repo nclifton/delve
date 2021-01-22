@@ -3,7 +3,7 @@ package queue
 import (
 	"context"
 
-	"github.com/burstsms/mtmo-tp/backend/webhook/worker/msg"
+	"github.com/burstsms/mtmo-tp/backend/webhook/worker/post/msg"
 )
 
 type PostWebhookMessage = msg.WebhookMessageSpec
