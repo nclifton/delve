@@ -42,18 +42,19 @@ func SMSPOST(r *Route) {
 	})
 
 	if err != nil {
-		switch err {
-		case errorlib.ErrInvalidMobileNumber,
-			errorlib.ErrInvalidPhoneNumber,
-			errorlib.ErrInvalidSenderNotFound,
-			errorlib.ErrInvalidSenderChannel,
-			errorlib.ErrInvalidSenderCountry,
-			errorlib.ErrInvalidSMSTooManyParts,
-			errorlib.ErrInsufficientBalance:
+		switch err.Error() {
+		case errorlib.ErrInvalidMobileNumber.Error(),
+			errorlib.ErrInvalidPhoneNumber.Error(),
+			errorlib.ErrInvalidSenderNotFound.Error(),
+			errorlib.ErrInvalidSenderChannel.Error(),
+			errorlib.ErrInvalidSenderCountry.Error(),
+			errorlib.ErrInvalidSMSTooManyParts.Error(),
+			errorlib.ErrInsufficientBalance.Error(),
+			errorlib.ErrInvalidRecipientInternationalNumber.Error():
+
 			r.WriteError(err.Error(), http.StatusBadRequest)
 		default:
 			r.WriteError(err.Error(), http.StatusInternalServerError)
-
 		}
 		return
 	}

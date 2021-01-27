@@ -13,9 +13,6 @@ func IsValidSender(sender *senderpb.Sender, address, country string) error {
 	if sender.Address != address {
 		return errorlib.ErrInvalidSenderAddress
 	}
-	if sender.Country != country {
-		return errorlib.ErrInvalidSenderCountry
-	}
 	if !stringutil.Includes(sender.Channels, "mms") {
 		return errorlib.ErrInvalidSenderChannel
 	}

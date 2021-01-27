@@ -44,12 +44,15 @@ func MMSPOST(r *Route) {
 		TrackLinks:  req.TrackLinks,
 	})
 
-	// TODO: implement more errors for mms
 	if err != nil {
-		switch err {
-		case errorlib.ErrInvalidSenderNotFound,
-			errorlib.ErrInvalidSenderChannel,
-			errorlib.ErrInvalidSenderCountry:
+		switch err.Error() {
+		case errorlib.ErrInvalidSenderNotFound.Error(),
+			errorlib.ErrInvalidSenderChannel.Error(),
+			errorlib.ErrInvalidSenderCountry.Error(),
+			errorlib.ErrInvalidMMSLengthMessage.Error(),
+			errorlib.ErrInvalidMMSLengthContentURLs.Error(),
+			errorlib.ErrInvalidRecipientInternationalNumber.Error():
+
 			r.WriteError(err.Error(), http.StatusBadRequest)
 		default:
 			r.WriteError(err.Error(), http.StatusInternalServerError)

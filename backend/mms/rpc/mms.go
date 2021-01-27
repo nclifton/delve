@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-	"errors"
 	"log"
 	"time"
 
@@ -37,12 +36,37 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 		}
 		return err
 	}
-	err = biz.IsValidSender(sender.Sender, p.Sender, p.Country)
-	if err != nil {
+
+	if err := biz.IsValidSender(sender.Sender, p.Sender, p.Country); err != nil {
 		return err
 	}
 
+	if len([]rune(p.Message)) > 1000 {
+		return errorlib.ErrInvalidMMSLengthMessage
+	}
+
+	if len(p.ContentURLs) > 4 {
+		return errorlib.ErrInvalidMMSLengthContentURLs
+	}
+
+	recipientNumber := p.Recipient
+	var country string
+
+	if p.Country != "" {
+		recipientNumber, country, err = number.ParseMobileCountry(recipientNumber, p.Country)
+		if err != nil {
+			return err
+		}
+	} else {
+		country, err = number.GetCountryFromPhone(recipientNumber)
+		if err != nil {
+			return errorlib.ErrInvalidRecipientInternationalNumber
+
+		}
+	}
+
 	message := p.Message
+
 	if p.TrackLinks {
 		rsp, err := s.svc.TrackLink.GenerateTrackLinks(tracklink.GenerateTrackLinksParams{
 			AccountID:   p.AccountID,
@@ -53,6 +77,7 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 		if err != nil {
 			return err
 		}
+
 		message = rsp.Message
 	}
 
@@ -68,29 +93,6 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 	}
 
 	message = generateOptOutLinkReply.Message
-
-	if len([]rune(p.Message)) > 1000 {
-		return errors.New("message must be less than 1000 characters")
-	}
-
-	if len(p.ContentURLs) > 4 {
-		return errors.New("you must provide no more then 4 content_urls")
-	}
-
-	recipientNumber := p.Recipient
-	var country string
-
-	if p.Country != "" {
-		recipientNumber, country, err = number.ParseMobileCountry(recipientNumber, p.Country)
-		if err != nil {
-			return err
-		}
-	} else {
-		country, err = number.GetCountryFromPhone(recipientNumber)
-		if err != nil {
-			return err
-		}
-	}
 
 	newMMS := types.MMS{
 		ID:          uid,

@@ -6,8 +6,10 @@ import "errors"
 
 // sms, mms
 var (
-	ErrInvalidMobileNumber   = errors.New("Invalid mobile number")
-	ErrInvalidPhoneNumber    = errors.New("Invalid mobile number")
+	ErrInvalidMobileNumber                 = errors.New("Invalid mobile number")
+	ErrInvalidPhoneNumber                  = errors.New("Invalid mobile number")
+	ErrInvalidRecipientInternationalNumber = errors.New("Invalid recipient international number")
+
 	ErrInvalidSender         = errors.New("Invalid sender")
 	ErrInvalidSenderNotFound = errors.New("Invalid sender: not found")
 	ErrInvalidSenderCountry  = errors.New("Invalid sender: incorrect country")
@@ -20,4 +22,7 @@ var (
 	ErrInvalidRoute           = errors.New("No valid route for recipient")
 	ErrSendSMS                = errors.New("Failed to send SMS")
 	ErrProcessWebhooks        = errors.New("Failed to process webhooks")
+
+	ErrInvalidMMSLengthMessage     = errors.New("message must be less than 1000 characters")
+	ErrInvalidMMSLengthContentURLs = errors.New("you must provide no more then 4 content_urls")
 )

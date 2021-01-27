@@ -40,6 +40,36 @@ func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
 		return err
 	}
 
+	recipientNumber := p.Recipient
+	var country string
+
+	if p.Country != "" {
+		recipientNumber, country, err = biz.ParseMobileCountry(recipientNumber, p.Country)
+		if err != nil {
+			return err
+		}
+	} else {
+		country, err = biz.GetCountryFromPhone(recipientNumber)
+		if err != nil {
+			return errorlib.ErrInvalidRecipientInternationalNumber
+		}
+	}
+
+	options := biz.SMSOptions{
+		MaxParts:         4,
+		OptOutLinkDomain: s.features.OptOutLinkDomain,
+		TrackLinkDomain:  s.features.TrackLinkDomain,
+		TrackLink:        p.TrackLinks,
+	}
+	// check the sms size
+	count, err := biz.IsValidSMS(p.Message, options)
+	if err != nil {
+		return err
+	}
+
+	// check if its a GSM compat message
+	isGSM := biz.IsGSMString(p.Message)
+
 	if p.TrackLinks {
 		rsp, err := s.tracklinkRPC.GenerateTrackLinks(tracklink.GenerateTrackLinksParams{
 			AccountID:   p.AccountID,
@@ -65,36 +95,6 @@ func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
 	}
 
 	message = generateOptOutLinkReply.Message
-
-	recipientNumber := p.Recipient
-	var country string
-
-	if p.Country != "" {
-		recipientNumber, country, err = biz.ParseMobileCountry(recipientNumber, p.Country)
-		if err != nil {
-			return err
-		}
-	} else {
-		country, err = biz.GetCountryFromPhone(recipientNumber)
-		if err != nil {
-			return err
-		}
-	}
-
-	options := biz.SMSOptions{
-		MaxParts:         4,
-		OptOutLinkDomain: s.features.OptOutLinkDomain,
-		TrackLinkDomain:  s.features.TrackLinkDomain,
-		TrackLink:        p.TrackLinks,
-	}
-	// check the sms size
-	count, err := biz.IsValidSMS(p.Message, options)
-	if err != nil {
-		return err
-	}
-
-	// check if its a GSM compat message
-	isGSM := biz.IsGSMString(p.Message)
 
 	newSMS := types.SMS{
 		ID:         uid,

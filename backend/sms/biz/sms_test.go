@@ -100,25 +100,6 @@ func Test_IsValidSender(t *testing.T) {
 			want: errorlib.ErrInvalidSenderAddress,
 		},
 		{
-			name: "invalid country",
-			args: args{
-				sender: &senderpb.Sender{
-					Id:             "12345",
-					AccountId:      "23456",
-					Address:        "BOOB",
-					MMSProviderKey: "optus",
-					Channels:       []string{"mms", "sms"},
-					Country:        "ph",
-					Comment:        "blah",
-					CreatedAt:      timestamppb.New(time.Now()),
-					UpdatedAt:      timestamppb.New(time.Now()),
-				},
-				address: "BOOB",
-				country: "au",
-			},
-			want: errorlib.ErrInvalidSenderCountry,
-		},
-		{
 			name: "invalid channel",
 			args: args{
 				sender: &senderpb.Sender{
