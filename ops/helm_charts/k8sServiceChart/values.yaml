@@ -16,7 +16,7 @@ namespaceAnnotations:
 
 # TODO: Only use ${artifact.metadata.image} here once we move to Harness completely
 image: 
-  repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/service-name
+  repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com
   tag: latest
 
 # TODO: Comment back in once we mve to Harness completely

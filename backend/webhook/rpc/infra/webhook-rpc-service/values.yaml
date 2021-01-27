@@ -11,7 +11,7 @@ k8sServiceChart:
   replicas: 2
 
   image:
-    repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/webhook_rpc
+    repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com
     tag: ${artifact.buildNo}
 
   podLabels:

@@ -11,7 +11,7 @@ k8sDeploymentJobChart:
   replicas: 1
 
   image:
-    repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com/sender_migration
+    repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com
     tag: ${artifact.buildNo}
 
   podLabels:

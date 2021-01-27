@@ -42,7 +42,7 @@ spec:
       {{- end}}
       containers:
       - name: {{required "value 'name' is required" .Values.name}}
-        image: "{{required "value 'image.repository' is required" .Values.image.repository}}:{{required "value 'image.tag' is required" .Values.image.tag}}"
+        image: "{{required "value 'image.repository' is required" .Values.image.repository}}/{{required "value 'name' is required" .Values.name}}:{{required "value 'image.tag' is required" .Values.image.tag}}"
         {{- if or .Values.env.config .Values.env.secrets .Values.existingConfigMapName .Values.existingSecretName}}
         envFrom:
         {{- if .Values.env.config}}
