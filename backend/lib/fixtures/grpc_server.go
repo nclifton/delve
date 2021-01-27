@@ -20,14 +20,16 @@ func (tfx *TestFixtures) GRPCStart(service rpcbuilder.Service) {
 		RabbitURL:                   tfx.Rabbit.ConnStr,
 		PostgresURL:                 tfx.Postgres.ConnStr,
 		TracerDisable:               true,
-		RabbitIgnoreClosedQueueConn: true})
+		RabbitIgnoreClosedQueueConn: true},
+		service,
+	)
 
 	s.SetCustomListener(bufconn.Listen(1024 * 1024))
 	tfx.GRPCListener = s.Listener()
 
 	// start in a go routine
 	go func() {
-		err := s.Start(service.Run)
+		err := s.Start()
 		if err != nil {
 			log.Fatal(err)
 		}

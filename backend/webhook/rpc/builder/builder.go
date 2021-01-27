@@ -26,7 +26,7 @@ func NewBuilder(config Config) *builder {
 	return &builder{conf: config}
 }
 
-func NewBuilderFromEnv() *builder {
+func NewServiceFromEnv() *builder {
 	stLog := logger.NewLogger()
 
 	var config Config

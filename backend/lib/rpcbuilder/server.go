@@ -48,19 +48,22 @@ type grpcServer struct {
 	lis        net.Listener
 	server     *grpc.Server
 	serverOpts []grpc.ServerOption
+
+	service Service
 }
 
 type Service interface {
 	Run(deps Deps) error
 }
 
-func NewGRPCServer(config Config) grpcServer {
+func NewGRPCServer(config Config, service Service) grpcServer {
 	return grpcServer{conf: config,
-		log: logger.NewLogger(),
+		log:     logger.NewLogger(),
+		service: service,
 	}
 }
 
-func NewGRPCServerFromEnv() grpcServer {
+func NewGRPCServerFromEnv(service Service) grpcServer {
 	stLog := logger.NewLogger()
 
 	var config Config
@@ -69,7 +72,9 @@ func NewGRPCServerFromEnv() grpcServer {
 	}
 
 	return grpcServer{conf: config,
-		log: stLog}
+		log:     stLog,
+		service: service,
+	}
 }
 
 func (g *grpcServer) TracerClose() error {
@@ -188,7 +193,7 @@ func (g *grpcServer) setupDeps(ctx context.Context) error {
 	return nil
 }
 
-func (g *grpcServer) Start(registerCB func(deps Deps) error) error {
+func (g *grpcServer) Start() error {
 	ctx := context.Background()
 
 	if err := g.setupDeps(ctx); err != nil {
@@ -197,7 +202,7 @@ func (g *grpcServer) Start(registerCB func(deps Deps) error) error {
 
 	g.createServer()
 
-	if err := registerCB(Deps{
+	if err := g.service.Run(Deps{
 		Tracer:       g.tracer,
 		RabbitConn:   g.rabbitConn,
 		PostgresConn: g.postgresConn,

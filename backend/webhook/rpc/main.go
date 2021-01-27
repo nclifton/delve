@@ -8,10 +8,9 @@ import (
 )
 
 func main() {
-	s := rpcbuilder.NewGRPCServerFromEnv()
-	b := builder.NewBuilderFromEnv()
+	s := rpcbuilder.NewGRPCServerFromEnv(builder.NewServiceFromEnv())
 
-	err := s.Start(b.Run)
+	err := s.Start()
 	if err != nil {
 		log.Fatal(err)
 	}
