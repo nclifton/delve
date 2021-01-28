@@ -1,0 +1,16 @@
+{
+    "rules": [
+        {
+            "rulePriority": 1,
+            "description": "Remove old images if image count is more than 5",
+            "selection": {
+                "tagStatus": "any",
+                "countType": "imageCountMoreThan",
+                "countNumber": 5
+            },
+            "action": {
+                "type": "expire"
+            }
+        }
+    ]
+}
