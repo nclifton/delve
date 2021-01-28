@@ -77,7 +77,6 @@ k8sServiceChart:
       RABBIT_EXCHANGE: "mm7"
       RABBIT_EXCHANGE_TYPE: "direct"
       RABBIT_PREFETCHED_COUNT: "1"
-      RPC_HOST: "mm7-rpc-service"
-      RPC_PORT: "10003"
+      MM7_RPC_ADDRESS: "mm7-rpc-service:10007"
     secrets:
       RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/mm7"

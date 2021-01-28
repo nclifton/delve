@@ -20,8 +20,7 @@ type Env struct {
 	RabbitExchange        string `envconfig:"RABBIT_EXCHANGE"`
 	RabbitExchangeType    string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	RabbitPrefetchedCount int    `envconfig:"RABBIT_PREFETCHED_COUNT"`
-	RPCHost               string `envconfig:"RPC_HOST"`
-	RPCPort               int    `envconfig:"RPC_PORT"`
+	MM7RPCAddress         string `envconfig:"MM7_RPC_ADDRESS"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
@@ -61,7 +60,7 @@ func main() {
 
 	w := rabbit.NewWorker(Name, rabbitmq, nil)
 
-	cli := client.NewClient(env.RPCHost, env.RPCPort)
+	cli := client.NewClient(env.MM7RPCAddress)
 
 	log.Println("Service started")
 	w.Run(opts, mm7w.NewHandler(cli))

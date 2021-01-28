@@ -3,6 +3,7 @@
 package client_test
 
 import (
+	"fmt"
 	"log"
 	"testing"
 
@@ -19,7 +20,7 @@ func initClient() *client.Client {
 		log.Fatal("Failed to read env vars:", err)
 	}
 
-	return client.NewClient(env.RPCHost, env.RPCPort)
+	return client.NewClient(fmt.Sprintf("%s:%d", env.ContainerName, env.ContainerPort))
 }
 
 func TestSend(t *testing.T) {

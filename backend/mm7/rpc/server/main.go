@@ -60,7 +60,7 @@ func main() {
 		log.Fatalf("Failed to initialise s3: %s reason: %s\n", mm7RPC.Name, err)
 	}
 
-	port := env.RPCPort
+	port := env.ContainerPort
 
 	rabbitOpts := mm7RPC.RabbitPublishOptions{
 		Exchange:     env.RabbitExchange,
@@ -74,7 +74,7 @@ func main() {
 
 	svc := mm7RPC.ConfigSvc{
 		S3:  s3Svc,
-		MMS: mms.New(env.MMSHost, env.MMSPort),
+		MMS: mms.New(env.MMSHost),
 	}
 
 	server, err := rpc.NewServer(mm7RPC.NewService(rabbitmq, rabbitOpts, redisCon, limiter, svc, configVar), port)

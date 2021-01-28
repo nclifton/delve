@@ -12,14 +12,6 @@ services:
       - ./backend:/backend
     ports:
       - "10000:10000"
-      - "10003:10003"
-      - "10004:10004"
-      - "10005:10005"
-      - "10006:10006"
-      - "10007:10007"
-      - "10010:10010"
-      - "10012:10012"
-      - "10013:10013"
       - "10014:10014"
     environment:
       - DISABLE_NEW_RELIC=true
@@ -28,31 +20,21 @@ services:
       - NR_TRACING=true
 
       - ADMINAPI_PORT=10014
-      - ADMINAPI_SMS_HOST=backend
-      - ADMINAPI_SMS_PORT=10009
-      - ADMINAPI_MMS_HOST=backend
-      - ADMINAPI_MMS_PORT=10007
-      - ADMINAPI_ACCOUNT_HOST=backend
-      - ADMINAPI_ACCOUNT_PORT=10001
+      - ADMINAPI_SMS_RPC_ADDRESS=backend:10009
+      - ADMINAPI_MMS_RPC_ADDRESS=backend:10007
+      - ADMINAPI_ACCOUNT_RPC_ADDRESS=backend:10001
 
       - API_PORT=10000
-      - API_ACCOUNT_HOST=backend
-      - API_ACCOUNT_PORT=10001
-      - API_SMS_HOST=backend
-      - API_SMS_PORT=10009
-      - API_MMS_HOST=backend
-      - API_MMS_PORT=10007
-      - API_WEBHOOK_HOST=webhook-rpc-service
-      - API_WEBHOOK_PORT=10002
-      - API_SENDER_HOST=sender-rpc-service
-      - API_SENDER_PORT=10015
+      - API_SMS_RPC_ADDRESS=backend:10009
+      - API_MMS_RPC_ADDRESS=backend:10007
+      - API_ACCOUNT_RPC_ADDRESS=backend:10001
+      - API_WEBHOOK_RPC_ADDRESS=webhook-rpc-service:10002
+      - API_SENDER_RPC_ADDRESS=sender-rpc-service:10015
 
-      - ACCOUNT_RPC_PORT=10001
-      - ACCOUNT_RPC_HOST=backend
+      - ACCOUNT_RPC_ADDRESS=backend:10001
       - ACCOUNT_POSTGRES_URL=postgresql://postgres:example@postgres/account
       - ACCOUNT_REDIS_URL=redis:6379
 
-      - WEBHOOK_WORKER_NAME=webhook.post
       - WEBHOOK_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/webhook
       - WEBHOOK_RABBIT_EXCHANGE=webhook
       - WEBHOOK_RABBIT_EXCHANGE_TYPE=direct
@@ -66,25 +48,19 @@ services:
       - MMS_RABBIT_EXCHANGE=mms
       - MMS_RABBIT_EXCHANGE_TYPE=direct
       - MMS_RABBIT_PREFETCHED_COUNT=1
-      - MMS_RPC_HOST=backend
-      - MMS_RPC_PORT=10007
+      - MMS_RPC_ADDRESS=backend:10007
       - MMS_POSTGRES_URL=postgresql://postgres:example@postgres/mms
-      - MMS_WEBHOOK_RPC_HOST=webhook-rpc-service
-      - MMS_WEBHOOK_RPC_PORT=10002
-      - MMS_TRACK_LINK_RPC_HOST=backend
-      - MMS_TRACK_LINK_RPC_PORT=10010
-      - MMS_OPT_OUT_RPC_HOST=backend
-      - MMS_OPT_OUT_RPC_PORT=10011
-      - MMS_SENDER_RPC_HOST=sender-rpc-service
-      - MMS_SENDER_RPC_PORT=10015
+      - MMS_WEBHOOK_RPC_ADDRESS=webhook-rpc-service:10002
+      - MMS_TRACK_LINK_RPC_ADDRESS=backend:10010
+      - MMS_OPTOUT_RPC_ADDRESS=backend:10011
+      - MMS_SENDER_RPC_ADDRESS=sender-rpc-service:10015
 
 
       - MM7_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
       - MM7_RABBIT_EXCHANGE=mm7
       - MM7_RABBIT_EXCHANGE_TYPE=direct
       - MM7_RABBIT_PREFETCHED_COUNT=1
-      - MM7_RPC_PORT=10003
-      - MM7_RPC_HOST=backend
+      - MM7_RPC_ADDRESS=backend:10003
       - MM7_REDIS_URL=redis:6379
       - MM7_TECLOO_URL=http://backend:10004/v1
       - MM7_TEMPLATE_PATH=mm7/templates
@@ -95,8 +71,7 @@ services:
       - MM7_AWS_ACCESS_KEY=sendsei
       - MM7_AWS_SECRET_KEY=fr0gsn0g
 
-      - MM7_MMS_RPC_HOST=backend
-      - MM7_MMS_PORT=10007
+      - MM7_MMS_RPC_ADDRESS=backend:10007
       - MM7_OPTUS_URL=http://172.17.0.1:7777/mm7/Mms
       - MM7_OPTUS_USER=COSTWbur
       - MM7_OPTUS_PASSWORD=G6VhUrMP
@@ -116,50 +91,58 @@ services:
       - TUALET_DLR_ENDPOINT=http://backend:10008/v1/sms/dlr
       - TUALET_MO_ENDPOINT=http://backend:10008/v1/sms/mo
 
-      - SMS_RPC_PORT=10009
       - SMS_INBOUND_PORT=10008
-      - SMS_RPC_HOST=backend
+      - SMS_RPC_ADDRESS=backend:10009
       - SMS_POSTGRES_URL=postgresql://postgres:example@postgres/sms
       - SMS_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/sms
       - SMS_CLIENT_TIMEOUT=3
       - SMS_REDIS_URL=redis:6379
       - SMS_ALARIS_URL=http://backend:10006/api
-      - SMS_WEBHOOK_RPC_HOST=webhook-rpc-service
-      - SMS_WEBHOOK_RPC_PORT=10002
-      - SMS_TRACK_LINK_RPC_HOST=backend
-      - SMS_TRACK_LINK_RPC_PORT=10010
-      - SMS_OPT_OUT_RPC_HOST=backend
-      - SMS_OPT_OUT_RPC_PORT=10011
-      - SMS_SENDER_RPC_HOST=sender-rpc-service
-      - SMS_SENDER_RPC_PORT=10015
+      - SMS_WEBHOOK_RPC_ADDRESS=webhook-rpc-service:10002
+      - SMS_TRACK_LINK_RPC_ADDRESS=backend:10010
+      - SMS_OPTOUT_RPC_ADDRESS=backend:10011
+      - SMS_SENDER_RPC_ADDRESS=sender-rpc-service:10015
+
       - OPTOUTLINK_DOMAIN=localhost:10010
       - TRACKLINK_DOMAIN=localhost:10010
-
-      - OPTOUT_RPC_PORT=10011
       - OPTOUT_INBOUND_PORT=10012
-      - OPTOUT_RPC_HOST=backend
+      - OPTOUT_RPC_ADDRESS=backend:10011
       - OPTOUT_POSTGRES_URL=postgresql://postgres:example@postgres/optout
       - OPTOUT_REDIS_URL=redis:6379
       - OPTOUT_OPTOUTLINK_DOMAIN=localhost:10012
 
-      - TRACK_LINK_RPC_PORT=10010
-      - TRACK_LINK_RPC_HOST=backend
+      - TRACK_LINK_RPC_ADDRESS=backend:10010
       - TRACK_LINK_INBOUND_PORT=10013
       - TRACK_LINK_POSTGRES_URL=postgresql://postgres:example@postgres/track_link
       - TRACK_LINK_TRACKLINK_DOMAIN=localhost:10010
-      - TRACK_LINK_WEBHOOK_RPC_HOST=webhook-rpc-service
-      - TRACK_LINK_WEBHOOK_RPC_PORT=10002
+      - TRACK_LINK_WEBHOOK_RPC_ADDRESS=webhook-rpc-service:10002
 
       - JAEGER_AGENT_HOST=jaeger
       - JAEGER_AGENT_PORT=6831
       - JAEGER_SAMPLER_TYPE=const
       - JAEGER_SAMPLER_PARAM=1
 
+      - TRACK_LINK_CONTAINER_PORT=10010
+      - OPTOUT_CONTAINER_PORT=10011
+      - MM7_CONTAINER_PORT=10003
+      - MMS_CONTAINER_PORT=10007
+      - SMS_CONTAINER_PORT=10009
+      - ACCOUNT_CONTAINER_PORT=10001
+
+      - TRACK_LINK_CONTAINER_NAME=backend
+      - OPTOUT_CONTAINER_NAME=backend
+      - MM7_CONTAINER_NAME=backend
+      - MMS_CONTAINER_NAME=backend
+      - SMS_CONTAINER_NAME=backend
+      - ACCOUNT_CONTAINER_NAME=backend
+      - WEBHOOK_CONTAINER_NAME=backend
+
     deploy:
       resources:
         limits:
           cpus: "4"
     depends_on:
+      - jaeger
       - rabbitmq
       - redis
       - minio

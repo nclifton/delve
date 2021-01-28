@@ -18,19 +18,16 @@ import (
 )
 
 type Env struct {
-	RPCPort            int    `envconfig:"RPC_PORT"`
-	PostgresURL        string `envconfig:"POSTGRES_URL"`
-	RabbitURL          string `envconfig:"RABBIT_URL"`
-	RabbitExchange     string `envconfig:"RABBIT_EXCHANGE"`
-	RabbitExchangeType string `envconfig:"RABBIT_EXCHANGE_TYPE"`
-	WebhookRPCHost     string `envconfig:"WEBHOOK_RPC_HOST"`
-	WebhookRPCPort     int    `envconfig:"WEBHOOK_RPC_PORT"`
-	SenderRPCHost      string `envconfig:"SENDER_RPC_HOST"`
-	SenderRPCPort      int    `envconfig:"SENDER_RPC_PORT"`
-	TrackLinkRPCHost   string `envconfig:"TRACK_LINK_RPC_HOST"`
-	TrackLinkRPCPort   int    `envconfig:"TRACK_LINK_RPC_PORT"`
-	OptOutRPCHost      string `envconfig:"OPT_OUT_RPC_HOST"`
-	OptOutRPCPort      int    `envconfig:"OPT_OUT_RPC_PORT"`
+	ContainerName       string `envconfig:"CONTAINER_NAME"`
+	ContainerPort       int    `envconfig:"CONTAINER_PORT"`
+	PostgresURL         string `envconfig:"POSTGRES_URL"`
+	RabbitURL           string `envconfig:"RABBIT_URL"`
+	RabbitExchange      string `envconfig:"RABBIT_EXCHANGE"`
+	RabbitExchangeType  string `envconfig:"RABBIT_EXCHANGE_TYPE"`
+	WebhookRPCAddress   string `envconfig:"WEBHOOK_RPC_ADDRESS"`
+	SenderRPCAddress    string `envconfig:"SENDER_RPC_ADDRESS"`
+	TrackLinkRPCAddress string `envconfig:"TRACK_LINK_RPC_ADDRESS"`
+	OptOutRPCAddress    string `envconfig:"OPTOUT_RPC_ADDRESS"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
@@ -55,7 +52,7 @@ func main() {
 		DistributedTracerEnabled: env.NRTracing,
 	})
 
-	port := env.RPCPort
+	port := env.ContainerPort
 
 	rabbitmq, err := rabbit.Connect(env.RabbitURL)
 	if err != nil {
@@ -67,7 +64,7 @@ func main() {
 		ExchangeType: env.RabbitExchangeType,
 	}
 
-	tracer, closer, err := jaeger.Connect(mmsRPC.Name)
+	tracer, closer, err := jaeger.Connect(env.ContainerName)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", mmsRPC.Name, err)
 	}
@@ -75,13 +72,13 @@ func main() {
 
 	svc := mmsRPC.ConfigSvc{
 		Webhook: webhookpb.NewServiceClient(
-			rpcbuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+			rpcbuilder.NewClientConn(env.WebhookRPCAddress, tracer),
 		),
 		Sender: senderpb.NewServiceClient(
-			rpcbuilder.NewClientConn(env.SenderRPCHost, env.SenderRPCPort, tracer),
+			rpcbuilder.NewClientConn(env.SenderRPCAddress, tracer),
 		),
-		TrackLink: tracklink.NewClient(env.TrackLinkRPCHost, env.TrackLinkRPCPort),
-		OptOut:    optOut.NewClient(env.OptOutRPCHost, env.OptOutRPCPort),
+		TrackLink: tracklink.NewClient(env.TrackLinkRPCAddress),
+		OptOut:    optOut.NewClient(env.OptOutRPCAddress),
 	}
 
 	mmsrpc, err := mmsRPC.NewService(env.PostgresURL, rabbitmq, rabbitOpts, svc)

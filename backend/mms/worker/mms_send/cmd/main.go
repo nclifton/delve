@@ -20,10 +20,8 @@ type Env struct {
 	RabbitExchange        string `envconfig:"RABBIT_EXCHANGE"`
 	RabbitExchangeType    string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	RabbitPrefetchedCount int    `envconfig:"RABBIT_PREFETCHED_COUNT"`
-	MM7RPCHost            string `envconfig:"MM7_RPC_HOST"`
-	MM7RPCPort            int    `envconfig:"MM7_RPC_PORT"`
-	MMSRPCHost            string `envconfig:"RPC_HOST"`
-	MMSRPCPort            int    `envconfig:"RPC_PORT"`
+	MM7RPCAddress         string `envconfig:"MM7_RPC_ADDRESS"`
+	MMSRPCAddress         string `envconfig:"MMS_RPC_ADDRESS"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
@@ -63,8 +61,8 @@ func main() {
 
 	w := rabbit.NewWorker(Name, rabbitmq, nil)
 
-	mm7cli := mm7c.NewClient(env.MM7RPCHost, env.MM7RPCPort)
-	mmscli := mmsc.New(env.MMSRPCHost, env.MMSRPCPort)
+	mm7cli := mm7c.NewClient(env.MM7RPCAddress)
+	mmscli := mmsc.New(env.MMSRPCAddress)
 
 	log.Println("Service started")
 	w.Run(opts, mmsw.NewHandler(mm7cli, mmscli))

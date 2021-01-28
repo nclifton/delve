@@ -12,8 +12,7 @@ import (
 )
 
 type Env struct {
-	SMSHost        string `envconfig:"SMS_RPC_HOST"`
-	SMSPort        int    `envconfig:"SMS_RPC_PORT"`
+	SMSRPCAddress  string `envconfig:"SMS_RPC_ADDRESS"`
 	SMSInboundPort int    `envconfig:"SMS_INBOUND_PORT"`
 
 	NRName    string `envconfig:"NR_NAME"`
@@ -41,7 +40,7 @@ func main() {
 	})
 
 	opts := inbound.InboundOptions{
-		SMSClient: rpc.New(env.SMSHost, env.SMSPort),
+		SMSClient: rpc.New(env.SMSRPCAddress),
 		NrApp:     newrelicM,
 	}
 

@@ -23,7 +23,6 @@ k8sServiceChart:
   # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
   serviceType: ClusterIP
   servicePort: 10003
-  serviceTargetPort: 10003
   # For Headless Services (e.g. RabbitMQ Consumers) 
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   #serviceClusterIP: None
@@ -77,11 +76,8 @@ k8sServiceChart:
       AWS_S3_PATH_STYLE: "true"
       RABBIT_EXCHANGE: "mm7"
       RABBIT_EXCHANGE_TYPE: "direct"
-      RPC_HOST: "mm7-rpc-service"
-      RPC_PORT: "10003"
       REDIS_URL: "redis-master.redis:6379"
-      MMS_RPC_HOST: "mms-rpc-service"
-      MMS_RPC_PORT: "10007"
+      MMS_RPC_ADDRESS: "mms-rpc-service:10007"
     secrets:
       RABBIT_URL: "amqp://burstsms:9ur686m6@rabbitmq.rabbitmq.svc.cluster.local:5672/mm7"
       # TODO: Setup AWS Bucket

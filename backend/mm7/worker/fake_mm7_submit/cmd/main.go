@@ -23,8 +23,7 @@ type Env struct {
 	RabbitExchange        string `envconfig:"RABBIT_EXCHANGE"`
 	RabbitExchangeType    string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	RabbitPrefetchedCount int    `envconfig:"RABBIT_PREFETCHED_COUNT"`
-	RPCHost               string `envconfig:"RPC_HOST"`
-	RPCPort               int    `envconfig:"RPC_PORT"`
+	MM7RPCAddress         string `envconfig:"MM7_RPC_ADDRESS"`
 	TeclooURL             string `envconfig:"TECLOO_URL"`
 	TemplatePath          string `envconfig:"TEMPLATE_PATH"`
 
@@ -66,7 +65,7 @@ func main() {
 
 	w := rabbit.NewWorker(Name, rabbitmq, nil)
 
-	cli := client.NewClient(env.RPCHost, env.RPCPort)
+	cli := client.NewClient(env.MM7RPCAddress)
 
 	tecloo, err := tcl.NewService(env.TeclooURL)
 	if err != nil {

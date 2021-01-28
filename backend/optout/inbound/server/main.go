@@ -12,9 +12,8 @@ import (
 )
 
 type Env struct {
-	OptOutHost        string `envconfig:"RPC_HOST"`
-	OptOutPort        int    `envconfig:"RPC_PORT"`
-	OptOutInboundPort int    `envconfig:"INBOUND_PORT"`
+	OptoutRPCAddress  string `envconfig:"OPTOUT_RPC_ADDRESS"`
+	OptoutInboundPort int    `envconfig:"INBOUND_PORT"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
@@ -32,7 +31,7 @@ func main() {
 
 	log.Printf("ENV: %+v", env)
 
-	port := strconv.Itoa(env.OptOutInboundPort)
+	port := strconv.Itoa(env.OptoutInboundPort)
 
 	newrelicM := nr.New(&nr.Options{
 		AppName:                  env.NRName,
@@ -41,7 +40,7 @@ func main() {
 	})
 
 	opts := inbound.InboundOptions{
-		OptOutClient: rpc.NewClient(env.OptOutHost, env.OptOutPort),
+		OptOutClient: rpc.NewClient(env.OptoutRPCAddress),
 		NrApp:        newrelicM,
 	}
 

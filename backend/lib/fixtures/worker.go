@@ -11,7 +11,7 @@ func (tfx *TestFixtures) StartWorker(name string, workerService workerbuilder.Se
 
 	worker := workerbuilder.NewWorker(
 		workerbuilder.Config{
-			WorkerName:                  name,
+			ContainerName:               name,
 			RabbitURL:                   tfx.Rabbit.ConnStr,
 			TracerDisable:               true,
 			RabbitIgnoreClosedQueueConn: true,

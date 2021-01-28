@@ -52,7 +52,7 @@ func (a *API) Handler() http.Handler {
 	return a.router
 }
 
-// New creates our api "app", i.e. the http handler
+// New creates our "app", i.e. the http handler
 func New(opts *Options) *API {
 	clients := RPCClients{
 		account: opts.AccountClient,

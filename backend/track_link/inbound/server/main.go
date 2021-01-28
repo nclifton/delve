@@ -12,8 +12,7 @@ import (
 )
 
 type Env struct {
-	TrackLinkHost        string `envconfig:"RPC_HOST"`
-	TrackLinkPort        int    `envconfig:"RPC_PORT"`
+	TrackLinkRPCAddress  string `envconfig:"TRACK_LINK_RPC_ADDRESS"`
 	TrackLinkInboundPort int    `envconfig:"INBOUND_PORT"`
 
 	NRName    string `envconfig:"NR_NAME"`
@@ -41,7 +40,7 @@ func main() {
 	})
 
 	opts := inbound.TrackLinkOptions{
-		TrackLinkClient: rpc.NewClient(env.TrackLinkHost, env.TrackLinkPort),
+		TrackLinkClient: rpc.NewClient(env.TrackLinkRPCAddress),
 		NrApp:           newrelicM,
 	}
 

@@ -11,9 +11,9 @@ import (
 )
 
 type Env struct {
-	RPCPort     int    `envconfig:"RPC_PORT"`
-	PostgresURL string `envconfig:"POSTGRES_URL"`
-	RedisURL    string `envconfig:"REDIS_URL"`
+	ContainerPort int    `envconfig:"CONTAINER_PORT"`
+	PostgresURL   string `envconfig:"POSTGRES_URL"`
+	RedisURL      string `envconfig:"REDIS_URL"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
@@ -38,18 +38,16 @@ func main() {
 		DistributedTracerEnabled: env.NRTracing,
 	})
 
-	port := env.RPCPort
-
 	arpc, err := accountRPC.NewService(env.PostgresURL, env.RedisURL)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", accountRPC.Name, err)
 	}
 
-	server, err := rpc.NewServer(arpc, port)
+	server, err := rpc.NewServer(arpc, env.ContainerPort)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", accountRPC.Name, err)
 	}
 
-	log.Printf("%s service initialised and available on port %d", accountRPC.Name, port)
+	log.Printf("%s service initialised and available on port %d", accountRPC.Name, env.ContainerPort)
 	server.Listen()
 }

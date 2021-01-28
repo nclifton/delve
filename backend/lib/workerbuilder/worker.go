@@ -19,8 +19,8 @@ import (
 )
 
 type Config struct {
-	WorkerName string `envconfig:"WORKER_NAME"`
-	RabbitURL  string `envconfig:"RABBIT_URL"`
+	ContainerName string `envconfig:"CONTAINER_NAME"`
+	RabbitURL     string `envconfig:"RABBIT_URL"`
 
 	TracerDisable               bool `envconfig:"TRACER_DISABLE"`
 	RabbitIgnoreClosedQueueConn bool `envconfig:"RABBIT_IGNORE_CLOSED_QUEUE_CONN"`
@@ -79,14 +79,14 @@ func (w *worker) Start() error {
 		return err
 	}
 
-	w.createWorker(w.conf.WorkerName)
+	w.createWorker(w.conf.ContainerName)
 
 	go func() {
 		if err := w.service.Run(Deps{
 			Worker: w.worker,
 		}); err != nil {
 			w.log.Fields(ctx, logger.Fields{
-				"worker": w.conf.WorkerName}).Fatalf("Failed to start worker")
+				"worker": w.conf.ContainerName}).Fatalf("Failed to start worker")
 		}
 	}()
 
@@ -105,7 +105,7 @@ func (w *worker) Start() error {
 
 func (w *worker) stop(ctx context.Context) {
 	logService := w.log.Fields(ctx, logger.Fields{
-		"worker": w.conf.WorkerName})
+		"worker": w.conf.ContainerName})
 
 	logService.Infof("Stopping worker")
 
@@ -152,9 +152,9 @@ func (w *worker) createJaegerConn(ctx context.Context) error {
 	}
 
 	w.log.Fields(ctx, logger.Fields{
-		"worker": w.conf.WorkerName}).Infof("Starting tracer connection")
+		"worker": w.conf.ContainerName}).Infof("Starting tracer connection")
 
-	tracer, closer, err := jaeger.Connect(w.conf.WorkerName)
+	tracer, closer, err := jaeger.Connect(w.conf.ContainerName)
 	if err != nil {
 		return fmt.Errorf("failed to init jaeger: %s", err)
 	}
@@ -167,7 +167,7 @@ func (w *worker) createJaegerConn(ctx context.Context) error {
 
 func (w *worker) createRabbitConn(ctx context.Context) error {
 	w.log.Fields(ctx, logger.Fields{
-		"worker": w.conf.WorkerName}).Infof("Starting rabbit connection")
+		"worker": w.conf.ContainerName}).Infof("Starting rabbit connection")
 
 	rabbitConn, err := rabbit.Connect(w.conf.RabbitURL, w.conf.RabbitIgnoreClosedQueueConn)
 	if err != nil {

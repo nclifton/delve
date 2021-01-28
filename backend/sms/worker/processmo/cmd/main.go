@@ -15,9 +15,8 @@ import (
 var workerName = "processmo"
 
 type Env struct {
-	RabbitURL string `envconfig:"RABBIT_URL"`
-	SMSHost   string `envconfig:"SMS_RPC_HOST"`
-	SMSPort   int    `envconfig:"SMS_RPC_PORT"`
+	RabbitURL     string `envconfig:"RABBIT_URL"`
+	SMSRPCAddress string `envconfig:"SMS_RPC_ADDRESS"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
@@ -59,7 +58,7 @@ func main() {
 
 	worker := rabbit.NewWorker(workerName, rabbitmq, nrOpts)
 
-	client := rpc.New(env.SMSHost, env.SMSPort)
+	client := rpc.New(env.SMSRPCAddress)
 
 	log.Println("Service started")
 	worker.Run(opts, processmo.NewHandler(client))

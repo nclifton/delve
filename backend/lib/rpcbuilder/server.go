@@ -21,13 +21,15 @@ import (
 )
 
 type Config struct {
-	RPCHost     string `envconfig:"RPC_HOST"`
-	RPCPort     string `envconfig:"RPC_PORT"`
-	RabbitURL   string `envconfig:"RABBIT_URL"`
-	PostgresURL string `envconfig:"POSTGRES_URL"`
+	ContainerName string `envconfig:"CONTAINER_NAME"`
+	ContainerPort int    `envconfig:"CONTAINER_PORT"`
+	RabbitURL     string `envconfig:"RABBIT_URL"`
+	PostgresURL   string `envconfig:"POSTGRES_URL"`
 
 	TracerDisable               bool `envconfig:"TRACER_DISABLE"`
 	RabbitIgnoreClosedQueueConn bool `envconfig:"RABBIT_IGNORE_CLOSED_QUEUE_CONN"`
+
+	DevHost string `envconfig:"DEV_HOST"`
 }
 
 type Deps struct {
@@ -92,10 +94,10 @@ func (g *grpcServer) createJaegerConn(ctx context.Context) error {
 	}
 
 	g.log.Fields(ctx, logger.Fields{
-		"host": g.conf.RPCHost,
-		"port": g.conf.RPCPort}).Infof("Starting tracer connection")
+		"host": g.conf.ContainerName,
+		"port": g.conf.ContainerPort}).Infof("Starting tracer connection")
 
-	tracer, closer, err := jaeger.Connect(g.conf.RPCHost)
+	tracer, closer, err := jaeger.Connect(g.conf.ContainerName)
 	if err != nil {
 		return fmt.Errorf("failed to init jaeger: %s", err)
 	}
@@ -114,8 +116,8 @@ func (g *grpcServer) createPostgresConn(ctx context.Context) error {
 	}
 
 	g.log.Fields(ctx, logger.Fields{
-		"host": g.conf.RPCHost,
-		"port": g.conf.RPCPort}).Infof("Starting db connection")
+		"host": g.conf.ContainerName,
+		"port": g.conf.ContainerPort}).Infof("Starting db connection")
 
 	postgresConn, err := pgxpool.Connect(ctx, g.conf.PostgresURL)
 	if err != nil {
@@ -132,8 +134,8 @@ func (g *grpcServer) createRabbitConn(ctx context.Context) error {
 	}
 
 	g.log.Fields(ctx, logger.Fields{
-		"host": g.conf.RPCHost,
-		"port": g.conf.RPCPort}).Infof("Starting rabbit connection")
+		"host": g.conf.ContainerName,
+		"port": g.conf.ContainerPort}).Infof("Starting rabbit connection")
 
 	rabbitConn, err := rabbit.Connect(g.conf.RabbitURL, g.conf.RabbitIgnoreClosedQueueConn)
 	if err != nil {
@@ -150,10 +152,11 @@ func (g *grpcServer) SetCustomListener(lis net.Listener) {
 
 func (g *grpcServer) createListener(ctx context.Context) error {
 	g.log.Fields(ctx, logger.Fields{
-		"host": g.conf.RPCHost,
-		"port": g.conf.RPCPort}).Infof("Starting listener")
+		"host": g.conf.ContainerName,
+		"port": g.conf.ContainerPort}).Infof("Starting listener")
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", g.conf.RPCHost, g.conf.RPCPort))
+	// TODO: remove DevHost once we ditch docker-compose - listener should not be provided a host name
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", g.conf.DevHost, g.conf.ContainerPort))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %v", err)
 	}
@@ -219,13 +222,13 @@ func (g *grpcServer) Start() error {
 
 	go func() {
 		g.log.Fields(ctx, logger.Fields{
-			"host": g.conf.RPCHost,
-			"port": g.conf.RPCPort}).Infof("Starting service")
+			"host": g.conf.ContainerName,
+			"port": g.conf.ContainerPort}).Infof("Starting service")
 
 		if err := g.server.Serve(g.lis); err != nil {
 			g.log.Fields(ctx, logger.Fields{
-				"host": g.conf.RPCHost,
-				"port": g.conf.RPCPort}).Fatalf("Failed to start grpc server")
+				"host": g.conf.ContainerName,
+				"port": g.conf.ContainerPort}).Fatalf("Failed to start grpc server")
 		}
 	}()
 
@@ -244,8 +247,8 @@ func (g *grpcServer) Start() error {
 
 func (g *grpcServer) stop(ctx context.Context) {
 	logService := g.log.Fields(ctx, logger.Fields{
-		"host": g.conf.RPCHost,
-		"port": g.conf.RPCPort})
+		"host": g.conf.ContainerName,
+		"port": g.conf.ContainerPort})
 
 	logService.Infof("Stopping service")
 

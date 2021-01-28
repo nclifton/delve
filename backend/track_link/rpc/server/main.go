@@ -16,15 +16,13 @@ import (
 )
 
 type Env struct {
-	RPCPort        int    `envconfig:"RPC_PORT"`
-	PostgresURL    string `envconfig:"POSTGRES_URL"`
-	TrackDomain    string `envconfig:"TRACKLINK_DOMAIN"`
-	MMSRPCHost     string `envconfig:"MMS_RPC_HOST"`
-	MMSRPCPort     int    `envconfig:"MMS_RPC_PORT"`
-	SMSRPCHost     string `envconfig:"SMS_RPC_HOST"`
-	SMSRPCPort     int    `envconfig:"SMS_RPC_PORT"`
-	WebhookRPCHost string `envconfig:"WEBHOOK_RPC_HOST"`
-	WebhookRPCPort int    `envconfig:"WEBHOOK_RPC_PORT"`
+	ContainerName     string `envconfig:"CONTAINER_NAME"`
+	ContainerPort     int    `envconfig:"CONTAINER_PORT"`
+	PostgresURL       string `envconfig:"POSTGRES_URL"`
+	TrackDomain       string `envconfig:"TRACKLINK_DOMAIN"`
+	MMSRPCAddress     string `envconfig:"MMS_RPC_ADDRESS"`
+	SMSRPCAddress     string `envconfig:"SMS_RPC_ADDRESS"`
+	WebhookRPCAddress string `envconfig:"WEBHOOK_RPC_ADDRESS"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
@@ -49,18 +47,18 @@ func main() {
 		DistributedTracerEnabled: env.NRTracing,
 	})
 
-	port := env.RPCPort
+	port := env.ContainerPort
 
-	tracer, closer, err := jaeger.Connect(tlrpc.Name)
+	tracer, closer, err := jaeger.Connect(env.ContainerName)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", tlrpc.Name, err)
 	}
 	defer closer.Close()
 
-	mmsrpc := mmsRPC.New(env.MMSRPCHost, env.MMSRPCPort)
-	smsrpc := smsRPC.New(env.SMSRPCHost, env.SMSRPCPort)
+	mmsrpc := mmsRPC.New(env.MMSRPCAddress)
+	smsrpc := smsRPC.New(env.SMSRPCAddress)
 	wrpc := webhookpb.NewServiceClient(
-		rpcbuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+		rpcbuilder.NewClientConn(env.WebhookRPCAddress, tracer),
 	)
 
 	srpc, err := tlrpc.NewService(env.PostgresURL, env.TrackDomain, mmsrpc, smsrpc, wrpc)

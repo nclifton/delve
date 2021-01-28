@@ -16,20 +16,13 @@ import (
 var gitref = "unset" // set with go linker in build script
 
 type Env struct {
-	Port string `envconfig:"ADMINAPI_PORT"`
-
-	AccountHost string `envconfig:"ACCOUNT_HOST"`
-	AccountPort int    `envconfig:"ACCOUNT_PORT"`
-
-	SMSHost string `envconfig:"SMS_HOST"`
-	SMSPort int    `envconfig:"SMS_PORT"`
-
-	MMSHost string `envconfig:"MMS_HOST"`
-	MMSPort int    `envconfig:"MMS_PORT"`
-
-	NRName    string `envconfig:"NR_NAME"`
-	NRLicense string `envconfig:"NR_LICENSE"`
-	NRTracing bool   `envconfig:"NR_TRACING"`
+	AdminAPIPort      string `envconfig:"ADMINAPI_PORT"`
+	AccountRPCAddress string `envconfig:"ACCOUNT_RPC_ADDRESS"`
+	SMSRPCAddress     string `envconfig:"SMS_RPC_ADDRESS"`
+	MMSRPCAddress     string `envconfig:"MMS_RPC_ADDRESS"`
+	NRName            string `envconfig:"NR_NAME"`
+	NRLicense         string `envconfig:"NR_LICENSE"`
+	NRTracing         bool   `envconfig:"NR_TRACING"`
 }
 
 func main() {
@@ -51,11 +44,11 @@ func main() {
 
 	app := adminapi.NewAdminAPI(&adminapi.AdminAPIOptions{
 		NrApp:         newrelicM,
-		SMSClient:     sms.New(env.SMSHost, env.SMSPort),
-		MMSClient:     mms.New(env.MMSHost, env.MMSPort),
-		AccountClient: account.New(env.AccountHost, env.AccountPort),
+		SMSClient:     sms.New(env.SMSRPCAddress),
+		MMSClient:     mms.New(env.MMSRPCAddress),
+		AccountClient: account.New(env.AccountRPCAddress),
 	})
 
-	log.Printf("%s service initialised and available on port %s", "adminapi", env.Port)
-	log.Fatal(http.ListenAndServe(":"+env.Port, app.Handler()))
+	log.Printf("%s service initialised and available on port %s", "adminapi", env.AdminAPIPort)
+	log.Fatal(http.ListenAndServe(":"+env.AdminAPIPort, app.Handler()))
 }

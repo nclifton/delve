@@ -19,24 +19,20 @@ import (
 )
 
 type Env struct {
-	RPCPort            int    `envconfig:"RPC_PORT"`
-	PostgresURL        string `envconfig:"POSTGRES_URL"`
-	RabbitURL          string `envconfig:"RABBIT_URL"`
-	RedisURL           string `envconfig:"REDIS_URL"`
-	RabbitExchange     string `envconfig:"RABBIT_EXCHANGE"`
-	RabbitExchangeType string `envconfig:"RABBIT_EXCHANGE_TYPE"`
-	WebhookRPCHost     string `envconfig:"WEBHOOK_RPC_HOST"`
-	WebhookRPCPort     int    `envconfig:"WEBHOOK_RPC_PORT"`
-	SenderRPCHost      string `envconfig:"SENDER_RPC_HOST"`
-	SenderRPCPort      int    `envconfig:"SENDER_RPC_PORT"`
-	AccountRPCHost     string `envconfig:"ACCOUNT_RPC_HOST"`
-	AccountRPCPort     int    `envconfig:"ACCOUNT_RPC_PORT"`
-	TrackLinkDomain    string `envconfig:"TRACKLINK_DOMAIN"`
-	OptOutLinkDomain   string `envconfig:"OPTOUTLINK_DOMAIN"`
-	TrackLinkRPCHost   string `envconfig:"TRACK_LINK_RPC_HOST"`
-	TrackLinkRPCPort   int    `envconfig:"TRACK_LINK_RPC_PORT"`
-	OptOutRPCHost      string `envconfig:"OPT_OUT_RPC_HOST"`
-	OptOutRPCPort      int    `envconfig:"OPT_OUT_RPC_PORT"`
+	ContainerName       string `envconfig:"CONTAINER_NAME"`
+	ContainerPort       int    `envconfig:"CONTAINER_PORT"`
+	PostgresURL         string `envconfig:"POSTGRES_URL"`
+	RabbitURL           string `envconfig:"RABBIT_URL"`
+	RedisURL            string `envconfig:"REDIS_URL"`
+	RabbitExchange      string `envconfig:"RABBIT_EXCHANGE"`
+	RabbitExchangeType  string `envconfig:"RABBIT_EXCHANGE_TYPE"`
+	WebhookRPCAddress   string `envconfig:"WEBHOOK_RPC_ADDRESS"`
+	SenderRPCAddress    string `envconfig:"SENDER_RPC_ADDRESS"`
+	AccountRPCAddress   string `envconfig:"ACCOUNT_RPC_ADDRESS"`
+	TrackLinkDomain     string `envconfig:"TRACKLINK_DOMAIN"`
+	OptOutLinkDomain    string `envconfig:"OPTOUTLINK_DOMAIN"`
+	TrackLinkRPCAddress string `envconfig:"TRACK_LINK_RPC_ADDRESS"`
+	OptOutRPCAddress    string `envconfig:"OPTOUT_RPC_ADDRESS"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`
@@ -61,28 +57,28 @@ func main() {
 		DistributedTracerEnabled: env.NRTracing,
 	})
 
-	port := env.RPCPort
+	port := env.ContainerPort
 
 	rabbitmq, err := rabbit.Connect(env.RabbitURL)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
 	}
 
-	tracer, closer, err := jaeger.Connect(smsRPC.Name)
+	tracer, closer, err := jaeger.Connect(env.ContainerName)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
 	}
 	defer closer.Close()
 
 	wrpc := webhookpb.NewServiceClient(
-		rpcbuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+		rpcbuilder.NewClientConn(env.WebhookRPCAddress, tracer),
 	)
 	srpc := senderpb.NewServiceClient(
-		rpcbuilder.NewClientConn(env.SenderRPCHost, env.SenderRPCPort, tracer),
+		rpcbuilder.NewClientConn(env.SenderRPCAddress, tracer),
 	)
-	arpc := accountRPC.New(env.AccountRPCHost, env.AccountRPCPort)
-	tlrpc := tracklinkRPC.NewClient(env.TrackLinkRPCHost, env.TrackLinkRPCPort)
-	orpc := optOutRPC.NewClient(env.OptOutRPCHost, env.OptOutRPCPort)
+	arpc := accountRPC.New(env.AccountRPCAddress)
+	tlrpc := tracklinkRPC.NewClient(env.TrackLinkRPCAddress)
+	orpc := optOutRPC.NewClient(env.OptOutRPCAddress)
 
 	features := smsRPC.SMSFeatures{
 		TrackLinkDomain:  env.TrackLinkDomain,

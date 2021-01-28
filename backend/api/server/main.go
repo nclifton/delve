@@ -22,26 +22,15 @@ const apiName = "REST API"
 var gitref = "unset" // set with go linker in build script
 
 type Env struct {
-	Port string `envconfig:"API_PORT"`
-
-	AccountHost string `envconfig:"ACCOUNT_HOST"`
-	AccountPort int    `envconfig:"ACCOUNT_PORT"`
-
-	SMSHost string `envconfig:"SMS_HOST"`
-	SMSPort int    `envconfig:"SMS_PORT"`
-
-	MMSHost string `envconfig:"MMS_HOST"`
-	MMSPort int    `envconfig:"MMS_PORT"`
-
-	WebhookRPCHost string `envconfig:"WEBHOOK_HOST"`
-	WebhookRPCPort int    `envconfig:"WEBHOOK_PORT"`
-
-	SenderRPCHost string `envconfig:"SENDER_HOST"`
-	SenderRPCPort int    `envconfig:"SENDER_PORT"`
-
-	NRName    string `envconfig:"NR_NAME"`
-	NRLicense string `envconfig:"NR_LICENSE"`
-	NRTracing bool   `envconfig:"NR_TRACING"`
+	APIPort           string `envconfig:"API_PORT"`
+	AccountRPCAddress string `envconfig:"ACCOUNT_RPC_ADDRESS"`
+	SMSRPCAddress     string `envconfig:"SMS_RPC_ADDRESS"`
+	MMSRPCAddress     string `envconfig:"MMS_RPC_ADDRESS"`
+	WebhookRPCAddress string `envconfig:"WEBHOOK_RPC_ADDRESS"`
+	SenderRPCAddress  string `envconfig:"SENDER_RPC_ADDRESS"`
+	NRName            string `envconfig:"NR_NAME"`
+	NRLicense         string `envconfig:"NR_LICENSE"`
+	NRTracing         bool   `envconfig:"NR_TRACING"`
 }
 
 func main() {
@@ -70,18 +59,18 @@ func main() {
 	app := api.New(&api.Options{
 		Tracer:        tracer,
 		Gitref:        gitref,
-		AccountClient: account.New(env.AccountHost, env.AccountPort),
-		SMSClient:     sms.New(env.SMSHost, env.SMSPort),
-		MMSClient:     mms.New(env.MMSHost, env.MMSPort),
+		AccountClient: account.New(env.AccountRPCAddress),
+		SMSClient:     sms.New(env.SMSRPCAddress),
+		MMSClient:     mms.New(env.MMSRPCAddress),
 		WebhookClient: webhookpb.NewServiceClient(
-			rpcbuilder.NewClientConn(env.WebhookRPCHost, env.WebhookRPCPort, tracer),
+			rpcbuilder.NewClientConn(env.WebhookRPCAddress, tracer),
 		),
 		SenderClient: senderpb.NewServiceClient(
-			rpcbuilder.NewClientConn(env.SenderRPCHost, env.SenderRPCPort, tracer),
+			rpcbuilder.NewClientConn(env.SenderRPCAddress, tracer),
 		),
 		NrApp: newrelicM,
 	})
 
-	log.Printf("%s service initialised and available on port %s", "api", env.Port)
-	log.Fatal(http.ListenAndServe(":"+env.Port, app.Handler()))
+	log.Printf("%s service initialised and available on port %s", "api", env.APIPort)
+	log.Fatal(http.ListenAndServe(":"+env.APIPort, app.Handler()))
 }

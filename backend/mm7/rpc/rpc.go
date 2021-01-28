@@ -12,6 +12,8 @@ import (
 const Name = "MM7"
 
 type Env struct {
+	ContainerName      string `envconfig:"CONTAINER_NAME"`
+	ContainerPort      int    `envconfig:"CONTAINER_PORT"`
 	AWSRegion          string `envconfig:"AWS_REGION"`
 	AWSAccessKey       string `envconfig:"AWS_ACCESS_KEY"`
 	AWSSecretKey       string `envconfig:"AWS_SECRET_KEY"`
@@ -21,12 +23,9 @@ type Env struct {
 	RabbitURL          string `envconfig:"RABBIT_URL"`
 	RabbitExchange     string `envconfig:"RABBIT_EXCHANGE"`
 	RabbitExchangeType string `envconfig:"RABBIT_EXCHANGE_TYPE"`
-	RPCHost            string `envconfig:"RPC_HOST"`
-	RPCPort            int    `envconfig:"RPC_PORT"`
 	RedisURL           string `envconfig:"REDIS_URL"`
 
-	MMSHost string `envconfig:"MMS_RPC_HOST"`
-	MMSPort int    `envconfig:"MMS_RPC_PORT"`
+	MMSRPCAddress string `envconfig:"MMS_RPC_ADDRESS"`
 
 	NRName    string `envconfig:"NR_NAME"`
 	NRLicense string `envconfig:"NR_LICENSE"`

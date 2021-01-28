@@ -15,8 +15,8 @@ import (
 func (tfx *TestFixtures) GRPCStart(service rpcbuilder.Service) {
 
 	s := rpcbuilder.NewGRPCServer(rpcbuilder.Config{
-		RPCHost:                     "",
-		RPCPort:                     "",
+		ContainerName:               "",
+		ContainerPort:               0,
 		RabbitURL:                   tfx.Rabbit.ConnStr,
 		PostgresURL:                 tfx.Postgres.ConnStr,
 		TracerDisable:               true,

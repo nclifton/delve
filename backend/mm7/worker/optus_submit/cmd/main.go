@@ -23,8 +23,7 @@ type Env struct {
 	RabbitExchange        string `envconfig:"RABBIT_EXCHANGE"`
 	RabbitExchangeType    string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	RabbitPrefetchedCount int    `envconfig:"RABBIT_PREFETCHED_COUNT"`
-	RPCHost               string `envconfig:"RPC_HOST"`
-	RPCPort               int    `envconfig:"RPC_PORT"`
+	MM7RPCAddress         string `envconfig:"MM7_RPC_ADDRESS"`
 	OptusURL              string `envconfig:"OPTUS_URL"`
 	OptusUser             string `envconfig:"OPTUS_USER"`
 	OptusPass             string `envconfig:"OPTUS_PASSWORD"`
@@ -68,7 +67,7 @@ func main() {
 
 	w := rabbit.NewWorker(Name, rabbitmq, nil)
 
-	cli := client.NewClient(env.RPCHost, env.RPCPort)
+	cli := client.NewClient(env.MM7RPCAddress)
 
 	optusClient, err := tcl.NewService(env.OptusURL, env.OptusUser, env.OptusPass)
 	if err != nil {

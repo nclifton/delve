@@ -20,8 +20,7 @@ var workerName = "sender"
 
 type Env struct {
 	RabbitURL     string `envconfig:"RABBIT_URL"`
-	SMSHost       string `envconfig:"SMS_RPC_HOST"`
-	SMSPort       int    `envconfig:"SMS_RPC_PORT"`
+	SMSRPCAddress string `envconfig:"SMS_RPC_ADDRESS"`
 	ClientTimeout int    `envconfig:"CLIENT_TIMEOUT"`
 	RedisURL      string `envconfig:"REDIS_URL"`
 	AlarisURL     string `envconfig:"ALARIS_URL"`
@@ -74,7 +73,7 @@ func main() {
 		log.Fatalf("Failed to initialise rabbit worker: %s reason: %s\n", workerName, err)
 	}
 
-	client := rpc.New(env.SMSHost, env.SMSPort)
+	client := rpc.New(env.SMSRPCAddress)
 
 	alarisClient, err := alaris.NewService(env.AlarisURL, http)
 	if err != nil {

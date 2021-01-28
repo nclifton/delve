@@ -31,7 +31,7 @@ podLabels:
 # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
 serviceType: NodePort
 servicePort: 4002
-serviceTargetPort: 80
+serviceTargetPort: 8080
 # For Headless Services (e.g. RabbitMQ Consumers) 
 # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
 #serviceClusterIP: None
@@ -92,11 +92,9 @@ readinessProbe:
 # The following two maps, config and secrets, are put into a ConfigMap
 # and a Secret, respectively.
 # Both are added to the container environment in podSpec as envFrom source.
-env: {}
-#  config:
-#    key1: value1
-#  secrets:
-#    key2: value2
+env:
+  config:
+    CONTAINER_PORT: "8080"
 
 # TODO: Remove this and use defined env vars above
 #existingConfigMapName: service-config
