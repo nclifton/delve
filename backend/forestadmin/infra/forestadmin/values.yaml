@@ -82,3 +82,4 @@ k8sServiceChart:
       NR_TRACING: "true"
       NODE_ENV: "${env.name}"
       APPLICATION_URL: "https://forest.${environmentVariable.dns}"
+      ADMIN_API_ADDRESS: "http://adminapi:11014/v1"

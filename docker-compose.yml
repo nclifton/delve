@@ -43,7 +43,7 @@ services:
       - WEBHOOK_POSTGRES_URL=postgresql://postgres:example@postgres/webhook
       - WEBHOOK_TRACER_DISABLE=true
       - WEBHOOK_RABBIT_IGNORE_CLOSED_QUEUE_CONN=true
-  
+
       - MMS_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mms
       - MMS_RABBIT_EXCHANGE=mms
       - MMS_RABBIT_EXCHANGE_TYPE=direct
@@ -54,7 +54,6 @@ services:
       - MMS_TRACK_LINK_RPC_ADDRESS=backend:10010
       - MMS_OPTOUT_RPC_ADDRESS=backend:10011
       - MMS_SENDER_RPC_ADDRESS=sender-rpc-service:10015
-
 
       - MM7_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mm7
       - MM7_RABBIT_EXCHANGE=mm7
@@ -228,7 +227,7 @@ services:
       - SENDER_POSTGRES_URL=postgresql://postgres:example@postgres/sender
       - FOREST_AUTH_SECRET=8d3d9df0260ad4414d18d77b5d16d585b636234357e56fac
       - FOREST_ENV_SECRET=470bdd45ada20f90a83f13c795b3422d5b8baf1198e81118b3e5fa2484579837
-      - FOREST_ADMIN_API=http://backend:10014/v1
+      - ADMIN_API_ADDRESS=http://backend:10014/v1
       - NODE_ENV=dev
       - CHOKIDAR_USEPOLLING=true
     ports:

@@ -199,20 +199,19 @@ router.delete(
     const accountId = request.params.recordId;
     const recordUpdater = new RecordUpdater(senderDb.sender);
 
-    request.body.data.forEach((selected)=>{
+    request.body.data.forEach((selected) => {
       senderDb.sender
-      .findAll({ where: { id: selected.id, account_id: accountId } })
-      .then(() => {
-        recordToUpdate = {
-          id: selected.id,
-          ref_account_id: null,
-          account_id: null,
-        };
-        return recordUpdater.update(recordToUpdate, selected.id);
-      })
-      .catch(next);
-    })
-
+        .findAll({ where: { id: selected.id, account_id: accountId } })
+        .then(() => {
+          recordToUpdate = {
+            id: selected.id,
+            ref_account_id: null,
+            account_id: null,
+          };
+          return recordUpdater.update(recordToUpdate, selected.id);
+        })
+        .catch(next);
+    });
   }
 );
 
@@ -416,7 +415,7 @@ router.post(
     let report = {};
     try {
       report = await Axios({
-        url: `${process.env.FOREST_ADMIN_API}/report/usage`,
+        url: `${process.env.ADMIN_API_ADDRESS}/report/usage`,
         method: "get",
         headers: {
           "content-type": "application/json",
@@ -440,7 +439,7 @@ router.post(
       for (const id of request.body.data.attributes.ids) {
         requests.push(
           Axios({
-            url: `${process.env.FOREST_ADMIN_API}/report/usage/${id}`,
+            url: `${process.env.ADMIN_API_ADDRESS}/report/usage/${id}`,
             method: "get",
             headers: {
               "content-type": "application/json",
