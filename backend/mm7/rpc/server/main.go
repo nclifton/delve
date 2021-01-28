@@ -74,7 +74,7 @@ func main() {
 
 	svc := mm7RPC.ConfigSvc{
 		S3:  s3Svc,
-		MMS: mms.New(env.MMSHost),
+		MMS: mms.New(env.MMSRPCAddress),
 	}
 
 	server, err := rpc.NewServer(mm7RPC.NewService(rabbitmq, rabbitOpts, redisCon, limiter, svc, configVar), port)
