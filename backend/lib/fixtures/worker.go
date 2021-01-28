@@ -7,11 +7,11 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/workerbuilder"
 )
 
-func (tfx *TestFixtures) StartWorker(name string, workerService workerbuilder.Service) {
+func (tfx *TestFixtures) StartWorker(host string, workerService workerbuilder.Service) {
 
 	worker := workerbuilder.NewWorker(
 		workerbuilder.Config{
-			ContainerName:               name,
+			ContainerName:               host,
 			RabbitURL:                   tfx.Rabbit.ConnStr,
 			TracerDisable:               true,
 			RabbitIgnoreClosedQueueConn: true,

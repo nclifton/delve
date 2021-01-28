@@ -19,15 +19,13 @@ import (
 )
 
 type Config struct {
-	ContainerName string `envconfig:"CONTAINER_NAME"`
-	RabbitURL     string `envconfig:"RABBIT_URL"`
-
-	TracerDisable               bool `envconfig:"TRACER_DISABLE"`
-	RabbitIgnoreClosedQueueConn bool `envconfig:"RABBIT_IGNORE_CLOSED_QUEUE_CONN"`
-
-	NRName    string `envconfig:"NR_NAME"`
-	NRLicense string `envconfig:"NR_LICENSE"`
-	NRTracing bool   `envconfig:"NR_TRACING"`
+	ContainerName               string `envconfig:"CONTAINER_NAME"`
+	RabbitURL                   string `envconfig:"RABBIT_URL"`
+	TracerDisable               bool   `envconfig:"TRACER_DISABLE"`
+	RabbitIgnoreClosedQueueConn bool   `envconfig:"RABBIT_IGNORE_CLOSED_QUEUE_CONN"`
+	NRName                      string `envconfig:"NR_NAME"`
+	NRLicense                   string `envconfig:"NR_LICENSE"`
+	NRTracing                   bool   `envconfig:"NR_TRACING"`
 }
 
 type Deps struct {

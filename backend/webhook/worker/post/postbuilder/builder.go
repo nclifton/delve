@@ -17,6 +17,7 @@ type Config struct {
 	ClientTimeout int    `envconfig:"CLIENT_TIMEOUT"`
 	RedisURL      string `envconfig:"REDIS_URL"`
 
+	// TODO, these are generic environment variables for a worker in it's own environment should move to the worker builder
 	RabbitExchange        string `envconfig:"RABBIT_EXCHANGE"`
 	RabbitExchangeType    string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	RabbitPrefetchedCount int    `envconfig:"RABBIT_PREFETCHED_COUNT"`

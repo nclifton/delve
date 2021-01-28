@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 	tfx.SetupRabbit()
 	tfx.SetupRedis()
 	tfx.GRPCStart(webhookRPCService())
-	tfx.StartWorker("webhook-post-worker", webhookPostService())
+	tfx.StartWorker("webhook-post-worker-service", webhookPostService())
 	code := m.Run()
 	defer os.Exit(code)
 	defer tfx.Teardown()

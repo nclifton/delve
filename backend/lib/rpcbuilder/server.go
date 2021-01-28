@@ -21,14 +21,14 @@ import (
 )
 
 type Config struct {
-	ContainerName string `envconfig:"CONTAINER_NAME"`
-	ContainerPort int    `envconfig:"CONTAINER_PORT"`
-	RabbitURL     string `envconfig:"RABBIT_URL"`
-	PostgresURL   string `envconfig:"POSTGRES_URL"`
-
-	TracerDisable               bool `envconfig:"TRACER_DISABLE"`
-	RabbitIgnoreClosedQueueConn bool `envconfig:"RABBIT_IGNORE_CLOSED_QUEUE_CONN"`
-
+	ContainerName               string `envconfig:"CONTAINER_NAME"`
+	ContainerPort               int    `envconfig:"CONTAINER_PORT"`
+	RabbitURL                   string `envconfig:"RABBIT_URL"`
+	PostgresURL                 string `envconfig:"POSTGRES_URL"`
+	TracerDisable               bool   `envconfig:"TRACER_DISABLE"`
+	RabbitIgnoreClosedQueueConn bool   `envconfig:"RABBIT_IGNORE_CLOSED_QUEUE_CONN"`
+	// special env variable that should be empty under Kubernetes so that the RPC listener will attach to all available ip addresses on the server
+	// in the docker-compose env (example dev) we have to specify the host address
 	DevHost string `envconfig:"DEV_HOST"`
 }
 
@@ -156,6 +156,7 @@ func (g *grpcServer) createListener(ctx context.Context) error {
 		"port": g.conf.ContainerPort}).Infof("Starting listener")
 
 	// TODO: remove DevHost once we ditch docker-compose - listener should not be provided a host name
+	// listen host (DevHost) can be an empty string (https://golang.org/pkg/net/)
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", g.conf.DevHost, g.conf.ContainerPort))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %v", err)
