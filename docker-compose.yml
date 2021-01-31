@@ -350,7 +350,7 @@ services:
     depends_on:
       - rabbitmq
       - postgres
-      - jaegar
+      - jaeger
 
   webhook-post-worker-service:
     build:
@@ -366,7 +366,7 @@ services:
     depends_on:
       - rabbitmq
       - redis
-      - jaegar
+      - jaeger
 
   sender-rpc-service:
     build:
