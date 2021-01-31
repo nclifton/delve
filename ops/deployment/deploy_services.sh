@@ -9,14 +9,7 @@ ROOTDIR="$(cd ../../ >/dev/null 2>&1 && pwd)"
 ENV=$1
 if [ -z "${ENV}" ]; then
   echo "Environment name must be specified"
-  echo "Usage: ./deploy_services.sh <ENV> <DOCKER_TAG>"
-  exit 1
-fi
-
-DOCKER_TAG=$2
-if [ -z "${DOCKER_TAG}" ]; then
-  echo "Docker tag must be specified"
-  echo "Usage: ./deploy_services.sh <ENV> <DOCKER_TAG>"
+  echo "Usage: ./deploy_services.sh <ENV>"
   exit 1
 fi
 
@@ -53,10 +46,10 @@ for service_path in ${service_paths}; do
   service_names+=($service_name)
 
   if [ ${ENV} = "staging" ]; then
-    #/bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "mtmostaging.com" ${DOCKER_TAG}
-    echo "Environment managed by Harness, skipping Helm Deploy..."
+    #/bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "mtmostaging.com" "latest"
+    echo "Environment managed by Harness, skipping service deployment..."
   elif [ ${ENV} = "production" ]; then
-    /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "tp.mtmo.io" ${DOCKER_TAG}
+    /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "tp.mtmo.io" "latest"
   else
     echo "Environment not supported!"
   fi

@@ -1,12 +1,43 @@
 {
     "rules": [
         {
-            "rulePriority": 1,
-            "description": "Remove old images if image count is more than 5",
+            "action": {
+                "type": "expire"
+            },
             "selection": {
-                "tagStatus": "any",
                 "countType": "imageCountMoreThan",
-                "countNumber": 5
+                "countNumber": 5,
+                "tagStatus": "tagged",
+                "tagPrefixList": [
+                    "ts"
+                ]
+            },
+            "description": "Remove timestamped images if image count is more than 5",
+            "rulePriority": 1
+        },
+        {
+            "action": {
+                "type": "expire"
+            },
+            "selection": {
+                "countType": "imageCountMoreThan",
+                "countNumber": 5,
+                "tagStatus": "tagged",
+                "tagPrefixList": [
+                    "tckt"
+                ]
+            },
+            "description": "Remove ticket images if image count is more than 5",
+            "rulePriority": 2
+        },
+        {
+            "rulePriority": 3,
+            "description": "Remove all untagged images after 1 day",
+            "selection": {
+                "tagStatus": "untagged",
+                "countType": "sinceImagePushed",
+                "countUnit": "days",
+                "countNumber": 1
             },
             "action": {
                 "type": "expire"
