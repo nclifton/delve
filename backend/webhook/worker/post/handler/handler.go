@@ -63,6 +63,7 @@ func (h *handler) Handle(ctx context.Context, body []byte, headers map[string]in
 	if err != nil {
 		return rabbit.NewErrRetryWorkerMessage(fmt.Sprintf("Failed sending webhook to: %s With params: %+v Error: %s", data.URL, data.Payload, err.Error()))
 	}
+	h.log.Fields(ctx, logger.Fields{"event": data.Payload.Event}).Infof("Sent webhook to: %s with status: %s", data.URL, resp.Status)
 	defer resp.Body.Close()
 
 	return nil
