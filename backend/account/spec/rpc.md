@@ -52,22 +52,3 @@ type FindByAPIKeyReply struct {
 	Account *Account
 }
 ```
-
-### RPC account.FindBySender
-
-Request
-
-```
-type FindBySenderParams struct {
-	Sender string `valid:"required"`
-}
-
-```
-
-Reply
-
-```
-type FindBySenderReply struct {
-	Account *Account
-}
-```

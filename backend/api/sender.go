@@ -31,11 +31,11 @@ func SenderListGET(r *Route) {
 
 	r.api.log.Info(r.r.Context(), "SenderListGET", "*")
 
-	rpcReply, err := r.api.sender.FindByAccountId(r.r.Context(), &senderpb.FindByAccountIdParams{
+	rpcReply, err := r.api.sender.FindSendersByAccountId(r.r.Context(), &senderpb.FindSendersByAccountIdParams{
 		AccountId: account.ID,
 	})
 	if err != nil {
-		r.api.log.Error(r.r.Context(), "r.api.sender.FindByAccountId", err.Error())
+		r.api.log.Error(r.r.Context(), "r.api.sender.FindSendersByAccountId", err.Error())
 		r.WriteError("Could not find senders", http.StatusNotFound)
 		return
 	}

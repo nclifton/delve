@@ -32,14 +32,6 @@ type FindByAPIKeyReply struct {
 	Account *Account
 }
 
-type FindBySenderParams struct {
-	Sender string
-}
-
-type FindBySenderReply struct {
-	Account *Account
-}
-
 type FindByIDParams struct {
 	ID string
 }

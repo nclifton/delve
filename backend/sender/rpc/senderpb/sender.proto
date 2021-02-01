@@ -27,24 +27,33 @@ message Sender {
     google.protobuf.Timestamp Updated_at = 9;
 }
 
-message FindByAddressParams {
+message FindSenderByAddressAndAccountIDParams {
     string Account_id = 1;
     string Address = 2; 
 }
 
-message FindByAddressReply {
+message FindSenderByAddressAndAccountIDReply {
     Sender Sender = 1;
 }
 
-message FindByAccountIdParams {
+message FindSendersByAccountIdParams {
     string Account_id = 1;
 }
 
-message FindByAccountIdReply {
+message FindSendersByAccountIdReply {
+    repeated Sender Senders = 1;
+}
+
+message FindSendersByAddressParams {
+    string Address = 2; 
+}
+
+message FindSendersByAddressReply {
     repeated Sender Senders = 1;
 }
 
 service Service {
-    rpc FindByAddress(FindByAddressParams) returns (FindByAddressReply);
-    rpc FindByAccountId(FindByAccountIdParams) returns (FindByAccountIdReply);
+    rpc FindSenderByAddressAndAccountID(FindSenderByAddressAndAccountIDParams) returns (FindSenderByAddressAndAccountIDReply);
+    rpc FindSendersByAccountId(FindSendersByAccountIdParams) returns (FindSendersByAccountIdReply);
+    rpc FindSendersByAddress(FindSendersByAddressParams) returns (FindSendersByAddressReply);
 }

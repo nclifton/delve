@@ -24,7 +24,7 @@ func (s *SMSService) Send(p types.SendParams, r *types.SendReply) error {
 	uid := uuid.New().String()
 	message := p.Message
 
-	sender, err := s.senderRPC.FindByAddress(ctx, &senderpb.FindByAddressParams{
+	sender, err := s.senderRPC.FindSenderByAddressAndAccountID(ctx, &senderpb.FindSenderByAddressAndAccountIDParams{
 		AccountId: p.AccountID,
 		Address:   p.Sender,
 	})

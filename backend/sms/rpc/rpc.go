@@ -18,7 +18,6 @@ type SMSService struct {
 	db           *db
 	webhookRPC   webhookpb.ServiceClient
 	senderRPC    senderpb.ServiceClient
-	accountRPC   *account.Client
 	tracklinkRPC *tracklink.Client
 	optOutRPC    *optOut.Client
 	name         string
@@ -64,7 +63,6 @@ func NewService(
 			name:         Name,
 			webhookRPC:   webhook,
 			senderRPC:    sender,
-			accountRPC:   account,
 			tracklinkRPC: tracklink,
 			features:     features,
 			optOutRPC:    optOut,

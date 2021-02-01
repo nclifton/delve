@@ -25,7 +25,7 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 	ctx := context.Background()
 	uid := uuid.New().String()
 
-	sender, err := s.svc.Sender.FindByAddress(ctx, &senderpb.FindByAddressParams{
+	sender, err := s.svc.Sender.FindSenderByAddressAndAccountID(ctx, &senderpb.FindSenderByAddressAndAccountIDParams{
 		AccountId: p.AccountID,
 		Address:   p.Sender,
 	})

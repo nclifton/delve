@@ -20,7 +20,7 @@ func NewSQLDB(db *pgxpool.Pool) DB {
 	}
 }
 
-func (db *sqlDB) SenderFindByAddress(ctx context.Context, accountId, address string) (Sender, error) {
+func (db *sqlDB) FindSenderByAddressAndAccountID(ctx context.Context, accountId, address string) (Sender, error) {
 	row := db.sql.QueryRow(
 		ctx,
 		`select id, account_id, address, mms_provider_key, channels, country, COALESCE(comment, '') as comment, created_at, updated_at
@@ -55,7 +55,7 @@ func (db *sqlDB) SenderFindByAddress(ctx context.Context, accountId, address str
 	return s, nil
 }
 
-func (db *sqlDB) SenderFindByAccountId(ctx context.Context, accountId string) ([]Sender, error) {
+func (db *sqlDB) FindSendersByAccountId(ctx context.Context, accountId string) ([]Sender, error) {
 	rows, err := db.sql.Query(
 		ctx,
 		`select id, account_id, address, mms_provider_key, channels, country, COALESCE(comment, ''), created_at, updated_at
@@ -91,6 +91,48 @@ func (db *sqlDB) SenderFindByAccountId(ctx context.Context, accountId string) ([
 		if err != nil {
 			return nil, err
 		}
+		ss = append(ss, s)
+	}
+
+	return ss, nil
+}
+
+func (db *sqlDB) FindSendersByAddress(ctx context.Context, address string) ([]Sender, error) {
+	rows, err := db.sql.Query(
+		ctx,
+		`SELECT id, account_id, address, mms_provider_key, channels, country, COALESCE(comment, ''), created_at, updated_at
+		FROM sender
+		WHERE address = $1`,
+		address,
+	)
+	if err != nil {
+		return []Sender{}, err
+	}
+	defer rows.Close()
+
+	ss := []Sender{}
+	for rows.Next() {
+		s := Sender{}
+		var channels pgtype.EnumArray
+
+		if err := rows.Scan(
+			&s.ID,
+			&s.AccountID,
+			&s.Address,
+			&s.MMSProviderKey,
+			&channels,
+			&s.Country,
+			&s.Comment,
+			&s.CreatedAt,
+			&s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		if err := channels.AssignTo(&s.Channels); err != nil {
+			return nil, err
+		}
+
 		ss = append(ss, s)
 	}
 

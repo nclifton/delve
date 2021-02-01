@@ -16,16 +16,6 @@ func (c *Client) FindByAPIKey(key string) (r *FindByAPIKeyReply, err error) {
 	return r, err
 }
 
-type FindBySenderReply = types.FindBySenderReply
-
-func (c *Client) FindBySender(sender string) (r *FindBySenderReply, err error) {
-	r = &FindBySenderReply{}
-	err = c.Call("FindBySender", types.FindBySenderParams{
-		Sender: sender,
-	}, r)
-	return r, err
-}
-
 type FindByIDReply = types.FindByIDReply
 
 func (c *Client) FindByID(id string) (r *FindByIDReply, err error) {

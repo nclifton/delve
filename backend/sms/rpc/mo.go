@@ -3,13 +3,16 @@ package rpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
 	optOutRPC "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	"github.com/burstsms/mtmo-tp/backend/sms/worker/msg"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
@@ -41,7 +44,7 @@ func (s *SMSService) QueueMO(p types.QueueMOParams, r *types.NoReply) error {
 	return nil
 }
 
-var ErrInsufficientParts = errors.New("Insuffcient parts to combine MO")
+var ErrInsufficientParts = errors.New("Insufficient parts to combine MO")
 
 func (s *SMSService) checkMultiPart(p *types.ProcessMOParams) error {
 	// Check for multipart
@@ -63,7 +66,7 @@ func (s *SMSService) checkMultiPart(p *types.ProcessMOParams) error {
 			return err
 		}
 
-		// do we habe all the parts
+		// do we have all the parts
 		if count == parcount {
 			// Join the message into one record
 			parts, err := s.db.GetAllSMSParts(p.SARID)
@@ -87,6 +90,7 @@ func (s *SMSService) checkMultiPart(p *types.ProcessMOParams) error {
 }
 
 func (s *SMSService) ProcessMO(p types.ProcessMOParams, r *types.NoReply) error {
+	ctx := context.Background()
 
 	// Check for multipart
 	err := s.checkMultiPart(&p)
@@ -97,36 +101,57 @@ func (s *SMSService) ProcessMO(p types.ProcessMOParams, r *types.NoReply) error 
 		return err
 	}
 
-	// Find the account from the sender
-	account, err := s.accountRPC.FindBySender(p.To)
+	// check if we have a reply to a send sms
+	replyNotFound := false
+	sms, err := s.db.FindSMSRelatedToMO(ctx, p.To, p.From)
 	if err != nil {
-		log.Printf("[Processing MO] Could not find account for Sender: %s %s", p.To, err)
-		return err
+		if !errors.As(err, &errorlib.NotFoundErr{}) {
+			log.Printf("[Processing MO] Error searching for related sms (To[%s] From[%s]): %s", p.To, p.From, err)
+			return err
+		}
+
+		replyNotFound = true
 	}
 
-	// check if we are a reply to a send sms
-	sms, err := s.db.FindSMSRelatedToMO(account.Account.ID, p.From, p.To)
-	if err != nil {
-		log.Printf("[Processing MO] Error searching for related sms: %s %T", err.Error(), err)
-		return err
+	var accountID string
+	if replyNotFound {
+		replySenders, err := s.senderRPC.FindSendersByAddress(ctx, &senderpb.FindSendersByAddressParams{
+			Address: p.To,
+		})
+		if err != nil {
+			log.Printf("[Processing MO] Could not find account for Sender: %s, error: %s", p.To, err)
+			return err
+		}
+
+		nbSenders := len(replySenders.GetSenders())
+
+		// check if we have 0 or multiple accounts related to this sender
+		if nbSenders != 1 {
+			msg := fmt.Sprintf("found %d account(s) for Sender: %s", nbSenders, p.To)
+			log.Printf("[Processing MO] Error %s", msg)
+			return errors.New(msg)
+		}
+
+		accountID = replySenders.GetSenders()[0].GetAccountId()
+	} else {
+		accountID = sms.AccountID
 	}
 
-	log.Printf("[Processing MO] Found Account: %+v Related to: %+v", account, sms)
+	log.Printf("[Processing MO] Found sms (To[%s] From[%s]), accountID: %s", p.To, p.From, accountID)
 
 	// Let the optout service deal with it if its an optout
-	err = s.optOutRPC.OptOutViaMsg(optOutRPC.OptOutViaMsgParams{
-		AccountID:   account.Account.ID,
+	if err := s.optOutRPC.OptOutViaMsg(optOutRPC.OptOutViaMsgParams{
+		AccountID:   accountID,
 		Message:     p.Message,
 		MessageType: `sms`,
 		MessageID:   sms.ID,
-	})
-	if err != nil {
+	}); err != nil {
 		log.Printf("[Processing MO] Error checking for OptOut: %s", err.Error())
 		return err
 	}
 
 	var lastMessage *webhookpb.Message
-	if *sms != (types.SMS{}) {
+	if !replyNotFound {
 		lastMessage = &webhookpb.Message{
 			Type:       "sms",
 			Id:         sms.ID,
@@ -139,8 +164,8 @@ func (s *SMSService) ProcessMO(p types.ProcessMOParams, r *types.NoReply) error 
 		lastMessage = nil
 	}
 
-	_, err = s.webhookRPC.PublishMO(context.Background(), &webhookpb.PublishMOParams{
-		AccountId:   account.Account.ID,
+	_, err = s.webhookRPC.PublishMO(ctx, &webhookpb.PublishMOParams{
+		AccountId:   accountID,
 		SMSId:       p.MessageID,
 		Recipient:   p.To,
 		Sender:      p.From,
@@ -148,5 +173,6 @@ func (s *SMSService) ProcessMO(p types.ProcessMOParams, r *types.NoReply) error 
 		ReceivedAt:  timestamppb.Now(),
 		LastMessage: lastMessage,
 	})
+
 	return err
 }

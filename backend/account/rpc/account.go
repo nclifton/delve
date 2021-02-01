@@ -43,22 +43,3 @@ func (s *AccountService) FindByID(p types.FindByIDParams, r *types.FindByIDReply
 	r.Account = account
 	return nil
 }
-
-func (s *AccountService) FindBySender(p types.FindBySenderParams, r *types.FindBySenderReply) error {
-	var account *types.Account
-
-	err := s.db.redis.Cached(
-		"Account.FindBySender:"+p.Sender,
-		&account,
-		time.Minute*5,
-		func() (interface{}, error) {
-			return s.db.FindBySenderSMS(p.Sender)
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	r.Account = account
-	return nil
-}

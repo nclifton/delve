@@ -18,6 +18,7 @@ type Sender struct {
 }
 
 type DB interface {
-	SenderFindByAddress(ctx context.Context, accountId, address string) (Sender, error)
-	SenderFindByAccountId(ctx context.Context, accountId string) ([]Sender, error)
+	FindSenderByAddressAndAccountID(ctx context.Context, accountId, address string) (Sender, error)
+	FindSendersByAccountId(ctx context.Context, accountId string) ([]Sender, error)
+	FindSendersByAddress(ctx context.Context, address string) ([]Sender, error)
 }

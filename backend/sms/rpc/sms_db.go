@@ -1,6 +1,9 @@
 package rpc
 
 import (
+	"context"
+
+	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
 	"github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 	"github.com/jackc/pgx/v4"
 )
@@ -103,23 +106,26 @@ func (db *db) FindSMSByMessageID(messageID string) (*types.SMS, error) {
 	return &sms, nil
 }
 
-func (db *db) FindSMSRelatedToMO(accountID string, mosender string, morecipient string) (*types.SMS, error) {
+func (db *db) FindSMSRelatedToMO(ctx context.Context, sender string, recipient string) (types.SMS, error) {
 	var sms types.SMS
-	err := db.postgres.QueryRow(bg(), `
+	err := db.postgres.QueryRow(ctx, `
 		SELECT id, account_id, message_id, created_at, updated_at, message_ref, country, message, sms_count, gsm, recipient, sender, status, track_links
 		FROM sms
-		WHERE account_id = $1 AND sender = $3 AND recipient = $2
+		WHERE sender = $1 AND recipient = $2 
 		AND created_at BETWEEN NOW() - INTERVAL '72 HOURS' AND NOW()
 		ORDER BY updated_at DESC
 		LIMIT 1
 		`,
-		accountID,
-		mosender,
-		morecipient,
+		sender,
+		recipient,
 	).Scan(&sms.ID, &sms.AccountID, &sms.MessageID, &sms.CreatedAt, &sms.UpdatedAt, &sms.MessageRef, &sms.Country, &sms.Message, &sms.SMSCount, &sms.GSM, &sms.Recipient, &sms.Sender, &sms.Status, &sms.TrackLinks)
-	if err != nil && err != pgx.ErrNoRows {
-		return &types.SMS{}, err
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return types.SMS{}, errorlib.NotFoundErr{Message: "sms not found"}
+		}
+
+		return types.SMS{}, err
 	}
 
-	return &sms, nil
+	return sms, nil
 }
