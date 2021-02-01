@@ -76,6 +76,28 @@ func Test_FindByAddress(t *testing.T) {
 			wantErr: wantErr{},
 		},
 		{
+			name: "no comment",
+			params: &senderpb.FindByAddressParams{
+				AccountId: s.uuids[6],
+				Address:   "NOCOMMENT",
+			},
+			want: want{
+				reply: &senderpb.FindByAddressReply{
+					Sender: &senderpb.Sender{
+						Id:             s.uuids[5],
+						AccountId:      s.uuids[6],
+						Address:        "NOCOMMENT",
+						MMSProviderKey: "optus",
+						Channels:       []string{"mms", "sms"},
+						Country:        "AU",
+						Comment:        "",
+						CreatedAt:      timestamppb.New(s.dates[5]),
+						UpdatedAt:      timestamppb.New(s.dates[6]),
+					}}},
+			wantErr: wantErr{},
+		},
+
+		{
 			name: "not found sender Address: MICE",
 			params: &senderpb.FindByAddressParams{
 				AccountId: s.uuids[1],
@@ -180,6 +202,29 @@ func Test_FindByAccount(t *testing.T) {
 			wantErr: wantErr{},
 		},
 		{
+			name: "happy no comment",
+			params: &senderpb.FindByAccountIdParams{
+				AccountId: s.uuids[6],
+			},
+			want: want{
+				reply: &senderpb.FindByAccountIdReply{
+					Senders: []*senderpb.Sender{
+						{
+							Id:             s.uuids[5],
+							AccountId:      s.uuids[6],
+							Address:        "NOCOMMENT",
+							MMSProviderKey: "optus",
+							Channels:       []string{"mms", "sms"},
+							Country:        "AU",
+							Comment:        "",
+							CreatedAt:      timestamppb.New(s.dates[5]),
+							UpdatedAt:      timestamppb.New(s.dates[6]),
+						},
+					},
+				}},
+			wantErr: wantErr{},
+		},
+		{
 			name: "account id not found",
 			params: &senderpb.FindByAccountIdParams{
 				AccountId: s.uuids[5],
@@ -244,5 +289,16 @@ func setupForFind(t *testing.T) *testDeps {
 		"comment":          "Arthur Dent",
 		"created_at":       s.dates[4],
 		"updated_at":       s.dates[3]})
+
+	s.HaveInDatabase("sender", assertdb.Row{
+		"id":               s.uuids[5],
+		"account_id":       s.uuids[6],
+		"address":          "NOCOMMENT",
+		"mms_provider_key": "optus",
+		"channels":         []string{"mms", "sms"},
+		"country":          "AU",
+		"created_at":       s.dates[5],
+		"updated_at":       s.dates[6]})
+
 	return s
 }

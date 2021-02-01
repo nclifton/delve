@@ -23,7 +23,7 @@ func NewSQLDB(db *pgxpool.Pool) DB {
 func (db *sqlDB) SenderFindByAddress(ctx context.Context, accountId, address string) (Sender, error) {
 	row := db.sql.QueryRow(
 		ctx,
-		`select id, account_id, address, mms_provider_key, channels, country, comment, created_at, updated_at
+		`select id, account_id, address, mms_provider_key, channels, country, COALESCE(comment, '') as comment, created_at, updated_at
 		from sender
 		where account_id = $1 and address = $2`,
 		accountId,
@@ -58,7 +58,7 @@ func (db *sqlDB) SenderFindByAddress(ctx context.Context, accountId, address str
 func (db *sqlDB) SenderFindByAccountId(ctx context.Context, accountId string) ([]Sender, error) {
 	rows, err := db.sql.Query(
 		ctx,
-		`select id, account_id, address, mms_provider_key, channels, country, comment, created_at, updated_at
+		`select id, account_id, address, mms_provider_key, channels, country, COALESCE(comment, ''), created_at, updated_at
 		from sender
 		where account_id = $1
 		limit 100`,
