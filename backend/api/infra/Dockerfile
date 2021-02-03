@@ -19,7 +19,7 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /src
 COPY ./backend .
 
-RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/api/server
+RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/api
 
 # Final stage: the running container
 FROM scratch
