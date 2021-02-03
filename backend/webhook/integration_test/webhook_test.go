@@ -28,7 +28,7 @@ import (
 var tfx *fixtures.TestFixtures
 
 func TestMain(m *testing.M) {
-	tfx = fixtures.New()
+	tfx = fixtures.New("webhook")
 	tfx.SetupPostgres("webhook")
 	tfx.SetupRabbit()
 	tfx.SetupRedis()

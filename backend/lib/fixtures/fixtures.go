@@ -24,6 +24,7 @@ type FixturesEnv struct {
 	MigrationRoot        string `envconfig:"MIGRATION_ROOT"`
 }
 type TestFixtures struct {
+	name     string
 	env      *FixturesEnv
 	Postgres struct {
 		ConnStr string
@@ -38,7 +39,7 @@ type TestFixtures struct {
 	GRPCListener net.Listener
 }
 
-func New() *TestFixtures {
+func New(name string) *TestFixtures {
 
 	log.Println("setup fixtures")
 	var env FixturesEnv
@@ -46,7 +47,7 @@ func New() *TestFixtures {
 		log.Fatal("failed to read env vars:", err)
 	}
 
-	return &TestFixtures{env: &env}
+	return &TestFixtures{env: &env, name: name}
 }
 
 func (tf *TestFixtures) SetupPostgres(dbName string) {
@@ -73,7 +74,7 @@ func (tf *TestFixtures) setupPostgresContainer(dbName string) {
 		postgres.WithDatabase(dbName),
 	)
 
-	container, err := gnomock.Start(pg, gnomock.WithContainerName("postgres-fixture"))
+	container, err := gnomock.Start(pg, gnomock.WithContainerName(fmt.Sprintf("%s-postgres-fixture", tf.name)))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -112,7 +113,7 @@ func (tf *TestFixtures) setupRabbitContainer() {
 	p := rabbitmq.Preset(
 		rabbitmq.WithUser(tf.env.RabbitmqUser, tf.env.RabbitmqUserPassword),
 	)
-	container, err := gnomock.Start(p, gnomock.WithContainerName("rabbit-fixture"))
+	container, err := gnomock.Start(p, gnomock.WithContainerName(fmt.Sprintf("%s-rabbit-fixture", tf.name)))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -138,7 +139,7 @@ func (tf *TestFixtures) setupRedisContainer() {
 	// Setup Redis
 	p := redis.Preset(redis.WithValues(vs))
 
-	container, err := gnomock.Start(p, gnomock.WithContainerName("redis-fixture"))
+	container, err := gnomock.Start(p, gnomock.WithContainerName(fmt.Sprintf("%s-redis-fixture", tf.name)))
 	if err != nil {
 		log.Fatal(err.Error())
 	}

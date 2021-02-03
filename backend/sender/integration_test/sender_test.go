@@ -22,7 +22,7 @@ import (
 var tfx *fixtures.TestFixtures
 
 func TestMain(m *testing.M) {
-	tfx = fixtures.New()
+	tfx = fixtures.New("sender")
 	tfx.SetupPostgres("sender")
 	tfx.GRPCStart(senderRPCService())
 	code := m.Run()
@@ -92,6 +92,25 @@ func Test_FindSenderByAddressAndAccountID(t *testing.T) {
 					Comment:        "",
 					CreatedAt:      timestamppb.New(s.dates[5]),
 					UpdatedAt:      timestamppb.New(s.dates[6]),
+				}}},
+			wantErr: wantErr{},
+		}, {
+			name: "no mms provider key",
+			params: &senderpb.FindSenderByAddressAndAccountIDParams{
+				AccountId: s.uuids[8],
+				Address:   "NOMMSPKEY",
+			},
+			want: want{&senderpb.FindSenderByAddressAndAccountIDReply{
+				Sender: &senderpb.Sender{
+					Id:             s.uuids[7],
+					AccountId:      s.uuids[8],
+					Address:        "NOMMSPKEY",
+					MMSProviderKey: "",
+					Channels:       []string{"sms"},
+					Country:        "AU",
+					Comment:        "",
+					CreatedAt:      timestamppb.New(s.dates[7]),
+					UpdatedAt:      timestamppb.New(s.dates[8]),
 				}}},
 			wantErr: wantErr{},
 		},
@@ -189,6 +208,25 @@ func Test_FindSendersByAddress(t *testing.T) {
 				Address: "NOTFOUND",
 			},
 			want:    &senderpb.FindSendersByAddressReply{Senders: []*senderpb.Sender{}},
+			wantErr: wantErr{},
+		}, {
+			name: "no mms provider key",
+			params: &senderpb.FindSendersByAddressParams{
+				Address: "NOMMSPKEY",
+			},
+			want: &senderpb.FindSendersByAddressReply{
+				Senders: []*senderpb.Sender{
+					{
+						Id:             s.uuids[7],
+						AccountId:      s.uuids[8],
+						Address:        "NOMMSPKEY",
+						MMSProviderKey: "",
+						Channels:       []string{"sms"},
+						Country:        "AU",
+						Comment:        "",
+						CreatedAt:      timestamppb.New(s.dates[7]),
+						UpdatedAt:      timestamppb.New(s.dates[8]),
+					}}},
 			wantErr: wantErr{},
 		},
 	}
@@ -298,6 +336,29 @@ func Test_FindSendersByAccountId(t *testing.T) {
 				reply: &senderpb.FindSendersByAccountIdReply{Senders: []*senderpb.Sender{}}},
 			wantErr: wantErr{},
 		},
+		{
+			name: "no mms_provider_key",
+			params: &senderpb.FindSendersByAccountIdParams{
+				AccountId: s.uuids[8],
+			},
+			want: want{
+				reply: &senderpb.FindSendersByAccountIdReply{
+					Senders: []*senderpb.Sender{
+						{
+							Id:             s.uuids[7],
+							AccountId:      s.uuids[8],
+							Address:        "NOMMSPKEY",
+							MMSProviderKey: "",
+							Channels:       []string{"sms"},
+							Country:        "AU",
+							Comment:        "",
+							CreatedAt:      timestamppb.New(s.dates[7]),
+							UpdatedAt:      timestamppb.New(s.dates[8]),
+						},
+					},
+				}},
+			wantErr: wantErr{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -364,6 +425,15 @@ func setupForFind(t *testing.T) *testDeps {
 		"country":          "AU",
 		"created_at":       s.dates[5],
 		"updated_at":       s.dates[6]})
+
+	s.HaveInDatabase("sender", assertdb.Row{
+		"id":         s.uuids[7],
+		"account_id": s.uuids[8],
+		"address":    "NOMMSPKEY",
+		"channels":   []string{"sms"},
+		"country":    "AU",
+		"created_at": s.dates[7],
+		"updated_at": s.dates[8]})
 
 	return s
 }
