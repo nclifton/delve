@@ -8,8 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/opentracing/opentracing-go"
+	"github.com/streadway/amqp"
+
+	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 )
 
 type MessageHandler interface {
@@ -19,6 +21,8 @@ type MessageHandler interface {
 
 // TODO remove NR code litering our app
 // should be replaced with calls to our own metrics service
+
+// TODO I think we want to have the standard logger here as well
 type Worker struct {
 	name   string
 	con    Conn
@@ -49,7 +53,12 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 
 	messages, done, err := Consume(w.con, opts)
 	if err != nil {
-		log.Fatalf("failed to consume from queue: %s", err)
+		if opts.AllowConnectionClose && err == amqp.ErrClosed {
+			log.Printf("connection closed, stopping rabbit consume")
+			done <- true // do I need this?
+		} else {
+			log.Fatalf("failed to consume from queue: %s", err)
+		}
 	}
 
 	// listen for termination signals so we can cleanly close consumer

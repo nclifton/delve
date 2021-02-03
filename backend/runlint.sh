@@ -15,4 +15,4 @@ LINT_DIRS='
 echo "GOBIN = $GOBIN"
 echo "PWD = $(echo $(pwd))"
 echo "LINT_DIRS = $LINT_DIRS"
-$GOBIN/golangci-lint --deadline=5m run $LINT_DIRS
+$GOBIN/golangci-lint --build-tags integration --deadline=5m run $LINT_DIRS

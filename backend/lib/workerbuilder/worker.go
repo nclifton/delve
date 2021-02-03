@@ -8,6 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/sirupsen/logrus"
+
+	"github.com/burstsms/mtmo-tp/backend/lib/health"
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
@@ -26,36 +29,49 @@ type Config struct {
 	NRName                      string `envconfig:"NR_NAME"`
 	NRLicense                   string `envconfig:"NR_LICENSE"`
 	NRTracing                   bool   `envconfig:"NR_TRACING"`
+	HealthCheckPort             string `envconfig:"HEALTH_CHECK_PORT" default:"8086"`
+	MaxGoRoutines               int    `envconfig:"MAX_GO_ROUTINES" default:"100"`
+
+	// special env variable that should be empty under Kubernetes so that the Health Check listener will attach to all available ip addresses on the server
+	HealthCheckHost string `envconfig:"HEALTH_CHECK_HOST" default:""`
 }
 
 type Deps struct {
-	Worker *rabbit.Worker
+	Worker               *rabbit.Worker
+	Health               health.HealthCheckService
+	AllowConnectionClose bool
 }
 
 type worker struct {
-	conf    Config
-	log     *logger.StandardLogger
-	service Service
-
+	conf         Config
+	log          *logger.StandardLogger
+	service      Service
 	tracer       opentracing.Tracer
 	tracerCloser io.Closer
 	rabbitConn   wabbit.Conn
 	worker       *rabbit.Worker
+	health       health.HealthCheckService
 }
 
 type Service interface {
 	Run(deps Deps) error
+	WorkerName() string
+	RabbitURL() string
 }
 
-func NewWorker(config Config, service Service) *worker {
+func NewWorker(ctx context.Context, config Config, service Service) *worker {
+	// TODO consider allowing injection of logger and health check service through this or another constructor
+
+	stLog := logger.NewLogger()
 	return &worker{
 		conf:    config,
-		log:     logger.NewLogger(),
+		log:     stLog,
 		service: service,
+		health:  health.New(ctx, healthCheckConfig(config), stLog),
 	}
 }
 
-func NewWorkerFromEnv(service Service) worker {
+func NewWorkerFromEnv(ctx context.Context, service Service) worker {
 	stLog := logger.NewLogger()
 
 	var config Config
@@ -63,28 +79,55 @@ func NewWorkerFromEnv(service Service) worker {
 		stLog.Fatalf(context.Background(), "envconfig.Process", "failed to read env vars: %s", err)
 	}
 
+	if config.ContainerName == "" {
+		config.ContainerName = service.WorkerName()
+	}
+	if config.RabbitURL == "" {
+		config.RabbitURL = service.RabbitURL()
+	}
+
 	return worker{
 		conf:    config,
 		log:     stLog,
 		service: service,
+		health:  health.New(ctx, healthCheckConfig(config), stLog),
 	}
 }
 
-func (w *worker) Start() error {
-	ctx := context.Background()
+func healthCheckConfig(config Config) health.Config {
+	return health.Config{
+		Host:          config.HealthCheckHost,
+		Port:          config.HealthCheckPort,
+		MaxGoRoutines: config.MaxGoRoutines,
+		LoggerFields:  loggerFields(config),
+	}
+}
 
-	if err := w.setupDeps(ctx); err != nil {
+func loggerFields(config Config) logger.Fields {
+	lf := logger.Fields{
+		"worker": config.ContainerName}
+	return lf
+}
+
+func (w *worker) Start(ctx context.Context) error {
+
+	if err := w.createJaegerConn(ctx); err != nil {
 		return err
 	}
 
-	w.createWorker(w.conf.ContainerName)
+	if err := w.createRabbitConn(ctx); err != nil {
+		return err
+	}
+
+	w.createWorker()
 
 	go func() {
 		if err := w.service.Run(Deps{
-			Worker: w.worker,
+			Worker:               w.worker,
+			Health:               w.health,
+			AllowConnectionClose: w.conf.RabbitIgnoreClosedQueueConn,
 		}); err != nil {
-			w.log.Fields(ctx, logger.Fields{
-				"worker": w.conf.ContainerName}).Fatalf("Failed to start worker")
+			w.log.Fields(ctx, loggerFields(w.conf)).Fatalf("Failed to start worker")
 		}
 	}()
 
@@ -96,52 +139,52 @@ func (w *worker) Start() error {
 	// Block until a signal is received
 	<-sigint
 
-	w.stop(ctx)
+	w.Stop(ctx)
 
 	return nil
 }
 
-func (w *worker) stop(ctx context.Context) {
-	logService := w.log.Fields(ctx, logger.Fields{
-		"worker": w.conf.ContainerName})
+func (w *worker) Stop(ctx context.Context) {
+
+	w.health.SetServiceReady(false)
+
+	logService := logFields(w, ctx)
 
 	logService.Infof("Stopping worker")
 
+	//TODO we need a graceful way to stop the consumer
+	// just closing the connection could cause the consumer to do an os.Exit which is not considered playing nice
+
 	if w.rabbitConn != nil {
 		logService.Infof("Closing rabbit connection")
-
 		w.rabbitConn.Close()
 	}
 
 	if w.tracerCloser != nil {
 		logService.Infof("Closing tracer connection")
-
 		if err := w.TracerClose(); err != nil {
 			logService.Fatalf("Failed to close tracer connection")
 		}
 	}
 
+	w.health.Stop(ctx)
+
 	logService.Infof("End of Worker")
 }
 
-func (w *worker) createWorker(queueName string) {
+func logFields(w *worker, ctx context.Context) *logrus.Entry {
+	logService := w.log.Fields(ctx, loggerFields(w.conf))
+	return logService
+}
+
+func (w *worker) createWorker() {
 	nrOpts := &nr.Options{
 		AppName:                  w.conf.NRName,
 		NewRelicLicense:          w.conf.NRLicense,
 		DistributedTracerEnabled: w.conf.NRTracing,
 	}
 
-	worker := rabbit.NewWorkerWithTracer(queueName, w.rabbitConn, nrOpts, w.tracer)
-
-	w.worker = worker
-}
-
-func (w *worker) setupDeps(ctx context.Context) error {
-	if err := w.createJaegerConn(ctx); err != nil {
-		return err
-	}
-
-	return w.createRabbitConn(ctx)
+	w.worker = rabbit.NewWorkerWithTracer(w.conf.ContainerName, w.rabbitConn, nrOpts, w.tracer)
 }
 
 func (w *worker) createJaegerConn(ctx context.Context) error {
@@ -149,8 +192,7 @@ func (w *worker) createJaegerConn(ctx context.Context) error {
 		return nil
 	}
 
-	w.log.Fields(ctx, logger.Fields{
-		"worker": w.conf.ContainerName}).Infof("Starting tracer connection")
+	w.log.Fields(ctx, loggerFields(w.conf)).Infof("Starting tracer connection: '%s'", w.conf.ContainerName)
 
 	tracer, closer, err := jaeger.Connect(w.conf.ContainerName)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/phayes/freeport"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/orlangure/gnomock"
@@ -17,17 +18,21 @@ import (
 )
 
 type FixturesEnv struct {
-	PostgresUser         string `envconfig:"POSTGRES_USER"`
-	PostgresUserPassword string `envconfig:"POSTGRES_USER_PASSWORD"`
-	RabbitmqUser         string `envconfig:"RABBITMQ_USER"`
-	RabbitmqUserPassword string `envconfig:"RABBITMQ_USER_PASSWORD"`
-	MigrationRoot        string `envconfig:"MIGRATION_ROOT"`
+	PostgresUser           string   `envconfig:"POSTGRES_USER" default:"gnomock"`
+	PostgresUserPassword   string   `envconfig:"POSTGRES_USER_PASSWORD" default:"gnomick"`
+	RabbitmqUser           string   `envconfig:"RABBITMQ_USER" default:"gnomock"`
+	RabbitmqUserPassword   string   `envconfig:"RABBITMQ_USER_PASSWORD" default:"gnomick"`
+	MigrationRoot          string   `envconfig:"MIGRATION_ROOT" default:"file://../migration/sql"`
+	HealthCheckHost        string   `envconfig:"RPC_HEALTH_CHECK_HOST" default:"127.0.0.1"`    // all health check services under test listen and serve on the same host but separate ports
+	RPCHealthCheckPort     string   `envconfig:"RPC_HEALTH_CHECK_PORT" default:"FREEPORT"`     // port number named "FREEPORT" will allow the fixture to allocate any unused port number
+	WorkerHealthCheckPorts []string `envconfig:"WORKER_HEALTH_CHECK_PORTS" default:"FREEPORT"` // comma separated list of PORTS to use or use "FREEPORT"
 }
 type TestFixtures struct {
 	name     string
 	env      *FixturesEnv
 	Postgres struct {
 		ConnStr string
+		Stop    func()
 	}
 	Rabbit struct {
 		ConnStr string
@@ -35,8 +40,11 @@ type TestFixtures struct {
 	Redis struct {
 		Address string
 	}
-	teardowns    []func()
-	GRPCListener net.Listener
+	teardowns             []func()
+	GRPCListener          net.Listener
+	RPCHealthCheckURI     string
+	WorkerHealthCheckURIs []string
+	workerPortIndex       int
 }
 
 func New(name string) *TestFixtures {
@@ -48,6 +56,19 @@ func New(name string) *TestFixtures {
 	}
 
 	return &TestFixtures{env: &env, name: name}
+
+}
+
+// return any available port if provided port string equals "FREEPORT"
+func port(port string) string {
+	if port == "FREEPORT" {
+		port, err := freeport.GetFreePort()
+		if err != nil {
+			log.Fatal(err)
+		}
+		return fmt.Sprintf("%d", port)
+	}
+	return port
 }
 
 func (tf *TestFixtures) SetupPostgres(dbName string) {
@@ -79,17 +100,17 @@ func (tf *TestFixtures) setupPostgresContainer(dbName string) {
 		log.Fatal(err.Error())
 	}
 
-	tf.teardowns = append(tf.teardowns, func() {
+	stop := func() {
 		err = gnomock.Stop(container)
-		if err != nil {
-			log.Printf("failed to shutdown Postgres container: %v\n", err)
-		}
-	})
+	}
+
+	tf.teardowns = append(tf.teardowns, stop)
+	tf.Postgres.Stop = stop
 
 	tf.Postgres.ConnStr = fmt.Sprintf(
-		"postgresql://%s:%s@%s:%d/%s?sslmode=%s",
+		"postgresql://%s:%s@%s/%s?sslmode=%s",
 		tf.env.PostgresUser, tf.env.PostgresUserPassword,
-		container.Host, container.DefaultPort(), dbName, "disable")
+		container.DefaultAddress(), dbName, "disable")
 
 }
 

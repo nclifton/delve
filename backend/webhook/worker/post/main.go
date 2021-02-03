@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/workerbuilder"
@@ -8,9 +9,10 @@ import (
 )
 
 func main() {
-	s := workerbuilder.NewWorkerFromEnv(postbuilder.NewBuilderFromEnv())
+	ctx := context.Background()
+	s := workerbuilder.NewWorkerFromEnv(ctx, postbuilder.NewBuilderFromEnv())
 
-	if err := s.Start(); err != nil {
+	if err := s.Start(ctx); err != nil {
 		log.Fatal(err)
 	}
 }

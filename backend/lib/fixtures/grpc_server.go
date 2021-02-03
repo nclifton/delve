@@ -2,6 +2,7 @@ package fixtures
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"testing"
@@ -14,22 +15,36 @@ import (
 
 func (tfx *TestFixtures) GRPCStart(service rpcbuilder.Service) {
 
-	s := rpcbuilder.NewGRPCServer(rpcbuilder.Config{
-		ContainerName:               "",
-		ContainerPort:               0,
-		RabbitURL:                   tfx.Rabbit.ConnStr,
-		PostgresURL:                 tfx.Postgres.ConnStr,
-		TracerDisable:               true,
-		RabbitIgnoreClosedQueueConn: true},
+	ctx := context.Background()
+	hcPort := port(tfx.env.RPCHealthCheckPort)
+
+	s := rpcbuilder.NewGRPCServer(
+		ctx,
+		rpcbuilder.Config{
+			ContainerName:               "integration-test-service",
+			ContainerPort:               0,
+			RabbitURL:                   tfx.Rabbit.ConnStr,
+			PostgresURL:                 tfx.Postgres.ConnStr,
+			TracerDisable:               true,
+			RabbitIgnoreClosedQueueConn: true,
+			HealthCheckPort:             hcPort,
+			MaxGoRoutines:               200,
+			DevHost:                     tfx.env.HealthCheckHost,
+		},
 		service,
 	)
+	tfx.RPCHealthCheckURI = fmt.Sprintf("http://%s:%s", tfx.env.HealthCheckHost, hcPort)
 
 	s.SetCustomListener(bufconn.Listen(1024 * 1024))
 	tfx.GRPCListener = s.Listener()
+	tfx.teardowns = append(tfx.teardowns, func() {
+		s.Stop(ctx)
+		tfx.GRPCListener = nil
+	})
 
 	// start in a go routine
 	go func() {
-		err := s.Start()
+		err := s.Start(ctx)
 		if err != nil {
 			log.Fatal(err)
 		}

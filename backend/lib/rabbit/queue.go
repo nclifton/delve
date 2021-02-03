@@ -36,12 +36,13 @@ type PublishOptions struct {
 }
 
 type ConsumeOptions struct {
-	PrefetchCount int
-	QueueName     string
-	Exchange      string
-	ExchangeType  string
-	RouteKey      string
-	RetryScale    []time.Duration
+	PrefetchCount        int
+	QueueName            string
+	Exchange             string
+	ExchangeType         string
+	RouteKey             string
+	RetryScale           []time.Duration
+	AllowConnectionClose bool
 }
 
 // Publish will send each message specified by data to the exchange

@@ -22,7 +22,7 @@ type builder struct {
 	conf Config
 }
 
-func NewBuilder(config Config) *builder {
+func NewService(config Config) *builder {
 	return &builder{conf: config}
 }
 
@@ -34,7 +34,7 @@ func NewServiceFromEnv() *builder {
 		stLog.Fatalf(context.Background(), "envconfig.Process", "failed to read env vars: %s", err)
 	}
 
-	return NewBuilder(config)
+	return NewService(config)
 }
 
 func (b *builder) Run(deps rpcbuilder.Deps) error {
