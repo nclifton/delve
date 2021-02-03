@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
-	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/burstsms/mtmo-tp/backend/lib/workerbuilder"
 	"github.com/burstsms/mtmo-tp/backend/webhook/worker/post/handler"
@@ -14,19 +13,8 @@ import (
 )
 
 type Config struct {
-
-	//TODO revise worker and post builder to move more configuration and dependency setup to the lib/workerbuilder package
-
-	WorkerName string `envconfig:"WORKER_NAME" default:"webhook-post-worker"`                                   // no longer required - use ContainerName
-	RabbitURL  string `envconfig:"RABBIT_URL" default:"amqp://tp:TheToiletPaperPassword@rabbitmq:5672/webhook"` // no longer required here
-
 	ClientTimeout int    `envconfig:"CLIENT_TIMEOUT"`
 	RedisURL      string `envconfig:"REDIS_URL"`
-
-	// TODO, these are generic environment variables for a worker in it's own environment, should move to the worker builder deps
-	RabbitExchange        string `envconfig:"RABBIT_EXCHANGE"`         // no longer required here
-	RabbitExchangeType    string `envconfig:"RABBIT_EXCHANGE_TYPE"`    // no longer required here
-	RabbitPrefetchedCount int    `envconfig:"RABBIT_PREFETCHED_COUNT"` // no longer required here
 }
 
 type postService struct {
@@ -52,22 +40,6 @@ func New(config Config) *postService {
 	return &postService{conf: config}
 }
 
-func (ps *postService) WorkerName() string {
-	return ps.conf.WorkerName
-}
-
-func (ps *postService) RabbitURL() string {
-	return ps.conf.RabbitURL
-}
-
-func (ps *postService) SetClient(client handler.HTTPClient) {
-	ps.client = client
-}
-
-func (ps *postService) SetLimiter(limiter handler.Limiter) {
-	ps.limiter = limiter
-}
-
 func (ps *postService) Run(deps workerbuilder.Deps) error {
 
 	if ps.client == nil {
@@ -84,19 +56,11 @@ func (ps *postService) Run(deps workerbuilder.Deps) error {
 		ps.limiter = limiter
 	}
 
-	opts := rabbit.ConsumeOptions{
-		PrefetchCount:        ps.conf.RabbitPrefetchedCount,
-		Exchange:             ps.conf.RabbitExchange,
-		ExchangeType:         ps.conf.RabbitExchangeType,
-		QueueName:            name,
-		RetryScale:           rabbit.RetryScale,
-		AllowConnectionClose: deps.AllowConnectionClose,
-	}
-
 	handler := handler.New(ps.client, ps.limiter)
 
+	// TODO move health set service ready true/false into the Worker
 	deps.Health.SetServiceReady(true)
-	deps.Worker.Run(opts, handler)
+	deps.Worker.Run(deps.ConsumeOptions, handler)
 
 	return nil
 }

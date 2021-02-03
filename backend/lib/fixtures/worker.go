@@ -9,19 +9,29 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/workerbuilder"
 )
 
-func (tfx *TestFixtures) StartWorker(host string, workerService workerbuilder.Service) {
+type WorkerConfig struct {
+	ContainerName  string
+	RabbitExchange string
+	QueueName      string
+}
+
+func (tfx *TestFixtures) StartWorker(config WorkerConfig, workerService workerbuilder.Service) {
 
 	port := tfx.workerPort()
 	ctx := context.Background()
 	worker := workerbuilder.NewWorker(ctx,
 		workerbuilder.Config{
-			ContainerName:               host,
+			ContainerName:               config.ContainerName,
 			RabbitURL:                   tfx.Rabbit.ConnStr,
 			TracerDisable:               true,
 			RabbitIgnoreClosedQueueConn: true,
 			NRName:                      "",
 			NRLicense:                   "",
 			NRTracing:                   false,
+			QueueName:                   config.QueueName,
+			RabbitExchange:              config.RabbitExchange,
+			RabbitExchangeType:          "direct",
+			RabbitPrefetchedCount:       1,
 			HealthCheckHost:             tfx.env.HealthCheckHost,
 			HealthCheckPort:             port,
 			MaxGoRoutines:               200,

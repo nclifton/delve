@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -97,11 +98,12 @@ func Test_HealthCheck(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.stopPostgres {
 				s.Postgres.Stop()
+				time.Sleep(time.Second)
 				// we need to teardown and restart all the fixtures now.
 				// The postgres container has to be new after we stop it.
-				// So to get the dependants on postgres to use a new postgres service they need to be new as well
+				// So to get the services that are dependants on postgres to use a new postgres service they need to be new as well
 				// Sorry.
-				// Also note that for this need to be able to shut everything down without an os.Exit() happening
+				// Also note that for this we need to be able to shut everything down without an os.Exit(1) happening
 				defer func() {
 					tfx.Teardown()
 					setupFixtures()
@@ -126,7 +128,7 @@ func Test_HealthCheck(t *testing.T) {
 			err = json.Unmarshal(bodyBytes, &body)
 			assert.Regexp(t, tt.want.responseBody.GoRoutineThreshold, body.GoRoutineThreshold, "GoRoutineThreshold")
 			assert.Regexp(t, tt.want.responseBody.Database, body.Database, "Database")
-			assert.Regexp(t, tt.want.responseBody.Service, body.Service, "Service")
+			assert.Regexp(t, tt.want.responseBody.Service, body.Service, fmt.Sprintf("Service GET: %s", url))
 		})
 	}
 }

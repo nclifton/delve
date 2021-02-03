@@ -3,7 +3,6 @@
 package test
 
 import (
-	"log"
 	"os"
 
 	"testing"
@@ -12,7 +11,6 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/webhook/worker/post/postbuilder"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/fixtures"
-	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
 	"github.com/burstsms/mtmo-tp/backend/lib/workerbuilder"
 )
@@ -32,7 +30,11 @@ func setupFixtures() {
 	tfx.SetupRabbit()
 	tfx.SetupRedis()
 	tfx.GRPCStart(webhookRPCService())
-	tfx.StartWorker("webhook-post-worker-service", webhookPostService())
+	tfx.StartWorker(fixtures.WorkerConfig{
+		ContainerName:  "webhook-post-worker-service",
+		RabbitExchange: "webhook",
+		QueueName:      "webhook",
+	}, webhookPostService())
 }
 
 func webhookRPCService() rpcbuilder.Service {
@@ -45,18 +47,9 @@ func webhookRPCService() rpcbuilder.Service {
 func webhookPostService() workerbuilder.Service {
 
 	service := postbuilder.New(postbuilder.Config{
-		ClientTimeout:         3,
-		RedisURL:              tfx.Redis.Address,
-		RabbitExchange:        "webhook",
-		RabbitExchangeType:    "direct",
-		RabbitPrefetchedCount: 1,
+		ClientTimeout: 3,
+		RedisURL:      tfx.Redis.Address,
 	})
-
-	limiter, err := redis.NewLimiter(tfx.Redis.Address)
-	if err != nil {
-		log.Fatal(err)
-	}
-	service.SetLimiter(limiter)
 
 	return service
 }

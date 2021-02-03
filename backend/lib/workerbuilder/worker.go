@@ -29,17 +29,20 @@ type Config struct {
 	NRName                      string `envconfig:"NR_NAME"`
 	NRLicense                   string `envconfig:"NR_LICENSE"`
 	NRTracing                   bool   `envconfig:"NR_TRACING"`
+	QueueName                   string `envconfig:"QUEUE_NAME"`
+	RabbitExchange              string `envconfig:"RABBIT_EXCHANGE"`
+	RabbitExchangeType          string `envconfig:"RABBIT_EXCHANGE_TYPE"`
+	RabbitPrefetchedCount       int    `envconfig:"RABBIT_PREFETCHED_COUNT"`
 	HealthCheckPort             string `envconfig:"HEALTH_CHECK_PORT" default:"8086"`
 	MaxGoRoutines               int    `envconfig:"MAX_GO_ROUTINES" default:"100"`
-
 	// special env variable that should be empty under Kubernetes so that the Health Check listener will attach to all available ip addresses on the server
 	HealthCheckHost string `envconfig:"HEALTH_CHECK_HOST" default:""`
 }
 
 type Deps struct {
-	Worker               *rabbit.Worker
-	Health               health.HealthCheckService
-	AllowConnectionClose bool
+	Worker         *rabbit.Worker
+	ConsumeOptions rabbit.ConsumeOptions
+	Health         health.HealthCheckService
 }
 
 type worker struct {
@@ -55,8 +58,6 @@ type worker struct {
 
 type Service interface {
 	Run(deps Deps) error
-	WorkerName() string
-	RabbitURL() string
 }
 
 func NewWorker(ctx context.Context, config Config, service Service) *worker {
@@ -77,13 +78,6 @@ func NewWorkerFromEnv(ctx context.Context, service Service) worker {
 	var config Config
 	if err := envconfig.Process("", &config); err != nil {
 		stLog.Fatalf(context.Background(), "envconfig.Process", "failed to read env vars: %s", err)
-	}
-
-	if config.ContainerName == "" {
-		config.ContainerName = service.WorkerName()
-	}
-	if config.RabbitURL == "" {
-		config.RabbitURL = service.RabbitURL()
 	}
 
 	return worker{
@@ -123,9 +117,16 @@ func (w *worker) Start(ctx context.Context) error {
 
 	go func() {
 		if err := w.service.Run(Deps{
-			Worker:               w.worker,
-			Health:               w.health,
-			AllowConnectionClose: w.conf.RabbitIgnoreClosedQueueConn,
+			Worker: w.worker,
+			ConsumeOptions: rabbit.ConsumeOptions{
+				PrefetchCount:        w.conf.RabbitPrefetchedCount,
+				Exchange:             w.conf.RabbitExchange,
+				ExchangeType:         w.conf.RabbitExchangeType,
+				QueueName:            w.conf.QueueName,
+				RetryScale:           rabbit.RetryScale,
+				AllowConnectionClose: w.conf.RabbitIgnoreClosedQueueConn,
+			},
+			Health: w.health,
 		}); err != nil {
 			w.log.Fields(ctx, loggerFields(w.conf)).Fatalf("Failed to start worker")
 		}
