@@ -14,7 +14,8 @@ services:
       - "10003:10003"
       - "10004:10004"
       - "10005:10005"
-      - "10006:10006"
+      - "10006:10006" 
+      - "10012:10012" 
       - "10014:10014"
     environment:
       - DISABLE_NEW_RELIC=true
@@ -97,6 +98,7 @@ services:
       - OPTOUT_POSTGRES_URL=postgresql://postgres:example@postgres/optout
       - OPTOUT_REDIS_URL=redis:6379
       - OPTOUT_OPTOUTLINK_DOMAIN=localhost:10012
+      - OPTOUT_WEBHOOK_RPC_ADDRESS=webhook-rpc-service:10002
 
       - TRACK_LINK_RPC_ADDRESS=backend:10010
       - TRACK_LINK_INBOUND_PORT=10013
