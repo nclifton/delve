@@ -51,7 +51,7 @@ func GenerateMM7Submit(params SubmitParams, soaptmpl *template.Template, message
 
 	// Text Part
 	txtHeader := textproto.MIMEHeader{}
-	txtHeader.Set("Content-Type", "text/plain")
+	txtHeader.Set("Content-Type", "text/plain; charset=utf-8")
 	txtHeader.Set("Content-ID", "msg-txt")
 	txtPart, _ := content.CreatePart(txtHeader)
 	_, err = txtPart.Write([]byte(message))
