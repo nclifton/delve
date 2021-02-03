@@ -11,7 +11,8 @@ services:
     volumes:
       - ./backend:/backend
     ports:
-      - "10000:10000"
+      - "10003:10003"
+      - "10004:10004"
       - "10005:10005"
       - "10006:10006"
       - "10014:10014"
@@ -26,14 +27,8 @@ services:
       - ADMINAPI_MMS_RPC_ADDRESS=backend:10007
       - ADMINAPI_ACCOUNT_RPC_ADDRESS=backend:10001
 
-      - API_PORT=10000
-      - API_SMS_RPC_ADDRESS=backend:10009
-      - API_MMS_RPC_ADDRESS=backend:10007
-      - API_ACCOUNT_RPC_ADDRESS=backend:10001
-      - API_WEBHOOK_RPC_ADDRESS=webhook-rpc-service:10002
-      - API_SENDER_RPC_ADDRESS=sender-rpc-service:10015
-
-      - ACCOUNT_RPC_ADDRESS=backend:10001
+      - ACCOUNT_RPC_PORT=10001
+      - ACCOUNT_RPC_HOST=backend
       - ACCOUNT_POSTGRES_URL=postgresql://postgres:example@postgres/account
       - ACCOUNT_REDIS_URL=redis:6379
 
@@ -385,6 +380,19 @@ services:
       - backend/sender/rpc/infra/values/dev-values.env
     depends_on:
       - postgres
+  api:
+    build:
+      context: .
+      dockerfile: ops/dev/docker-compose/DockerfileDomain.dev
+    hostname: api
+    entrypoint: ["/go/bin/modd", "--file=./api/modd.conf"]
+    tty: true
+    volumes:
+      - ./backend:/backend
+    ports:
+      - "10000:10000"
+    env_file:
+      - backend/api/infra/values/dev-values.env
 
 volumes:
   redis_data:

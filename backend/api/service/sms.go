@@ -1,9 +1,10 @@
-package api
+package service
 
 import (
 	"net/http"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
+	"github.com/burstsms/mtmo-tp/backend/lib/rest"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 )
 
@@ -16,19 +17,15 @@ type SMSPOSTRequest struct {
 	TrackLinks bool   `json:"track_links"`
 }
 
-func SMSPOST(r *Route) {
-	account, err := r.RequireAccountContext()
-	if err != nil {
-		return
-	}
+func (s *Service) SMSPOST(hc *rest.HandlerContext) {
+	account := accountFromCtx(hc)
 
 	var req SMSPOSTRequest
-	err = r.DecodeRequest(&req)
-	if err != nil {
+	if err := hc.DecodeJSON(&req); err != nil {
 		return
 	}
 
-	res, err := r.api.sms.Send(sms.SendParams{
+	res, err := s.SMSClient.Send(sms.SendParams{
 		MessageRef: req.MessageRef,
 		Message:    req.Message,
 		AccountID:  account.ID,
@@ -51,13 +48,12 @@ func SMSPOST(r *Route) {
 			errorlib.ErrInvalidSMSTooManyParts.Error(),
 			errorlib.ErrInsufficientBalance.Error(),
 			errorlib.ErrInvalidRecipientInternationalNumber.Error():
-
-			r.WriteError(err.Error(), http.StatusBadRequest)
+			hc.WriteJSONError(err.Error(), http.StatusBadRequest, err)
 		default:
-			r.WriteError(err.Error(), http.StatusInternalServerError)
+			hc.LogFatal(err)
 		}
 		return
 	}
 
-	r.Write(res.SMS, http.StatusOK)
+	hc.WriteJSON(res.SMS, http.StatusOK)
 }

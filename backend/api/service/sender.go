@@ -1,9 +1,10 @@
-package api
+package service
 
 import (
 	"net/http"
 	"time"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/rest"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
 
@@ -23,27 +24,20 @@ type APIResponseSenders struct {
 	Senders []APIResponseSender `json:"senders"`
 }
 
-func SenderListGET(r *Route) {
-	account, err := r.RequireAccountContext()
-	if err != nil {
-		return
-	}
+func (s *Service) SenderListGET(hc *rest.HandlerContext) {
+	account := accountFromCtx(hc)
 
-	r.api.log.Info(r.r.Context(), "SenderListGET", "*")
-
-	rpcReply, err := r.api.sender.FindSendersByAccountId(r.r.Context(), &senderpb.FindSendersByAccountIdParams{
+	reply, err := s.SenderClient.FindSendersByAccountId(hc.Context(), &senderpb.FindSendersByAccountIdParams{
 		AccountId: account.ID,
 	})
 	if err != nil {
-		r.api.log.Error(r.r.Context(), "r.api.sender.FindSendersByAccountId", err.Error())
-		r.WriteError("Could not find senders", http.StatusNotFound)
-		return
+		hc.LogFatal(err)
 	}
 
 	res := APIResponseSenders{
 		Senders: []APIResponseSender{},
 	}
-	for _, s := range rpcReply.Senders {
+	for _, s := range reply.Senders {
 		res.Senders = append(res.Senders, APIResponseSender{
 			Id:               s.Id,
 			Account_id:       s.AccountId,
@@ -57,5 +51,5 @@ func SenderListGET(r *Route) {
 		})
 	}
 
-	r.Write(res, http.StatusOK)
+	hc.WriteJSON(res, http.StatusOK)
 }
