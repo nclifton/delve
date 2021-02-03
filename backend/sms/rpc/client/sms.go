@@ -5,6 +5,8 @@ import (
 	rpc "github.com/burstsms/mtmo-tp/backend/sms/rpc/types"
 )
 
+type SMS = types.SMS
+
 type SendParams = rpc.SendParams
 type SendReply = rpc.SendReply
 

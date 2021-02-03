@@ -5,7 +5,9 @@ import (
 
 	"google.golang.org/grpc"
 
+	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	types "github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
+	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/webhook/rpc/webhookpb"
 )
 
@@ -29,4 +31,22 @@ type mockWebhookRPC struct {
 
 func (m mockWebhookRPC) PublishOptOut(ctx context.Context, p *webhookpb.PublishOptOutParams, opts ...grpc.CallOption) (*webhookpb.NoReply, error) {
 	return m.reply, m.err
+}
+
+type mockSMSRPC struct {
+	findByIDReply sms.FindByIDReply
+	err           error
+}
+
+func (m mockSMSRPC) FindByID(p sms.FindByIDParams) (r *sms.FindByIDReply, err error) {
+	return &m.findByIDReply, err
+}
+
+type mockMMSRPC struct {
+	findByIDReply mms.FindByIDReply
+	err           error
+}
+
+func (m mockMMSRPC) FindByID(p mms.FindByIDParams) (r *mms.FindByIDReply, err error) {
+	return &m.findByIDReply, err
 }

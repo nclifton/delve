@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	types "github.com/burstsms/mtmo-tp/backend/optout/rpc/types"
+	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 )
 
 func TestFindByLinkID(t *testing.T) {
@@ -84,11 +86,13 @@ func TestOptOutViaLink(t *testing.T) {
 		params        types.OptOutViaLinkParams
 		db            mockDB
 		webhookRPC    mockWebhookRPC
+		smsRPC        mockSMSRPC
+		mmsRPC        mockMMSRPC
 		expectedReply types.OptOutViaLinkReply
 		expectedErr   error
 	}{
 		{
-			name: "test happy path with tag",
+			name: "test happy path sms with tag",
 			params: types.OptOutViaLinkParams{
 				LinkID: "dVYHEhq6",
 			},
@@ -97,8 +101,13 @@ func TestOptOutViaLink(t *testing.T) {
 					ID:          "11111111-1111-1111-1111-111111111111",
 					AccountID:   "11111111-1111-1111-1111-111111111112",
 					MessageID:   "11111111-1111-1111-1111-111111111113",
-					MessageType: "SMS",
+					MessageType: "sms",
 					LinkID:      "dVYHEhq6",
+				},
+			},
+			smsRPC: mockSMSRPC{
+				findByIDReply: sms.FindByIDReply{
+					SMS: &sms.SMS{},
 				},
 			},
 			expectedReply: types.OptOutViaLinkReply{
@@ -106,7 +115,37 @@ func TestOptOutViaLink(t *testing.T) {
 					ID:          "11111111-1111-1111-1111-111111111111",
 					AccountID:   "11111111-1111-1111-1111-111111111112",
 					MessageID:   "11111111-1111-1111-1111-111111111113",
-					MessageType: "SMS",
+					MessageType: "sms",
+					LinkID:      "dVYHEhq6",
+				},
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "test happy path mms",
+			params: types.OptOutViaLinkParams{
+				LinkID: "dVYHEhq6",
+			},
+			db: mockDB{
+				optOut: types.OptOut{
+					ID:          "11111111-1111-1111-1111-111111111111",
+					AccountID:   "11111111-1111-1111-1111-111111111112",
+					MessageID:   "11111111-1111-1111-1111-111111111113",
+					MessageType: "mms",
+					LinkID:      "dVYHEhq6",
+				},
+			},
+			mmsRPC: mockMMSRPC{
+				findByIDReply: mms.FindByIDReply{
+					MMS: &mms.MMS{},
+				},
+			},
+			expectedReply: types.OptOutViaLinkReply{
+				OptOut: &types.OptOut{
+					ID:          "11111111-1111-1111-1111-111111111111",
+					AccountID:   "11111111-1111-1111-1111-111111111112",
+					MessageID:   "11111111-1111-1111-1111-111111111113",
+					MessageType: "mms",
 					LinkID:      "dVYHEhq6",
 				},
 			},
@@ -132,8 +171,13 @@ func TestOptOutViaLink(t *testing.T) {
 					ID:          "11111111-1111-1111-1111-111111111111",
 					AccountID:   "11111111-1111-1111-1111-111111111112",
 					MessageID:   "11111111-1111-1111-1111-111111111113",
-					MessageType: "SMS",
+					MessageType: "sms",
 					LinkID:      "dVYHEhq6",
+				},
+			},
+			smsRPC: mockSMSRPC{
+				findByIDReply: sms.FindByIDReply{
+					SMS: &sms.SMS{},
 				},
 			},
 			webhookRPC: mockWebhookRPC{
@@ -148,6 +192,8 @@ func TestOptOutViaLink(t *testing.T) {
 			optOut := OptOutService{
 				db:         test.db,
 				webhookRPC: test.webhookRPC,
+				smsRPC:     test.smsRPC,
+				mmsRPC:     test.mmsRPC,
 			}
 
 			r := &types.OptOutViaLinkReply{}
