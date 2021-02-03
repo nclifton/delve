@@ -15,26 +15,33 @@ func (s *webhookImpl) PublishLinkHit(ctx context.Context, p *webhookpb.PublishLi
 	}
 
 	for _, w := range webhooks {
-		err = s.queue.PostWebhook(ctx, msg.WebhookMessageSpec{
+		sourceMessage := PublishMessageData{}
+		if p.SourceMessage != nil {
+			sourceMessage = PublishMessageData{
+				Type:         p.SourceMessage.Type,
+				Id:           p.SourceMessage.Id,
+				Recipient:    p.SourceMessage.Recipient,
+				Sender:       p.SourceMessage.Sender,
+				Subject:      p.SourceMessage.Subject,
+				Message:      p.SourceMessage.Message,
+				Content_urls: p.SourceMessage.ContentURLs,
+				Message_ref:  p.SourceMessage.MessageRef,
+			}
+		}
+
+		if err := s.queue.PostWebhook(ctx, msg.WebhookMessageSpec{
 			URL:       w.URL,
 			RateLimit: int(w.RateLimit),
 			Payload: msg.WebhookBody{
 				Event: EventLinkHitStatus,
 				Data: PublishLinkHitData{
-					URL:       p.URL,
-					Hits:      int(p.Hits),
-					Timestamp: p.Timestamp.AsTime().Format(time.RFC3339),
-					Source_message: PublishMessageData{
-						Type:         p.SourceMessage.Type,
-						Id:           p.SourceMessage.Id,
-						Recipient:    p.SourceMessage.Recipient,
-						Sender:       p.SourceMessage.Sender,
-						Subject:      p.SourceMessage.Subject,
-						Message:      p.SourceMessage.Message,
-						Content_urls: p.SourceMessage.ContentURLs,
-						Message_ref:  p.SourceMessage.MessageRef,
-					}}}})
-		if err != nil {
+					URL:            p.URL,
+					Hits:           int(p.Hits),
+					Timestamp:      p.Timestamp.AsTime().Format(time.RFC3339),
+					Source_message: sourceMessage,
+				},
+			},
+		}); err != nil {
 			return &webhookpb.NoReply{}, err
 		}
 	}

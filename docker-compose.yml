@@ -15,7 +15,8 @@ services:
       - "10004:10004"
       - "10005:10005"
       - "10006:10006" 
-      - "10012:10012" 
+      - "10012:10012"
+      - "10013:10013" 
       - "10014:10014"
     environment:
       - DISABLE_NEW_RELIC=true
@@ -91,8 +92,6 @@ services:
       - SMS_OPTOUT_RPC_ADDRESS=backend:10011
       - SMS_SENDER_RPC_ADDRESS=sender-rpc-service:10015
 
-      - OPTOUTLINK_DOMAIN=localhost:10010
-      - TRACKLINK_DOMAIN=localhost:10010
       - OPTOUT_INBOUND_PORT=10012
       - OPTOUT_RPC_ADDRESS=backend:10011
       - OPTOUT_POSTGRES_URL=postgresql://postgres:example@postgres/optout
@@ -100,10 +99,10 @@ services:
       - OPTOUT_OPTOUTLINK_DOMAIN=localhost:10012
       - OPTOUT_WEBHOOK_RPC_ADDRESS=webhook-rpc-service:10002
 
-      - TRACK_LINK_RPC_ADDRESS=backend:10010
       - TRACK_LINK_INBOUND_PORT=10013
+      - TRACK_LINK_RPC_ADDRESS=backend:10010
       - TRACK_LINK_POSTGRES_URL=postgresql://postgres:example@postgres/track_link
-      - TRACK_LINK_TRACKLINK_DOMAIN=localhost:10010
+      - TRACK_LINK_TRACKLINK_DOMAIN=localhost:10013
       - TRACK_LINK_WEBHOOK_RPC_ADDRESS=webhook-rpc-service:10002
 
       - JAEGER_AGENT_HOST=jaeger
