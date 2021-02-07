@@ -28,7 +28,7 @@ func (tfx *TestFixtures) StartWorker(config WorkerConfig, workerService workerbu
 			NRName:                      "",
 			NRLicense:                   "",
 			NRTracing:                   false,
-			QueueName:                   config.QueueName,
+			RabbitQueueName:             config.QueueName,
 			RabbitExchange:              config.RabbitExchange,
 			RabbitExchangeType:          "direct",
 			RabbitPrefetchedCount:       1,

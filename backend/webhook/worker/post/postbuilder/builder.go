@@ -23,13 +23,11 @@ type postService struct {
 	limiter handler.Limiter
 }
 
-const name string = "webhook"
-
 func NewBuilderFromEnv() *postService {
 	stLog := logger.NewLogger()
 
 	var config Config
-	if err := envconfig.Process(name, &config); err != nil {
+	if err := envconfig.Process("", &config); err != nil {
 		stLog.Fatalf(context.Background(), "envconfig.Process", "failed to read env vars: %s", err)
 	}
 

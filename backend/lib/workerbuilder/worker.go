@@ -29,7 +29,7 @@ type Config struct {
 	NRName                      string `envconfig:"NR_NAME"`
 	NRLicense                   string `envconfig:"NR_LICENSE"`
 	NRTracing                   bool   `envconfig:"NR_TRACING"`
-	QueueName                   string `envconfig:"QUEUE_NAME"`
+	RabbitQueueName             string `envconfig:"RABBIT_QUEUE_NAME"`
 	RabbitExchange              string `envconfig:"RABBIT_EXCHANGE"`
 	RabbitExchangeType          string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	RabbitPrefetchedCount       int    `envconfig:"RABBIT_PREFETCHED_COUNT"`
@@ -122,7 +122,7 @@ func (w *worker) Start(ctx context.Context) error {
 				PrefetchCount:        w.conf.RabbitPrefetchedCount,
 				Exchange:             w.conf.RabbitExchange,
 				ExchangeType:         w.conf.RabbitExchangeType,
-				QueueName:            w.conf.QueueName,
+				QueueName:            w.conf.RabbitQueueName,
 				RetryScale:           rabbit.RetryScale,
 				AllowConnectionClose: w.conf.RabbitIgnoreClosedQueueConn,
 			},
