@@ -10,7 +10,7 @@ resource "kubernetes_namespace" "kubernetes_dashboard" {
 
 resource "kubernetes_service_account" "eks_admin" {
   metadata {
-    name = "eks-admin"
+    name      = "eks-admin"
     namespace = "kube-system"
 
     labels = {
@@ -49,7 +49,7 @@ resource "helm_release" "kubernetes_dashboard" {
   name       = "kubernetes-dashboard"
   repository = "https://kubernetes.github.io/dashboard/"
   chart      = "kubernetes-dashboard"
-  version    = "3.0.0"
+  version    = "4.0.0"
   namespace  = "kubernetes-dashboard"
 
   set {

@@ -36,7 +36,7 @@ terraform {
 
 provider "aws" {
   profile = var.aws_profile
-  region  = "ap-southeast-2"
+  region  = var.aws_region
 }
 
 # Call each child module
@@ -76,14 +76,17 @@ module "aurora_postgresql" {
 module "pgadmin" {
   source            = "./modules/pgadmin"
   postgres_endpoint = module.aurora_postgresql.endpoint
+  env_dns           = var.env_dns
 }
 
 module "redis" {
-  source = "./modules/redis"
+  source  = "./modules/redis"
+  env_dns = var.env_dns
 }
 
 module "rabbitmq" {
-  source = "./modules/rabbitmq"
+  source  = "./modules/rabbitmq"
+  env_dns = var.env_dns
 }
 
 module "keda" {
@@ -91,16 +94,19 @@ module "keda" {
 }
 
 module "harness" {
-    source = "./modules/harness"
+  # Only deploy to staging and production environments
+  # https://stackoverflow.com/a/58193941
+  count  = (length(regexall(".*staging.*", terraform.workspace)) > 0 || length(regexall(".*production.*", terraform.workspace)) > 0) ? 1 : 0
+  source = "./modules/harness"
 }
 
 # TODO: Remove this and use peering connection once Optus Proxy has been
 # re-architected. Due February 2021.
 module "optus_vpn_connection" {
-    source = "./modules/optus_vpn_connection"
+  source = "./modules/optus_vpn_connection"
 }
 
 module "optus_peering" {
-    source = "./modules/optus_peering"
-    mtmo_prod_aws_profile = var.mtmo_prod_aws_profile
+  source                = "./modules/optus_peering"
+  mtmo_prod_aws_profile = var.mtmo_prod_aws_profile
 }

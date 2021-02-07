@@ -10,6 +10,11 @@ resource "null_resource" "iam_oidc_provider" {
   provisioner "local-exec" {
     command = "eksctl utils associate-iam-oidc-provider --region ap-southeast-2 --cluster ${terraform.workspace} --approve"
   }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = "aws iam delete-open-id-connect-provider --open-id-connect-provider-arn arn:aws:iam::$(aws sts get-caller-identity | jq -r '.Account'):oidc-provider/$(aws eks describe-cluster --name ${terraform.workspace} --output json | jq -r .cluster.identity.oidc.issuer | sed -e 's*https://**')"
+  }
 }
 
 resource "aws_iam_policy" "alb_ingress_controller" {
@@ -63,6 +68,8 @@ resource "kubernetes_cluster_role_binding" "alb_ingress_controller" {
     kind      = "ClusterRole"
     name      = "alb-ingress-controller"
   }
+
+  depends_on = [null_resource.iamserviceaccount]
 }
 
 resource "null_resource" "iamserviceaccount" {
@@ -83,7 +90,7 @@ resource "null_resource" "iamserviceaccount" {
 
 resource "kubernetes_deployment" "alb_ingress_controller" {
   metadata {
-    name = "alb-ingress-controller"
+    name      = "alb-ingress-controller"
     namespace = "kube-system"
     labels = {
       "app.kubernetes.io/name" = "alb-ingress-controller"
@@ -108,16 +115,18 @@ resource "kubernetes_deployment" "alb_ingress_controller" {
         container {
           name  = "alb-ingress-controller"
           image = "docker.io/amazon/aws-alb-ingress-controller:v1.1.7"
-          
+
           args = [
-              "--ingress-class=alb",
-              "--cluster-name=${terraform.workspace}"
+            "--ingress-class=alb",
+            "--cluster-name=${terraform.workspace}"
           ]
         }
 
-        service_account_name = "alb-ingress-controller"
+        service_account_name            = "alb-ingress-controller"
         automount_service_account_token = "true"
       }
     }
   }
+
+  depends_on = [kubernetes_cluster_role_binding.alb_ingress_controller]
 }

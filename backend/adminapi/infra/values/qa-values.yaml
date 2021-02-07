@@ -4,7 +4,4 @@
 # or set the number of replicas for a specific environment only.
 #
 # WARNING: This file must exist in order for Harness to work properly even if it's empty.
-k8sServiceChart:
-  env:
-    config:
-      TECLOO_DR_ENDPOINT: "https://tecloo.mm7.tp.mtmo.io/v1/mms/inbound"
+#k8sServiceChart:

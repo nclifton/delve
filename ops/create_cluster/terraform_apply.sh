@@ -29,7 +29,9 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 ENV_DNS="mtmostaging.com"
-if [[ "${CLUSTER_NAME}" == "tp-production" ]]; then
+if [[ "${CLUSTER_NAME}" == "tp-qa" ]]; then
+    ENV_DNS="qa.mtmostaging.com"
+elif [[ "${CLUSTER_NAME}" == "tp-production" ]]; then
     ENV_DNS="tp.mtmo.io"
 fi
 

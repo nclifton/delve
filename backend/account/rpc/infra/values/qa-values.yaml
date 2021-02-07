@@ -6,5 +6,5 @@
 # WARNING: This file must exist in order for Harness to work properly even if it's empty.
 k8sServiceChart:
   env:
-    config:
-      TECLOO_DR_ENDPOINT: "https://tecloo.mm7.tp.mtmo.io/v1/mms/inbound"
+    secrets:
+      POSTGRES_URL: "postgresql://foo:barbut8chars@tp-qa.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/account"

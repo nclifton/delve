@@ -4,6 +4,12 @@ variable "aws_profile" {
   description = "The aws profile to use"
 }
 
+variable "aws_region" {
+  type        = string
+  default     = "ap-southeast-2"
+  description = "The aws region deploying to"
+}
+
 variable "mtmo_prod_aws_profile" {
   type        = string
   default     = "mtmo-prod"
@@ -12,6 +18,5 @@ variable "mtmo_prod_aws_profile" {
 
 variable "env_dns" {
   type        = string
-  default     = "mtmostaging.com"
   description = "The environment base domain"
 }

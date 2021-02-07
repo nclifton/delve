@@ -42,18 +42,18 @@ resource "helm_release" "rabbitmq" {
 
 resource "kubernetes_ingress" "rabbitmq_ingress" {
   metadata {
-    name = "rabbitmq-ingress"
+    name      = "rabbitmq-ingress"
     namespace = "rabbitmq"
     annotations = {
-        "kubernetes.io/ingress.class" = "alb"
-        "alb.ingress.kubernetes.io/scheme" = "internet-facing"
-        "alb.ingress.kubernetes.io/actions.ssl-redirect" = "{\"Type\": \"redirect\", \"RedirectConfig\": { \"Protocol\": \"HTTPS\", \"Port\": \"443\", \"StatusCode\": \"HTTP_301\"}}"
-        "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\":443}]"
-        "alb.ingress.kubernetes.io/success-codes" = "200,404"
-        "alb.ingress.kubernetes.io/target-type" = "ip"
+      "kubernetes.io/ingress.class"                    = "alb"
+      "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
+      "alb.ingress.kubernetes.io/actions.ssl-redirect" = "{\"Type\": \"redirect\", \"RedirectConfig\": { \"Protocol\": \"HTTPS\", \"Port\": \"443\", \"StatusCode\": \"HTTP_301\"}}"
+      "alb.ingress.kubernetes.io/listen-ports"         = "[{\"HTTP\": 80}, {\"HTTPS\":443}]"
+      "alb.ingress.kubernetes.io/success-codes"        = "200,404"
+      "alb.ingress.kubernetes.io/target-type"          = "ip"
     }
     labels = {
-        "app" = "rabbitmq"
+      "app" = "rabbitmq"
     }
   }
 
@@ -73,7 +73,7 @@ resource "kubernetes_ingress" "rabbitmq_ingress" {
 
     rule {
       host = "rabbitmq-management.${var.env_dns}"
-      
+
       http {
         path {
           path = "/*"
@@ -86,4 +86,6 @@ resource "kubernetes_ingress" "rabbitmq_ingress" {
       }
     }
   }
+
+  depends_on = [kubernetes_namespace.rabbitmq]
 }

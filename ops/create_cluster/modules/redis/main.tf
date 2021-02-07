@@ -27,7 +27,7 @@ resource "null_resource" "redis_commander" {
   }
 
   provisioner "local-exec" {
-    when = destroy
+    when    = destroy
     command = "kubectl delete -f ${path.module}/redis-commander.yaml"
   }
 
@@ -36,18 +36,18 @@ resource "null_resource" "redis_commander" {
 
 resource "kubernetes_ingress" "redis_commander_ingress" {
   metadata {
-    name = "redis-commander-ingress"
+    name      = "redis-commander-ingress"
     namespace = "redis"
     annotations = {
-        "kubernetes.io/ingress.class" = "alb"
-        "alb.ingress.kubernetes.io/scheme" = "internet-facing"
-        "alb.ingress.kubernetes.io/actions.ssl-redirect" = "{\"Type\": \"redirect\", \"RedirectConfig\": { \"Protocol\": \"HTTPS\", \"Port\": \"443\", \"StatusCode\": \"HTTP_301\"}}"
-        "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\":443}]"
-        "alb.ingress.kubernetes.io/success-codes" = "200,404"
-        "alb.ingress.kubernetes.io/target-type" = "ip"
+      "kubernetes.io/ingress.class"                    = "alb"
+      "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
+      "alb.ingress.kubernetes.io/actions.ssl-redirect" = "{\"Type\": \"redirect\", \"RedirectConfig\": { \"Protocol\": \"HTTPS\", \"Port\": \"443\", \"StatusCode\": \"HTTP_301\"}}"
+      "alb.ingress.kubernetes.io/listen-ports"         = "[{\"HTTP\": 80}, {\"HTTPS\":443}]"
+      "alb.ingress.kubernetes.io/success-codes"        = "200,404"
+      "alb.ingress.kubernetes.io/target-type"          = "ip"
     }
     labels = {
-        "app" = "redis-commander"
+      "app" = "redis-commander"
     }
   }
 
@@ -80,4 +80,6 @@ resource "kubernetes_ingress" "redis_commander_ingress" {
       }
     }
   }
+
+  depends_on = [kubernetes_namespace.redis]
 }

@@ -7,4 +7,4 @@
 k8sServiceChart:
   env:
     config:
-      TECLOO_DR_ENDPOINT: "https://tecloo.mm7.sendseistaging.com/v1/mms/inbound"
+      TECLOO_DR_ENDPOINT: "https://tecloo.mm7.mtmostaging.com/v1/mms/inbound"
