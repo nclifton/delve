@@ -32,13 +32,13 @@ func (tfx *TestFixtures) StartWorker(config WorkerConfig, workerService workerbu
 			RabbitExchange:              config.RabbitExchange,
 			RabbitExchangeType:          "direct",
 			RabbitPrefetchedCount:       1,
-			HealthCheckHost:             tfx.env.HealthCheckHost,
+			HealthCheckHost:             tfx.config.HealthCheckHost,
 			HealthCheckPort:             port,
 			MaxGoRoutines:               200,
 		},
 		workerService,
 	)
-	tfx.WorkerHealthCheckURIs = append(tfx.WorkerHealthCheckURIs, fmt.Sprintf("http://%s:%s", tfx.env.HealthCheckHost, port))
+	tfx.WorkerHealthCheckURIs = append(tfx.WorkerHealthCheckURIs, fmt.Sprintf("http://%s:%s", tfx.config.HealthCheckHost, port))
 	tfx.teardowns = append(tfx.teardowns, func() {
 		worker.Stop(ctx)
 	})
@@ -57,8 +57,8 @@ func (tfx *TestFixtures) StartWorker(config WorkerConfig, workerService workerbu
 
 func (tfx *TestFixtures) workerPort() string {
 	tfx.workerPortIndex++
-	if tfx.env.WorkerHealthCheckPorts[0] == "FREEPORT" || tfx.workerPortIndex > len(tfx.env.WorkerHealthCheckPorts) {
-		return port(tfx.env.WorkerHealthCheckPorts[0])
+	if tfx.workerPortIndex > len(tfx.config.WorkerHealthCheckPorts) {
+		log.Fatalf("Not enough worker health check ports provided")
 	}
-	return tfx.env.WorkerHealthCheckPorts[tfx.workerPortIndex]
+	return tfx.config.WorkerHealthCheckPorts[tfx.workerPortIndex]
 }

@@ -22,7 +22,7 @@ import (
 var tfx *fixtures.TestFixtures
 
 func TestMain(m *testing.M) {
-	tfx = fixtures.New("sender")
+	tfx = fixtures.New(fixtures.Config{Name: "sender"})
 	tfx.SetupPostgres("sender")
 	tfx.GRPCStart(senderRPCService())
 	code := m.Run()

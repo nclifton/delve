@@ -7,8 +7,6 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/kelseyhightower/envconfig"
-	"github.com/phayes/freeport"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/orlangure/gnomock"
@@ -17,19 +15,32 @@ import (
 	"github.com/orlangure/gnomock/preset/redis"
 )
 
-type FixturesEnv struct {
-	PostgresUser           string   `envconfig:"POSTGRES_USER" default:"gnomock"`
-	PostgresUserPassword   string   `envconfig:"POSTGRES_USER_PASSWORD" default:"gnomick"`
-	RabbitmqUser           string   `envconfig:"RABBITMQ_USER" default:"gnomock"`
-	RabbitmqUserPassword   string   `envconfig:"RABBITMQ_USER_PASSWORD" default:"gnomick"`
-	MigrationRoot          string   `envconfig:"MIGRATION_ROOT" default:"file://../migration/sql"`
-	HealthCheckHost        string   `envconfig:"RPC_HEALTH_CHECK_HOST" default:"127.0.0.1"`    // all health check services under test listen and serve on the same host but separate ports
-	RPCHealthCheckPort     string   `envconfig:"RPC_HEALTH_CHECK_PORT" default:"FREEPORT"`     // port number named "FREEPORT" will allow the fixture to allocate any unused port number
-	WorkerHealthCheckPorts []string `envconfig:"WORKER_HEALTH_CHECK_PORTS" default:"FREEPORT"` // comma separated list of PORTS to use or use "FREEPORT"
+type Config struct {
+	Name                   string
+	PostgresUser           string
+	PostgresUserPassword   string
+	RabbitmqUser           string
+	RabbitmqUserPassword   string
+	MigrationRoot          string
+	HealthCheckHost        string   // all health check services under test listen and serve on the same host but separate ports
+	RPCHealthCheckPort     string   // port number named "FREEPORT" will allow the fixture to allocate any unused port number
+	WorkerHealthCheckPorts []string // comma separated list of PORTS to use or use "FREEPORT"
 }
+
+var defaults = Config{
+	Name:                   "",
+	PostgresUser:           "gnomock",
+	PostgresUserPassword:   "gnomick",
+	RabbitmqUser:           "gnomock",
+	RabbitmqUserPassword:   "gnomick",
+	MigrationRoot:          "file://../migration/sql", // the domain's migration directory is expected to be a sibling directory of the work directory
+	HealthCheckHost:        "127.0.0.1",
+	RPCHealthCheckPort:     "18086",
+	WorkerHealthCheckPorts: []string{"18087", "18088", "18089"},
+}
+
 type TestFixtures struct {
-	name     string
-	env      *FixturesEnv
+	config   Config
 	Postgres struct {
 		ConnStr string
 		Stop    func()
@@ -47,28 +58,35 @@ type TestFixtures struct {
 	workerPortIndex       int
 }
 
-func New(name string) *TestFixtures {
+func New(config Config) *TestFixtures {
 
 	log.Println("setup fixtures")
-	var env FixturesEnv
-	if err := envconfig.Process("TEST_FIXTURE", &env); err != nil {
-		log.Fatal("failed to read env vars:", err)
-	}
 
-	return &TestFixtures{env: &env, name: name}
+	return &TestFixtures{
+		config: Config{
+			Name:                   config.Name,
+			PostgresUser:           ifEmptyStringThen(config.PostgresUser, defaults.PostgresUser),
+			PostgresUserPassword:   ifEmptyStringThen(config.PostgresUser, defaults.PostgresUser),
+			RabbitmqUser:           ifEmptyStringThen(config.RabbitmqUser, defaults.RabbitmqUser),
+			RabbitmqUserPassword:   ifEmptyStringThen(config.RabbitmqUser, defaults.RabbitmqUser),
+			MigrationRoot:          ifEmptyStringThen(config.MigrationRoot, defaults.MigrationRoot),
+			HealthCheckHost:        ifEmptyStringThen(config.HealthCheckHost, defaults.HealthCheckHost),
+			RPCHealthCheckPort:     ifEmptyStringThen(config.RPCHealthCheckPort, defaults.RPCHealthCheckPort),
+			WorkerHealthCheckPorts: ifEmptyStringArrayThen(config.WorkerHealthCheckPorts, defaults.WorkerHealthCheckPorts),
+		}}
 
 }
-
-// return any available port if provided port string equals "FREEPORT"
-func port(port string) string {
-	if port == "FREEPORT" {
-		port, err := freeport.GetFreePort()
-		if err != nil {
-			log.Fatal(err)
-		}
-		return fmt.Sprintf("%d", port)
+func ifEmptyStringThen(value string, defaultValue string) string {
+	if value == "" {
+		return defaultValue
 	}
-	return port
+	return value
+}
+func ifEmptyStringArrayThen(value []string, defaultValue []string) []string {
+	if len(value) == 0 {
+		return defaultValue
+	}
+	return value
 }
 
 func (tf *TestFixtures) SetupPostgres(dbName string) {
@@ -91,11 +109,11 @@ func (tf *TestFixtures) Teardown() {
 func (tf *TestFixtures) setupPostgresContainer(dbName string) {
 
 	pg := postgres.Preset(
-		postgres.WithUser(tf.env.PostgresUser, tf.env.PostgresUserPassword),
+		postgres.WithUser(tf.config.PostgresUser, tf.config.PostgresUserPassword),
 		postgres.WithDatabase(dbName),
 	)
 
-	container, err := gnomock.Start(pg, gnomock.WithContainerName(fmt.Sprintf("%s-postgres-fixture", tf.name)))
+	container, err := gnomock.Start(pg, gnomock.WithContainerName(fmt.Sprintf("%s-postgres-fixture", tf.config.Name)))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -109,14 +127,14 @@ func (tf *TestFixtures) setupPostgresContainer(dbName string) {
 
 	tf.Postgres.ConnStr = fmt.Sprintf(
 		"postgresql://%s:%s@%s/%s?sslmode=%s",
-		tf.env.PostgresUser, tf.env.PostgresUserPassword,
+		tf.config.PostgresUser, tf.config.PostgresUserPassword,
 		container.DefaultAddress(), dbName, "disable")
 
 }
 
 func (tf *TestFixtures) migrate() {
 	m, err := migrate.New(
-		tf.env.MigrationRoot,
+		tf.config.MigrationRoot,
 		tf.Postgres.ConnStr,
 	)
 	if err != nil {
@@ -132,9 +150,9 @@ func (tf *TestFixtures) migrate() {
 
 func (tf *TestFixtures) setupRabbitContainer() {
 	p := rabbitmq.Preset(
-		rabbitmq.WithUser(tf.env.RabbitmqUser, tf.env.RabbitmqUserPassword),
+		rabbitmq.WithUser(tf.config.RabbitmqUser, tf.config.RabbitmqUserPassword),
 	)
-	container, err := gnomock.Start(p, gnomock.WithContainerName(fmt.Sprintf("%s-rabbit-fixture", tf.name)))
+	container, err := gnomock.Start(p, gnomock.WithContainerName(fmt.Sprintf("%s-rabbit-fixture", tf.config.Name)))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -148,7 +166,7 @@ func (tf *TestFixtures) setupRabbitContainer() {
 
 	tf.Rabbit.ConnStr = fmt.Sprintf(
 		"amqp://%s:%s@%s",
-		tf.env.RabbitmqUser, tf.env.RabbitmqUserPassword,
+		tf.config.RabbitmqUser, tf.config.RabbitmqUserPassword,
 		container.DefaultAddress(),
 	)
 
@@ -160,7 +178,7 @@ func (tf *TestFixtures) setupRedisContainer() {
 	// Setup Redis
 	p := redis.Preset(redis.WithValues(vs))
 
-	container, err := gnomock.Start(p, gnomock.WithContainerName(fmt.Sprintf("%s-redis-fixture", tf.name)))
+	container, err := gnomock.Start(p, gnomock.WithContainerName(fmt.Sprintf("%s-redis-fixture", tf.config.Name)))
 	if err != nil {
 		log.Fatal(err.Error())
 	}

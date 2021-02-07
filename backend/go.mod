@@ -29,7 +29,6 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/orlangure/gnomock v0.10.1
 	github.com/pborman/uuid v1.2.1 // indirect
-	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
 	github.com/prometheus/client_golang v1.9.0 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/streadway/amqp v1.0.0

@@ -16,24 +16,23 @@ import (
 func (tfx *TestFixtures) GRPCStart(service rpcbuilder.Service) {
 
 	ctx := context.Background()
-	hcPort := port(tfx.env.RPCHealthCheckPort)
 
 	s := rpcbuilder.NewGRPCServer(
 		ctx,
 		rpcbuilder.Config{
-			ContainerName:               "integration-test-service",
+			ContainerName:               fmt.Sprintf("%s-integration-test-service", tfx.config.Name),
 			ContainerPort:               0,
 			RabbitURL:                   tfx.Rabbit.ConnStr,
 			PostgresURL:                 tfx.Postgres.ConnStr,
 			TracerDisable:               true,
 			RabbitIgnoreClosedQueueConn: true,
-			HealthCheckPort:             hcPort,
+			HealthCheckPort:             tfx.config.RPCHealthCheckPort,
 			MaxGoRoutines:               200,
-			DevHost:                     tfx.env.HealthCheckHost,
+			DevHost:                     tfx.config.HealthCheckHost,
 		},
 		service,
 	)
-	tfx.RPCHealthCheckURI = fmt.Sprintf("http://%s:%s", tfx.env.HealthCheckHost, hcPort)
+	tfx.RPCHealthCheckURI = fmt.Sprintf("http://%s:%s", tfx.config.HealthCheckHost, tfx.config.RPCHealthCheckPort)
 
 	s.SetCustomListener(bufconn.Listen(1024 * 1024))
 	tfx.GRPCListener = s.Listener()

@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 }
 
 func setupFixtures() {
-	tfx = fixtures.New("webhook")
+	tfx = fixtures.New(fixtures.Config{Name: "webhook"})
 	tfx.SetupPostgres("webhook")
 	tfx.SetupRabbit()
 	tfx.SetupRedis()
