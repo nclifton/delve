@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
@@ -21,49 +23,21 @@ func NewSQLDB(db *pgxpool.Pool) DB {
 }
 
 func (db *sqlDB) FindSenderByAddressAndAccountID(ctx context.Context, accountId, address string) (Sender, error) {
-	row := db.sql.QueryRow(
-		ctx,
-		`select id, account_id, address, mms_provider_key, channels, country, COALESCE(comment, '') as comment, created_at, updated_at
-		from sender
-		where account_id = $1 and address = $2`,
-		accountId,
-		address,
-	)
-	s := Sender{}
-	var channels pgtype.EnumArray
-	err := row.Scan(
-		&s.ID,
-		&s.AccountID,
-		&s.Address,
-		&s.MMSProviderKey,
-		&channels,
-		&s.Country,
-		&s.Comment,
-		&s.CreatedAt,
-		&s.UpdatedAt,
-	)
+
+	row := db.sql.QueryRow(ctx, fmt.Sprintf("select %s from sender where account_id = $1 and address = $2", senderSelect), accountId, address)
+	s, err := scanSenderRow(row)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return s, errorlib.NotFoundErr{Message: "sender not found"}
 		}
 		return s, err
 	}
-	err = channels.AssignTo(&s.Channels)
-	if err != nil {
-		return s, err
-	}
+
 	return s, nil
 }
-
 func (db *sqlDB) FindSendersByAccountId(ctx context.Context, accountId string) ([]Sender, error) {
-	rows, err := db.sql.Query(
-		ctx,
-		`select id, account_id, address, mms_provider_key, channels, country, COALESCE(comment, ''), created_at, updated_at
-		from sender
-		where account_id = $1
-		limit 100`,
-		accountId,
-	)
+
+	rows, err := db.sql.Query(ctx, fmt.Sprintf("select %s from sender where account_id = $1 limit 100", senderSelect), accountId)
 	if err != nil {
 		return []Sender{}, err
 	}
@@ -71,25 +45,9 @@ func (db *sqlDB) FindSendersByAccountId(ctx context.Context, accountId string) (
 
 	ss := []Sender{}
 	for rows.Next() {
-		s := Sender{}
-		var channels pgtype.EnumArray
-		err := rows.Scan(
-			&s.ID,
-			&s.AccountID,
-			&s.Address,
-			&s.MMSProviderKey,
-			&channels,
-			&s.Country,
-			&s.Comment,
-			&s.CreatedAt,
-			&s.UpdatedAt,
-		)
+		s, err := scanSenderRow(rows)
 		if err != nil {
-			return nil, err
-		}
-		err = channels.AssignTo(&s.Channels)
-		if err != nil {
-			return nil, err
+			return []Sender{}, err
 		}
 		ss = append(ss, s)
 	}
@@ -98,13 +56,8 @@ func (db *sqlDB) FindSendersByAccountId(ctx context.Context, accountId string) (
 }
 
 func (db *sqlDB) FindSendersByAddress(ctx context.Context, address string) ([]Sender, error) {
-	rows, err := db.sql.Query(
-		ctx,
-		`SELECT id, account_id, address, mms_provider_key, channels, country, COALESCE(comment, ''), created_at, updated_at
-		FROM sender
-		WHERE address = $1`,
-		address,
-	)
+
+	rows, err := db.sql.Query(ctx, fmt.Sprintf("select %s from sender where address = $1", senderSelect), address)
 	if err != nil {
 		return []Sender{}, err
 	}
@@ -112,29 +65,42 @@ func (db *sqlDB) FindSendersByAddress(ctx context.Context, address string) ([]Se
 
 	ss := []Sender{}
 	for rows.Next() {
-		s := Sender{}
-		var channels pgtype.EnumArray
-
-		if err := rows.Scan(
-			&s.ID,
-			&s.AccountID,
-			&s.Address,
-			&s.MMSProviderKey,
-			&channels,
-			&s.Country,
-			&s.Comment,
-			&s.CreatedAt,
-			&s.UpdatedAt,
-		); err != nil {
-			return nil, err
+		s, err := scanSenderRow(rows)
+		if err != nil {
+			return []Sender{}, err
 		}
-
-		if err := channels.AssignTo(&s.Channels); err != nil {
-			return nil, err
-		}
-
 		ss = append(ss, s)
 	}
 
 	return ss, nil
+}
+
+const senderSelect string = "id, account_id, address, mms_provider_key, channels, country, comment, created_at, updated_at"
+
+func scanSenderRow(row pgx.Row) (Sender, error) {
+	s := Sender{}
+	var channels pgtype.EnumArray
+	var mmsProviderKey sql.NullString
+	var comment sql.NullString
+	err := row.Scan(
+		&s.ID,
+		&s.AccountID,
+		&s.Address,
+		&mmsProviderKey,
+		&channels,
+		&s.Country,
+		&comment,
+		&s.CreatedAt,
+		&s.UpdatedAt,
+	)
+	if err != nil {
+		return Sender{}, err
+	}
+	err = channels.AssignTo(&s.Channels)
+	if err != nil {
+		return Sender{}, err
+	}
+	s.MMSProviderKey = mmsProviderKey.String
+	s.Comment = comment.String
+	return s, nil
 }

@@ -8,8 +8,8 @@ CREATE TYPE provider_key AS ENUM (
   ''
 );
 ALTER TABLE sender RENAME COLUMN mms_provider_key TO _mms_provider_key;
-ALTER TABLE sender ADD mms_provider_key provider_key NOT NULL default '';
-UPDATE sender SET mms_provider_key = CASE WHEN _mms_provider_key IS NULL THEN '' ELSE _mms_provider_key::text::provider_key END;
+ALTER TABLE sender ADD mms_provider_key provider_key;
+UPDATE sender SET mms_provider_key = CASE _mms_provider_key WHEN NULL THEN '' ELSE _mms_provider_key::text::provider_key END;
 ALTER TABLE sender DROP COLUMN _mms_provider_key;
 DROP TYPE _provider_key;
 

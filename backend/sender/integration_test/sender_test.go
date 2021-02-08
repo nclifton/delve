@@ -94,7 +94,8 @@ func Test_FindSenderByAddressAndAccountID(t *testing.T) {
 					UpdatedAt:      timestamppb.New(s.dates[6]),
 				}}},
 			wantErr: wantErr{},
-		}, {
+		},
+		{
 			name: "no mms provider key",
 			params: &senderpb.FindSenderByAddressAndAccountIDParams{
 				AccountId: s.uuids[8],
@@ -114,7 +115,6 @@ func Test_FindSenderByAddressAndAccountID(t *testing.T) {
 				}}},
 			wantErr: wantErr{},
 		},
-
 		{
 			name: "not found sender Address: MICE",
 			params: &senderpb.FindSenderByAddressAndAccountIDParams{
