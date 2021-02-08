@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       ref_account_id: {
         field: "account_id",
-        type: DataTypes.STRING,
+        type: DataTypes.UUID,
         allowNull: true,
       },
       address: {
