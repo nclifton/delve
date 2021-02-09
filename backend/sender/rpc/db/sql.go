@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
@@ -103,4 +104,44 @@ func scanSenderRow(row pgx.Row) (Sender, error) {
 	s.MMSProviderKey = mmsProviderKey.String
 	s.Comment = comment.String
 	return s, nil
+}
+
+func (db *sqlDB) CreateSenders(ctx context.Context, newSenders []Sender) ([]Sender, error) {
+
+	insertSql := "insert into sender (account_id, address, channels, mms_provider_key, country, comment)"
+	returningSql := "returning " + senderSelect
+	valuesSql := ""
+	valuesRowsSql := make([]string, 0, len(newSenders))
+	args := make([]interface{}, 0, len(newSenders)*6)
+	idx := 1
+	for _, newSender := range newSenders {
+		valuesRowSql := fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)", idx, idx+1, idx+2, idx+3, idx+4, idx+5)
+		valuesRowsSql = append(valuesRowsSql, valuesRowSql)
+		args = append(args, newSender.AccountID)
+		args = append(args, newSender.Address)
+		args = append(args, newSender.Channels)
+		args = append(args, newSender.MMSProviderKey)
+		args = append(args, newSender.Country)
+		args = append(args, newSender.Comment)
+		idx = idx + 6
+	}
+	valuesSql = strings.Join(valuesRowsSql, ",\n")
+	sqlStr := fmt.Sprintf("%s\nVALUES\n%s\n%s", insertSql, valuesSql, returningSql)
+
+	rows, err := db.sql.Query(ctx, sqlStr, args...)
+	if err != nil {
+		return []Sender{}, err
+	}
+	defer rows.Close()
+
+	ss := []Sender{}
+	for rows.Next() {
+		s, err := scanSenderRow(rows)
+		if err != nil {
+			return []Sender{}, err
+		}
+		ss = append(ss, s)
+	}
+
+	return ss, nil
 }

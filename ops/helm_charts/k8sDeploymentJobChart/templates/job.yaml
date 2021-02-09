@@ -50,6 +50,7 @@ spec:
       containers:
       - name: {{required "value 'name' is required" .Values.name}}
         image: "{{required "value 'image.repository' is required" .Values.image.repository}}/{{required "value 'name' is required" .Values.name}}:{{required "value 'image.tag' is required" .Values.image.tag}}"
+        imagePullPolicy: {{required "value 'image.pullPolicy' is required" .Values.image.pullPolicy}}
         {{- if or .Values.env.config .Values.env.secrets .Values.existingConfigMapName}}
         envFrom:
         {{- if .Values.env.config}}

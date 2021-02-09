@@ -18,6 +18,7 @@ namespaceAnnotations:
 image: 
   repository: 006764518182.dkr.ecr.ap-southeast-2.amazonaws.com
   tag: latest
+  pullPolicy: Always
 
 # TODO: Comment back in once we mve to Harness completely
 #dockercfg: ${artifact.source.dockerconfig}

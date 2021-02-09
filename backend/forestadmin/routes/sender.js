@@ -150,6 +150,7 @@ router.put(
 /**
   proxy request to adminapi (go) endpoint
   parse the adminapi response and create appropriate FA response
+  ref: https://gist.github.com/casamia918/3966de2dcafeb8aa8c6dcedf108c3041
 */
 router.post(
   '/sender/import',
@@ -157,17 +158,14 @@ router.post(
   async (req, res, next) => {
     let response = {};
     try {
-      response = await axios({
-        url: `${process.env.ADMIN_API_ADDRESS}/import/sender`,
-        method: 'post',
-        data: { data: req.body.data.attributes.values['CSV file'] },
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      response = await axios.post(
+        `${process.env.ADMIN_API_ADDRESS}/import/sender`, {
+        data: req.body.data.attributes.values['CSV file'],
+      })
     } catch (err) {
       next(err);
     }
+
     res.send({ success: 'Data successfully imported!' });
   });
 

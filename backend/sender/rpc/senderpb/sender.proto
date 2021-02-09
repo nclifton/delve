@@ -26,6 +26,14 @@ message Sender {
     google.protobuf.Timestamp Created_at = 8;
     google.protobuf.Timestamp Updated_at = 9;
 }
+message NewSender {
+    string Account_id = 1;
+    string Address = 2;
+    string MMS_provider_key = 3;
+    repeated string Channels = 4;
+    string Country = 5;
+    string Comment = 6;
+}
 
 message FindSenderByAddressAndAccountIDParams {
     string Account_id = 1;
@@ -52,8 +60,17 @@ message FindSendersByAddressReply {
     repeated Sender Senders = 1;
 }
 
+message CreateSendersParams {
+    repeated NewSender Senders = 1;
+}
+
+message CreateSendersReply {
+    repeated Sender Senders = 1;
+}
+
 service Service {
     rpc FindSenderByAddressAndAccountID(FindSenderByAddressAndAccountIDParams) returns (FindSenderByAddressAndAccountIDReply);
     rpc FindSendersByAccountId(FindSendersByAccountIdParams) returns (FindSendersByAccountIdReply);
     rpc FindSendersByAddress(FindSendersByAddressParams) returns (FindSendersByAddressReply);
+    rpc CreateSenders(CreateSendersParams) returns (CreateSendersReply);
 }
