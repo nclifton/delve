@@ -6,6 +6,9 @@ const {
   RecordSerializer,
 } = require("forest-express-sequelize");
 const models = require("../models");
+const parseDataUri = require('parse-data-uri');
+const csv = require('csv');
+const P = require('bluebird');
 
 const sender = models.sequelize.sender.models;
 const dbAccount = models.sequelize.account.models;
@@ -17,7 +20,7 @@ const permissionMiddlewareCreator = new PermissionMiddlewareCreator("sender");
 // - Native routes are already generated but can be extended/overriden - Learn how to extend a route here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/extend-a-route
 // - Smart action routes will need to be added as you create new Smart Actions - Learn how to create a Smart Action here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/actions/create-and-manage-smart-actions
 
-// Create a Account
+// Create a Sender
 router.post(
   "/sender",
   permissionMiddlewareCreator.create(),
@@ -44,7 +47,7 @@ router.put(
     recordUpdater
       .deserialize(request.body)
       .then((recordToUpdate) => {
-        if (request.body.data.relationships.account_id.data){
+        if (request.body.data.relationships.account_id.data) {
           recordToUpdate.ref_account_id =
             request.body.data.relationships.account_id.data.id;
         } else {
@@ -141,5 +144,43 @@ router.put(
       .catch(next);
   }
 );
+
+router.post(
+  '/sender/import',
+  permissionMiddlewareCreator.create(),
+  (req, res, next) => {
+    let parsed = parseDataUri(req.body.data.attributes.values['CSV file']);
+
+    //TODO need to deal with duplicates
+    //TODO field validation
+    //TODO errors output
+    //TODO account name?
+
+    csv.parse(parsed.data, { columns: true }, function (err, rows) {
+      if (err) {
+        res.status(400).send({
+          error: `Cannot import data: ${err.message}`
+        });
+      } else {
+        P.each(rows, (row => {
+
+          const recordCreator = new RecordCreator(sender.sender)
+          recordCreator.create({
+            address: row.address,
+            country: row.country,
+            comment: row.comment,
+            channels: JSON.parse(row.channels),
+            mmsProviderKey: row.mms_provider_key == "" ? null : row.mms_provider_key,
+            account_id: row.account_id == "" ? null : row.account_id,
+            ref_account_id: row.account_id == "" ? null : row.account_id,
+          });
+
+        })).then(() => {
+          res.send({ success: 'Data successfully imported!' });
+        })
+          .catch(next);
+      }
+    });
+  });
 
 module.exports = router;

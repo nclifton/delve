@@ -9,7 +9,17 @@ const dbAccount = models.sequelize.account.models;
 // - Smart relationships: https://docs.forestadmin.com/documentation/reference-guide/relationships/create-a-smart-relationship
 // - Smart segments: https://docs.forestadmin.com/documentation/reference-guide/segments/smart-segments
 collection("sender", {
-  actions: [],
+  actions: [{
+    name: 'Import senders',
+    endpoint: '/forest/sender/import',
+    type: 'global',
+    fields: [{
+      field: 'CSV file',
+      description: 'A comma separated values file stores tabular data (numbers and text) in plain text',
+      type: 'File',
+      isRequired: true
+    }]
+  }],
   fields: [
     {
       field: "account_id",
