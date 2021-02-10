@@ -1,14 +1,14 @@
 # This file can be used to override environment specific config.
 # Any value in the default values.yaml file can be overridden here.
-# For example, you can set environment specific variables here 
+# For example, you can set environment specific variables here
 # or set the number of replicas for a specific environment only.
 #
 # WARNING: This file must exist in order for Harness to work properly even if it's empty.
 k8sServiceChart:
   env:
     secrets:
-      FOREST_ENV_SECRET: "TODO: ADD ENV"
-      FOREST_AUTH_SECRET: "TODO: ADD AUTH"
+      FOREST_ENV_SECRET: "74f20d6eedfbcdf80c568a66445a22c453474c6b621c68b25c06ea314f43cbbe"
+      FOREST_AUTH_SECRET: "d356b6b6f64d774ac4b6b1e4bddf736c78cd9aac551517e0"
       ACCOUNT_POSTGRES_URL: "postgresql://foo:barbut8chars@tp-qa.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/account"
       WEBHOOK_POSTGRES_URL: "postgresql://foo:barbut8chars@tp-qa.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/webhook"
       SENDER_POSTGRES_URL: "postgresql://foo:barbut8chars@tp-qa.cluster-cescgmw4wm19.ap-southeast-2.rds.amazonaws.com/sender"
