@@ -240,8 +240,8 @@ router.get(
       filter = `AND (
         address ILIKE '%${request.query.search}%'
         OR country ILIKE '%${request.query.search}%'
-        OR channels ILIKE '%${request.query.search}%'
-        OR mms_provider_key ILIKE '%${request.query.search}%'
+        OR '%${request.query.search}%' ILIKE ANY (channels::name[])
+        OR '%${request.query.search}%' ILIKE mms_provider_key::name
       )`;
       countQuery += filter;
       findQuery += filter;
