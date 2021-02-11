@@ -29,11 +29,11 @@ require (
 	github.com/opentracing-contrib/go-stdlib v1.0.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/orlangure/gnomock v0.10.1
-	github.com/pborman/uuid v1.2.1 // indirect
+	github.com/pborman/uuid v1.2.1
 	github.com/prometheus/client_golang v1.9.0 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/streadway/amqp v1.0.0
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/tiago4orion/conjure v0.0.0-20150908101743-93cb30b9d218 // indirect
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect
 	github.com/uber/jaeger-client-go v2.25.0+incompatible

@@ -10,8 +10,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/pborman/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/vincent-petithory/dataurl"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
 
 func TestArray_UnmarshalCSV(t *testing.T) {
@@ -106,12 +110,12 @@ func TestGetSendersFromRequest(t *testing.T) {
 
 func Test_ImportSenderPOST(t *testing.T) {
 
-	api := NewAdminAPI(&AdminAPIOptions{})
-
 	type wantErr error
 	type want struct {
-		bodyString string
-		statusCode int
+		createSendersParams *senderpb.CreateSendersParams
+		createSendersReply  *senderpb.CreateSendersReply
+		bodyString          string
+		statusCode          int
 	}
 
 	tests := []struct {
@@ -128,6 +132,48 @@ func Test_ImportSenderPOST(t *testing.T) {
 				`,NOKEY,AU,"[""sms""]",,`,
 			},
 			want: want{
+				createSendersParams: &senderpb.CreateSendersParams{
+					Senders: []*senderpb.NewSender{
+						{
+							AccountId:      "",
+							Address:        "GIRAFFE",
+							MMSProviderKey: "",
+							Channels:       []string{"sms", "mms"},
+							Country:        "AU",
+							Comment:        "",
+						},
+						{
+							AccountId:      "",
+							Address:        "NOKEY",
+							MMSProviderKey: "",
+							Channels:       []string{"sms"},
+							Country:        "AU",
+							Comment:        "",
+						},
+					},
+				},
+				createSendersReply: &senderpb.CreateSendersReply{
+					Senders: []*senderpb.Sender{
+						{
+							Id:        uuid.New(),
+							Address:   "GIRAFFE",
+							Channels:  []string{"sms", "mms"},
+							Country:   "AU",
+							Comment:   "",
+							CreatedAt: timestamppb.Now(),
+							UpdatedAt: timestamppb.Now(),
+						},
+						{
+							Id:        uuid.New(),
+							Address:   "NOKEY",
+							Channels:  []string{"sms"},
+							Country:   "AU",
+							Comment:   "",
+							CreatedAt: timestamppb.Now(),
+							UpdatedAt: timestamppb.Now(),
+						},
+					},
+				},
 				bodyString: `{"status":"ok"}`,
 				statusCode: http.StatusOK,
 			},
@@ -151,6 +197,11 @@ func Test_ImportSenderPOST(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 
+			mock := new(senderpb.MockServiceClient)
+			mock.On("CreateSenders", req.Context(), tt.want.createSendersParams).Return(tt.want.createSendersReply, nil)
+			api := NewAdminAPI(&AdminAPIOptions{
+				SenderClient: mock,
+			})
 			api.Handler().ServeHTTP(rr, req)
 
 			// Check the status code is what we expect.

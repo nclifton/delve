@@ -5,7 +5,10 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gocarina/gocsv"
 	"github.com/vincent-petithory/dataurl"
+
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
 
 /**
@@ -18,16 +21,26 @@ func ImportSenderPOST(r *Route) {
 		return
 	}
 
+	params := &senderpb.CreateSendersParams{
+		Senders: make([]*senderpb.NewSender, 0, len(senders)),
+	}
 	for _, sender := range senders {
 		log.Printf("%+v\n", sender)
-
-		// use sender RPC service to insert the senders
 
 	}
 
 	type payload struct {
 		Status string `json:"status"`
 	}
+
+	_, err := r.api.sender.CreateSenders(r.r.Context(), params)
+	if err != nil {
+		// handler rpc error
+		log.Printf("Could not upload senders CSV: %s", err.Error())
+		r.WriteError("Could not upload senders CSV", http.StatusInternalServerError)
+		return
+	}
+
 	data := payload{
 		Status: "ok",
 	}
