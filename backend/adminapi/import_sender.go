@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gocarina/gocsv"
 	"github.com/vincent-petithory/dataurl"
 )
 
@@ -23,7 +22,6 @@ func ImportSenderPOST(r *Route) {
 		log.Printf("%+v\n", sender)
 
 		// use sender RPC service to insert the senders
-		r.api.sender.
 
 	}
 
