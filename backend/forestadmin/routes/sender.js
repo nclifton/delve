@@ -155,20 +155,18 @@ router.put(
 router.post(
   '/sender/import',
   permissionMiddlewareCreator.create(),
-  (req, res, next) => {
+  async (req, res, next) => {
+    let response = {};
+    try {
+      response = await axios.post(
+        `${process.env.ADMIN_API_ADDRESS}/import/sender`, {
+        data: req.body.data.attributes.values['CSV file'],
+      })
+    } catch (err) {
+      next(err);
+    }
 
-    axios.post(
-      `${process.env.ADMIN_API_ADDRESS}/import/sender`, {
-      data: req.body.data.attributes.values['CSV file'],
-    })
-      .then(response => {
-        res.writeHead(response.statusCode, response.headers)
-        res.send({ success: 'Data successfully imported!' });
-      })
-      .catch(err => {
-        console.log('error:',err);
-        res.status(400).send({ error: `Cannot import data: ${err.message}` });
-      })
+    res.send({ success: 'Data successfully imported!' });
   });
 
 module.exports = router;

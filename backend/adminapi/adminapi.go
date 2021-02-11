@@ -75,6 +75,7 @@ func NewAdminAPI(opts *AdminAPIOptions) *AdminAPI {
 	// we also need a route and chain for 404
 	router.NotFound = NewPlainRoute(api, baseChain, NotFoundRoute)
 	router.GET("/v1/status", NewRoute(api, baseChain, StatusGET))
+	router.POST("/v1/import/sender", NewRoute(api, baseChain, ImportSenderPOST))
 	router.GET("/v1/report/usage", NewRoute(api, baseChain, UsageReportGET))
 	router.GET("/v1/report/usage/:account_id", NewRoute(api, baseChain, UsageReportGET))
 
