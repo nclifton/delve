@@ -7,8 +7,11 @@ import (
 
 	"github.com/gocarina/gocsv"
 	"github.com/vincent-petithory/dataurl"
+<<<<<<< HEAD
 
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
+=======
+>>>>>>> expanding testing
 )
 
 /**
@@ -20,12 +23,21 @@ func ImportSenderPOST(r *Route) {
 	if failed {
 		return
 	}
+<<<<<<< HEAD
 
 	params := &senderpb.CreateSendersParams{
 		Senders: make([]*senderpb.NewSender, 0, len(senders)),
 	}
 	for _, sender := range senders {
 		log.Printf("%+v\n", sender)
+=======
+
+	for _, sender := range senders {
+		log.Printf("%+v\n", sender)
+
+		// use sender RPC service to insert the senders
+		r.api.sender.
+>>>>>>> expanding testing
 
 	}
 
