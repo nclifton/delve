@@ -3,13 +3,15 @@ package adminapi
 import (
 	"net/http"
 
+	"github.com/julienschmidt/httprouter"
+	"github.com/justinas/alice"
+
 	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
-	"github.com/julienschmidt/httprouter"
-	"github.com/justinas/alice"
 )
 
 type AdminAPIOptions struct {
@@ -17,12 +19,14 @@ type AdminAPIOptions struct {
 	AccountClient *account.Client
 	SMSClient     *sms.Client
 	MMSClient     *mms.Client
+	SenderClient  senderpb.ServiceClient
 }
 
 type RPCClients struct {
 	account *account.Client
 	sms     *sms.Client
 	mms     *mms.Client
+	sender  senderpb.ServiceClient
 }
 
 // API wraps an instance of our api app
@@ -43,6 +47,7 @@ func NewAdminAPI(opts *AdminAPIOptions) *AdminAPI {
 		account: opts.AccountClient,
 		sms:     opts.SMSClient,
 		mms:     opts.MMSClient,
+		sender:  opts.SenderClient,
 	}
 
 	api := &AdminAPI{
