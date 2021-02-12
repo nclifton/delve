@@ -23,6 +23,14 @@ if [ "${ENV}" = "production" ]; then
   fi
 fi
 
+SLACK_NOTIFICATION_URL=https://hooks.slack.com/services/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
+NOTIFICATION_ENVS=("qa")
+
+if [[ " ${NOTIFICATION_ENVS[*]} " =~ ${ENV} ]]; then
+  release_message="MTMO-TP deployment to ${ENV} environment started"
+  curl -X POST -H 'Content-type: application/json' --data '{"text":"'"${release_message}"'"}' $SLACK_NOTIFICATION_URL
+fi
+
 kube_config="${SCRIPTDIR}/${ENV}/connection_config.yaml"
 
 # Load in service paths based on whether a directory contains an infra folder or not
@@ -67,3 +75,8 @@ for helm_chart in ${helm_charts}; do
     helm --kubeconfig ${kube_config} uninstall ${helm_chart} --namespace tp
   fi
 done
+
+if [[ " ${NOTIFICATION_ENVS[*]} " =~ ${ENV} ]]; then
+  release_message="MTMO-TP deployment to ${ENV} environment complete!"
+  curl -X POST -H "Content-type: application/json" --data "{\"text\":\"${release_message}\"}" $SLACK_NOTIFICATION_URL
+fi
