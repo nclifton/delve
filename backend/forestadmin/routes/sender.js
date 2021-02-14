@@ -6,10 +6,15 @@ const {
   RecordSerializer,
 } = require("forest-express-sequelize");
 const models = require("../models");
+const parseDataUri = require('parse-data-uri');
+const axios = require("axios");
+const multer = require('multer');
 
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {}
+})
 const sender = models.sequelize.sender.models;
-const dbAccount = models.sequelize.account.models;
-
 const router = express.Router();
 const permissionMiddlewareCreator = new PermissionMiddlewareCreator("sender");
 
@@ -17,7 +22,7 @@ const permissionMiddlewareCreator = new PermissionMiddlewareCreator("sender");
 // - Native routes are already generated but can be extended/overriden - Learn how to extend a route here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/extend-a-route
 // - Smart action routes will need to be added as you create new Smart Actions - Learn how to create a Smart Action here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/actions/create-and-manage-smart-actions
 
-// Create a Account
+// Create a Sender
 router.post(
   "/sender",
   permissionMiddlewareCreator.create(),
@@ -44,7 +49,7 @@ router.put(
     recordUpdater
       .deserialize(request.body)
       .then((recordToUpdate) => {
-        if (request.body.data.relationships.account_id.data){
+        if (request.body.data.relationships.account_id.data) {
           recordToUpdate.ref_account_id =
             request.body.data.relationships.account_id.data.id;
         } else {
@@ -141,5 +146,27 @@ router.put(
       .catch(next);
   }
 );
+
+/**
+  proxy request to adminapi (go) endpoint
+  parse the adminapi response and create appropriate FA response
+  ref: https://gist.github.com/casamia918/3966de2dcafeb8aa8c6dcedf108c3041
+*/
+router.post(
+  '/sender/import',
+  permissionMiddlewareCreator.create(),
+  async (req, res, next) => {
+    let response = {};
+    try {
+      response = await axios.post(
+        `${process.env.ADMIN_API_ADDRESS}/import/sender`, {
+        data: req.body.data.attributes.values['CSV file'],
+      })
+    } catch (err) {
+      next(err);
+    }
+
+    res.send({ success: 'Data successfully imported!' });
+  });
 
 module.exports = router;

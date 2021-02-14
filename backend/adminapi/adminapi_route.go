@@ -86,6 +86,8 @@ func (r *Route) WriteValidatorError(err error) {
 	r.Write(&JSONErrors{Error: "Validation Error", ErrorData: valid.ErrorsByField(err)}, http.StatusOK)
 }
 
+
+// ** This looks like deadcode **
 // we have a function like this because over rpc you can't compare errors directly
 func errCmp(e1, e2 error) bool {
 	if e1 == nil && e2 == nil {
