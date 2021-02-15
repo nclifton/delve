@@ -112,7 +112,6 @@ func TestGetSendersFromRequest(t *testing.T) {
 
 func Test_ImportSenderPOST(t *testing.T) {
 
-	type wantErr error
 	type want struct {
 		createSendersParams *senderpb.CreateSendersParams
 		createSendersReply  *senderpb.CreateSendersReply
@@ -125,7 +124,6 @@ func Test_ImportSenderPOST(t *testing.T) {
 		name    string
 		csv     []string
 		want    want
-		wantErr wantErr
 	}{
 		{
 			name: "happy import",
@@ -180,7 +178,6 @@ func Test_ImportSenderPOST(t *testing.T) {
 				bodyString: `{"status":"ok"}`,
 				statusCode: http.StatusOK,
 			},
-			wantErr: nil,
 		}, {
 			name: "unhappy - address not provided",
 			csv: []string{
@@ -203,7 +200,6 @@ func Test_ImportSenderPOST(t *testing.T) {
 				bodyString:         `{"error":"Could not upload senders CSV: ERROR: null value in column \"address\" violates not-null constraint (SQLSTATE 23502)"}`,
 				statusCode:         http.StatusInternalServerError,
 			},
-			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
@@ -221,13 +217,14 @@ func Test_ImportSenderPOST(t *testing.T) {
 			}
 			req.Header.Set("Content-Type", "application/json")
 
-			rr := httptest.NewRecorder()
-
+			// prepare and inject the mock sender RPC service client
 			mock := new(senderpb.MockServiceClient)
 			mock.On("CreateSenders", req.Context(), tt.want.createSendersParams).Return(tt.want.createSendersReply, tt.want.createSendersError)
 			api := NewAdminAPI(&AdminAPIOptions{
 				SenderClient: mock,
 			})
+
+			rr := httptest.NewRecorder()
 			api.Handler().ServeHTTP(rr, req)
 
 			// Check the status code is what we expect.
