@@ -5,6 +5,7 @@ package test
 import (
 	"testing"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/stretchr/testify/assert"
@@ -19,7 +20,8 @@ func Test_CreateSenders(t *testing.T) {
 	client := s.getClient(t)
 
 	type want struct {
-		reply *senderpb.CreateSendersReply
+		reply      *senderpb.CreateSendersReply
+		dbCriteria []assertdb.Criteria
 	}
 
 	type wantErr struct {
@@ -48,7 +50,19 @@ func Test_CreateSenders(t *testing.T) {
 				},
 			},
 			want: want{
-				reply: &senderpb.CreateSendersReply{}},
+				reply: &senderpb.CreateSendersReply{},
+				dbCriteria: []map[string]interface{}{
+					{
+						"account_id":       nil,
+						"address":          "LION",
+						"mms_provider_key": nil,
+						"channels":         []string{"mms", "sms"},
+						"country":          "AU",
+						"comment":          "roars",
+					},
+				},
+			},
+
 			wantErr: wantErr{},
 		}, {
 			name: "happy create two",
@@ -61,7 +75,7 @@ func Test_CreateSenders(t *testing.T) {
 						Channels:       []string{"mms"},
 						Country:        "AU",
 						Comment:        "roars too",
-					},{
+					}, {
 						AccountId:      "",
 						Address:        "PANTHER",
 						MMSProviderKey: "mgage",
@@ -72,7 +86,25 @@ func Test_CreateSenders(t *testing.T) {
 				},
 			},
 			want: want{
-				reply: &senderpb.CreateSendersReply{}},
+				reply: &senderpb.CreateSendersReply{},
+				dbCriteria: []map[string]interface{}{
+					{
+						"account_id":       nil,
+						"address":          "TIGER",
+						"mms_provider_key": nil,
+						"channels":         []string{"mms"},
+						"country":          "AU",
+						"comment":          "roars too",
+					}, {
+						"account_id":       nil,
+						"address":          "PANTHER",
+						"mms_provider_key": nil,
+						"channels":         []string{"sms"},
+						"country":          "US",
+						"comment":          "is silent",
+					},
+				},
+			},
 			wantErr: wantErr{},
 		},
 		{
@@ -81,7 +113,9 @@ func Test_CreateSenders(t *testing.T) {
 				Senders: []*senderpb.NewSender{},
 			},
 			want: want{
-				reply: &senderpb.CreateSendersReply{}},
+				reply:      &senderpb.CreateSendersReply{},
+				dbCriteria: []map[string]interface{}{},
+			},
 			wantErr: wantErr{},
 		},
 		{
@@ -97,8 +131,22 @@ func Test_CreateSenders(t *testing.T) {
 				}},
 			},
 			want: want{
-				reply: &senderpb.CreateSendersReply{}},
-			wantErr: wantErr{},
+				reply: &senderpb.CreateSendersReply{},
+				dbCriteria: []map[string]interface{}{
+					{
+						"account_id":       nil,
+						"address":          "",
+						"mms_provider_key": nil,
+						"channels":         []string{},
+						"country":          "",
+						"comment":          "",
+					},
+				},
+			},
+			wantErr: wantErr{
+				status: status.New(codes.Unknown, `ERROR: null value in column "address" violates not-null constraint (SQLSTATE 23502)`),
+				ok:     true, // the grpc service did respond to the call
+			},
 		},
 		{
 			name: "unvalidated sender - nil values",
@@ -106,17 +154,26 @@ func Test_CreateSenders(t *testing.T) {
 				Senders: []*senderpb.NewSender{{}},
 			},
 			want: want{
-				reply: &senderpb.CreateSendersReply{}},
-			wantErr: wantErr{},
+				reply:      &senderpb.CreateSendersReply{},
+				dbCriteria: []map[string]interface{}{},
+			},
+			wantErr: wantErr{
+				status: status.New(codes.Unknown, `ERROR: null value in column "address" violates not-null constraint (SQLSTATE 23502)`),
+				ok:     true, // the grpc service did respond to the call
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := client.CreateSenders(s.ctx, tt.params)
-			if tt.wantErr.status != nil && err != nil {
-				errStatus, ok := status.FromError(err)
-				assert.Equal(t, ok, tt.wantErr.ok, "grpc ok")
-				assert.EqualValues(t, tt.wantErr.status, errStatus, "grpc status")
+			if tt.wantErr.status != nil {
+				if err != nil {
+					errStatus, ok := status.FromError(err)
+					assert.Equal(t, ok, tt.wantErr.ok, "grpc ok")
+					assert.EqualValues(t, tt.wantErr.status, errStatus, "grpc status")
+				} else {
+					t.Fatal("did not get expected error")
+				}
 			} else if err != nil {
 				t.Fatalf("unexpected error: %+v", err)
 			} else {
@@ -132,14 +189,7 @@ func Test_CreateSenders(t *testing.T) {
 					assert.NotEmptyf(t, sender.CreatedAt, "sender %d CreatedAt", idx)
 					assert.NotEmptyf(t, sender.UpdatedAt, "sender %d UpdatedAt", idx)
 
-					s.SeeInDatabase("sender", assertdb.Criteria{
-						"account_id":       sender.AccountId,
-						"address":          sender.Address,
-						"mms_provider_key": sender.MMSProviderKey,
-						"channels":         sender.Channels,
-						"country":          sender.Country,
-						"comment":          sender.Comment,
-					})
+					s.SeeInDatabase("sender", tt.want.dbCriteria[idx])
 
 				}
 			}

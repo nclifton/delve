@@ -117,12 +117,12 @@ func (db *sqlDB) CreateSenders(ctx context.Context, newSenders []Sender) ([]Send
 	for _, newSender := range newSenders {
 		valuesRowSql := fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)", idx, idx+1, idx+2, idx+3, idx+4, idx+5)
 		valuesRowsSql = append(valuesRowsSql, valuesRowSql)
-		args = append(args, newSender.AccountID)
-		args = append(args, newSender.Address)
+		args = append(args, nilIfBlank(newSender.AccountID))
+		args = append(args, nilIfBlank(newSender.Address))
 		args = append(args, newSender.Channels)
-		args = append(args, newSender.MMSProviderKey)
-		args = append(args, newSender.Country)
-		args = append(args, newSender.Comment)
+		args = append(args, nilIfBlank(newSender.MMSProviderKey))
+		args = append(args, nilIfBlank(newSender.Country))
+		args = append(args, nilIfBlank(newSender.Comment))
 		idx = idx + 6
 	}
 	valuesSql = strings.Join(valuesRowsSql, ",\n")
@@ -142,6 +142,18 @@ func (db *sqlDB) CreateSenders(ctx context.Context, newSenders []Sender) ([]Send
 		}
 		ss = append(ss, s)
 	}
+	if len(newSenders) != len(ss) {
+		err = rows.Err()
+	} else {
+		err = nil
+	}
 
-	return ss, nil
+	return ss, err
+}
+
+func nilIfBlank(v string) interface{} {
+	if len(v) == 0 {
+		return nil
+	}
+	return v
 }
