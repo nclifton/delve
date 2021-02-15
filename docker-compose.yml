@@ -334,6 +334,21 @@ services:
       OPTOUT_POSTGRES_SSL: disable
       OPTOUT_POSTGRES_NAME: optout
 
+  mm7postgressetup:
+    build:
+      context: .
+      dockerfile: backend/mm7/migration/infra/Dockerfile
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/backend
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_SSL: disable
+      POSTGRES_NAME: mm7
+
   webhook-rpc-service:
     build:
       context: .

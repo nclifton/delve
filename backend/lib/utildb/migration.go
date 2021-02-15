@@ -31,8 +31,7 @@ func Migrate() {
 	stLog.Info(ctx, "Migrate", "Starting service...")
 
 	var env Env
-	err := envconfig.Process("", &env)
-	if err != nil {
+	if err := envconfig.Process("", &env); err != nil {
 		stLog.Fatalf(ctx, "Migrate", "Failed to read env vars: %s", err)
 	}
 
