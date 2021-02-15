@@ -2,11 +2,13 @@ package adminapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gocarina/gocsv"
 	"github.com/vincent-petithory/dataurl"
+	"google.golang.org/grpc/status"
 
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
@@ -26,21 +28,28 @@ func ImportSenderPOST(r *Route) {
 	}
 	for _, sender := range senders {
 		log.Printf("%+v\n", sender)
-
-	}
-
-	type payload struct {
-		Status string `json:"status"`
+		params.Senders = append(params.Senders, &senderpb.NewSender{
+			AccountId:      sender.AccountId,
+			Address:        sender.Address,
+			MMSProviderKey: sender.MMSProviderKey,
+			Channels:       sender.Channels,
+			Country:        sender.Country,
+			Comment:        sender.Comment,
+		})
 	}
 
 	_, err := r.api.sender.CreateSenders(r.r.Context(), params)
 	if err != nil {
 		// handler rpc error
+		grpcError := status.Convert(err)
 		log.Printf("Could not upload senders CSV: %s", err.Error())
-		r.WriteError("Could not upload senders CSV", http.StatusInternalServerError)
+		r.WriteError(fmt.Sprintf("Could not upload senders CSV: %s", grpcError.Message()), http.StatusInternalServerError)
 		return
 	}
 
+	type payload struct {
+		Status string `json:"status"`
+	}
 	data := payload{
 		Status: "ok",
 	}

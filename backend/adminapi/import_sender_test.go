@@ -13,6 +13,8 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/vincent-petithory/dataurl"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
@@ -114,6 +116,7 @@ func Test_ImportSenderPOST(t *testing.T) {
 	type want struct {
 		createSendersParams *senderpb.CreateSendersParams
 		createSendersReply  *senderpb.CreateSendersReply
+		createSendersError  error
 		bodyString          string
 		statusCode          int
 	}
@@ -178,6 +181,29 @@ func Test_ImportSenderPOST(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 			wantErr: nil,
+		}, {
+			name: "unhappy - address not provided",
+			csv: []string{
+				"account_id,address,country,channels,mms_provider_key,comment",
+				`,,AU,"[""sms"",""mms""]",,`,
+			},
+			want: want{
+				createSendersParams: &senderpb.CreateSendersParams{
+					Senders: []*senderpb.NewSender{{
+						AccountId:      "",
+						Address:        "",
+						MMSProviderKey: "",
+						Channels:       []string{"sms", "mms"},
+						Country:        "AU",
+						Comment:        "",
+					}},
+				},
+				createSendersReply: &senderpb.CreateSendersReply{},
+				createSendersError: status.Error(codes.Unknown, `ERROR: null value in column "address" violates not-null constraint (SQLSTATE 23502)`),
+				bodyString:         `{"error":"Could not upload senders CSV: ERROR: null value in column \"address\" violates not-null constraint (SQLSTATE 23502)"}`,
+				statusCode:         http.StatusInternalServerError,
+			},
+			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
@@ -198,7 +224,7 @@ func Test_ImportSenderPOST(t *testing.T) {
 			rr := httptest.NewRecorder()
 
 			mock := new(senderpb.MockServiceClient)
-			mock.On("CreateSenders", req.Context(), tt.want.createSendersParams).Return(tt.want.createSendersReply, nil)
+			mock.On("CreateSenders", req.Context(), tt.want.createSendersParams).Return(tt.want.createSendersReply, tt.want.createSendersError)
 			api := NewAdminAPI(&AdminAPIOptions{
 				SenderClient: mock,
 			})
@@ -209,8 +235,6 @@ func Test_ImportSenderPOST(t *testing.T) {
 
 			// Check the response body is what we expect.
 			assert.JSONEq(t, tt.want.bodyString, rr.Body.String(), "handler returned unexpected body")
-
-			// check the sender rpc client mock that it was used as exected
 
 		})
 	}
