@@ -121,9 +121,9 @@ func Test_ImportSenderPOST(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		csv     []string
-		want    want
+		name string
+		csv  []string
+		want want
 	}{
 		{
 			name: "happy import",
