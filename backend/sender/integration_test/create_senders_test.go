@@ -50,12 +50,21 @@ func Test_CreateSenders(t *testing.T) {
 				},
 			},
 			want: want{
-				reply: &senderpb.CreateSendersReply{},
+				reply: &senderpb.CreateSendersReply{
+					Senders: []*senderpb.Sender{{
+						AccountId:      "",
+						Address:        "LION",
+						MMSProviderKey: "fake",
+						Channels:       []string{"mms", "sms"},
+						Country:        "AU",
+						Comment:        "roars",
+					}},
+				},
 				dbCriteria: []map[string]interface{}{
 					{
 						"account_id":       nil,
 						"address":          "LION",
-						"mms_provider_key": nil,
+						"mms_provider_key": "fake",
 						"channels":         []string{"mms", "sms"},
 						"country":          "AU",
 						"comment":          "roars",
@@ -86,19 +95,35 @@ func Test_CreateSenders(t *testing.T) {
 				},
 			},
 			want: want{
-				reply: &senderpb.CreateSendersReply{},
+				reply: &senderpb.CreateSendersReply{
+					Senders: []*senderpb.Sender{{
+						AccountId:      "",
+						Address:        "TIGER",
+						MMSProviderKey: "optus",
+						Channels:       []string{"mms"},
+						Country:        "AU",
+						Comment:        "roars too",
+					}, {
+						AccountId:      "",
+						Address:        "PANTHER",
+						MMSProviderKey: "mgage",
+						Channels:       []string{"sms"},
+						Country:        "US",
+						Comment:        "is silent",
+					}},
+				},
 				dbCriteria: []map[string]interface{}{
 					{
 						"account_id":       nil,
 						"address":          "TIGER",
-						"mms_provider_key": nil,
+						"mms_provider_key": "optus",
 						"channels":         []string{"mms"},
 						"country":          "AU",
 						"comment":          "roars too",
 					}, {
 						"account_id":       nil,
 						"address":          "PANTHER",
-						"mms_provider_key": nil,
+						"mms_provider_key": "mgage",
 						"channels":         []string{"sms"},
 						"country":          "US",
 						"comment":          "is silent",
@@ -178,7 +203,7 @@ func Test_CreateSenders(t *testing.T) {
 				t.Fatalf("unexpected error: %+v", err)
 			} else {
 				assert.Equal(t, len(tt.want.reply.Senders), len(got.Senders), "number of senders in reply")
-				for idx, sender := range tt.want.reply.Senders {
+				for idx, sender := range got.Senders {
 					assert.NotEmptyf(t, sender.Id, "sender %d Id", idx)
 					assert.Equalf(t, sender.AccountId, got.Senders[idx].AccountId, "sender %d AccountId", idx)
 					assert.Equalf(t, sender.Address, got.Senders[idx].Address, "sender %d Address", idx)

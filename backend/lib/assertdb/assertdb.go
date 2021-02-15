@@ -77,16 +77,21 @@ func (adb *AssertDb) CountInDatabase(table string, criteria Criteria) int {
 	values := make([]interface{}, 0, len(criteria))
 	idx := 0
 	for name, value := range criteria {
-		idx++
 		op := " ="
 		if strings.Contains(strings.TrimSpace(string(name)), " ") {
 			op = ""
 		}
-		where = append(where, fmt.Sprintf("%s%s $%d", name, op, idx))
-		values = append(values, value)
+		if value != nil {
+			idx++
+			where = append(where, fmt.Sprintf("%s%s $%d", name, op, idx))
+			values = append(values, value)
+		} else {
+			where = append(where, fmt.Sprintf("%s IS NULL", name))
+		}
+
 	}
 	row := adb.conn.QueryRow(adb.ctx,
-		fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, table, strings.Join(where, " AND ")), values...)
+		fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE %s`, table, strings.Join(where, " AND ")), values...)
 
 	var count int
 	assert.NilError(adb.t, row.Scan(&count), fmt.Sprintf("query table %s failed", table))
