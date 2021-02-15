@@ -179,7 +179,7 @@ func Test_ImportSenderPOST(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		}, {
-			name: "unhappy - address not provided",
+			name: "unvalidated CSV - some unknown internal error",
 			csv: []string{
 				"account_id,address,country,channels,mms_provider_key,comment",
 				`,,AU,"[""sms"",""mms""]",,`,
@@ -196,8 +196,8 @@ func Test_ImportSenderPOST(t *testing.T) {
 					}},
 				},
 				createSendersReply: &senderpb.CreateSendersReply{},
-				createSendersError: status.Error(codes.Unknown, `ERROR: null value in column "address" violates not-null constraint (SQLSTATE 23502)`),
-				bodyString:         `{"error":"Could not upload senders CSV: ERROR: null value in column \"address\" violates not-null constraint (SQLSTATE 23502)"}`,
+				createSendersError: status.Error(codes.Unknown, `something bad happened`),
+				bodyString:         `{"error":"Could not upload senders CSV: something bad happened"}`,
 				statusCode:         http.StatusInternalServerError,
 			},
 		},
