@@ -23,12 +23,20 @@ k8sServiceChart:
     linkerd.io/inject: disabled
 
   # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
-  serviceType: ClusterIP
+  serviceType: NodePort
   servicePort: 10004
   serviceTargetPort: 10004
-  # For Headless Services (e.g. RabbitMQ Consumers) 
+  # For Headless Services (e.g. RabbitMQ Consumers)
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   #serviceClusterIP: None
+
+  # Cluster Ingress
+  ingress:
+    enabled: true
+    # Add ingress rules (cluster ingress endpoints) as a list below
+    rules:
+      - host: "tecloo.${environmentVariable.dns}"
+        path: /*
 
   # HorizontalPodAutoscaler
   hpa:

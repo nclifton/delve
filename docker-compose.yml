@@ -234,14 +234,9 @@ services:
       - postgres
     volumes:
       - ./backend:/backend
-    environment:
-      ACCOUNT_POSTGRES_HOST: postgres
-      ACCOUNT_POSTGRES_USER: postgres
-      ACCOUNT_POSTGRES_PASSWORD: example
-      ACCOUNT_POSTGRES_SSL: disable
-      ACCOUNT_POSTGRES_NAME: account
-      ACCOUNT_POSTGRES_AUTH_DB: postgres
-
+    env_file:
+      - backend/account/migration/infra/values/dev-values.env
+  
   mmspostgressetup:
     build:
       context: .
@@ -250,13 +245,8 @@ services:
       - postgres
     volumes:
       - ./backend:/backend
-    environment:
-      MMS_POSTGRES_HOST: postgres
-      MMS_POSTGRES_USER: postgres
-      MMS_POSTGRES_PASSWORD: example
-      MMS_POSTGRES_SSL: disable
-      MMS_POSTGRES_NAME: mms
-      MMS_POSTGRES_AUTH_DB: postgres
+    env_file:
+      - backend/mms/migration/infra/values/dev-values.env
 
   smspostgressetup:
     build:
@@ -266,13 +256,8 @@ services:
       - postgres
     volumes:
       - ./backend:/backend
-    environment:
-      SMS_POSTGRES_HOST: postgres
-      SMS_POSTGRES_USER: postgres
-      SMS_POSTGRES_PASSWORD: example
-      SMS_POSTGRES_SSL: disable
-      SMS_POSTGRES_NAME: sms
-      SMS_POSTGRES_AUTH_DB: postgres
+    env_file:
+      - backend/sms/migration/infra/values/dev-values.env
 
   webhookpostgressetup:
     build:
@@ -282,12 +267,8 @@ services:
       - postgres
     volumes:
       - ./backend:/backend
-    environment:
-      WEBHOOK_POSTGRES_HOST: postgres
-      WEBHOOK_POSTGRES_USER: postgres
-      WEBHOOK_POSTGRES_PASSWORD: example
-      WEBHOOK_POSTGRES_SSL: disable
-      WEBHOOK_POSTGRES_NAME: webhook
+    env_file:
+      - backend/webhook/migration/infra/values/dev-values.env
 
   senderpostgressetup:
     build:
@@ -297,12 +278,8 @@ services:
       - postgres
     volumes:
       - ./backend:/backend
-    environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: example
-      POSTGRES_SSL: disable
-      POSTGRES_NAME: sender
+    env_file:
+      - backend/sender/migration/infra/values/dev-values.env
 
   tracklinkpostgressetup:
     build:
@@ -312,12 +289,8 @@ services:
       - postgres
     volumes:
       - ./backend:/backend
-    environment:
-      TRACK_LINK_POSTGRES_HOST: postgres
-      TRACK_LINK_POSTGRES_USER: postgres
-      TRACK_LINK_POSTGRES_PASSWORD: example
-      TRACK_LINK_POSTGRES_SSL: disable
-      TRACK_LINK_POSTGRES_NAME: track_link
+    env_file:
+      - backend/track_link/migration/infra/values/dev-values.env
 
   optoutpostgressetup:
     build:
@@ -327,12 +300,34 @@ services:
       - postgres
     volumes:
       - ./backend:/backend
+    env_file:
+      - backend/optout/migration/infra/values/dev-values.env
+
+  mm7postgressetup:
+    build:
+      context: .
+      dockerfile: backend/mm7/migration/infra/Dockerfile
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/backend
+    env_file:
+      - backend/mm7/migration/infra/values/dev-values.env
+
+  mm7postgressetup:
+    build:
+      context: .
+      dockerfile: backend/mm7/migration/infra/Dockerfile
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/backend
     environment:
-      OPTOUT_POSTGRES_HOST: postgres
-      OPTOUT_POSTGRES_USER: postgres
-      OPTOUT_POSTGRES_PASSWORD: example
-      OPTOUT_POSTGRES_SSL: disable
-      OPTOUT_POSTGRES_NAME: optout
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_SSL: disable
+      POSTGRES_NAME: mm7
 
   webhook-rpc-service:
     build:
