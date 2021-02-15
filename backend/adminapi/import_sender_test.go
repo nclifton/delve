@@ -10,17 +10,12 @@ import (
 	"strings"
 	"testing"
 
-<<<<<<< HEAD
 	"github.com/pborman/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/vincent-petithory/dataurl"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
-=======
-	"github.com/stretchr/testify/assert"
-	"github.com/vincent-petithory/dataurl"
->>>>>>> expanding testing
 )
 
 func TestArray_UnmarshalCSV(t *testing.T) {
@@ -202,14 +197,11 @@ func Test_ImportSenderPOST(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 
-<<<<<<< HEAD
 			mock := new(senderpb.MockServiceClient)
 			mock.On("CreateSenders", req.Context(), tt.want.createSendersParams).Return(tt.want.createSendersReply, nil)
 			api := NewAdminAPI(&AdminAPIOptions{
 				SenderClient: mock,
 			})
-=======
->>>>>>> expanding testing
 			api.Handler().ServeHTTP(rr, req)
 
 			// Check the status code is what we expect.
