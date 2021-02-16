@@ -348,11 +348,11 @@ services:
       - postgres
       - jaeger
 
-  webhook-post-worker-service:
+  webhook-post-worker:
     build:
       context: .
       dockerfile: ops/dev/docker-compose/DockerfileDomain.dev
-    hostname: webhook-post-worker-service
+    hostname: webhook-post-worker
     entrypoint: ["/go/bin/modd", "--file=./webhook/worker/modd.conf"]
     tty: true
     volumes:
@@ -392,6 +392,21 @@ services:
       - "10000:10000"
     env_file:
       - backend/api/infra/values/dev-values.env
+
+  mgage-submit-worker:
+    build:
+      context: .
+      dockerfile: ops/dev/docker-compose/DockerfileDomain.dev
+    hostname: mgage-submit-worker
+    entrypoint: ["/go/bin/modd", "--file=./mm7/worker/modd.conf"]
+    tty: true
+    volumes:
+      - ./backend:/backend
+    env_file:
+      - backend/mm7/worker/mgage_submit/infra/values/dev-values.env
+    depends_on:
+      - rabbitmq
+      - jaeger
 
 volumes:
   redis_data:

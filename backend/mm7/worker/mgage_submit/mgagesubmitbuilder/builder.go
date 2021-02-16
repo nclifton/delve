@@ -1,26 +1,19 @@
-package postbuilder
+package mgagesubmitbuilder
 
 import (
 	"context"
-	"net/http"
-	"time"
 
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
-	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/burstsms/mtmo-tp/backend/lib/workerbuilder"
-	"github.com/burstsms/mtmo-tp/backend/webhook/worker/post/handler"
+	"github.com/burstsms/mtmo-tp/backend/mm7/worker/mgage_submit/handler"
 	"github.com/kelseyhightower/envconfig"
 )
 
 type Config struct {
-	ClientTimeout int    `envconfig:"CLIENT_TIMEOUT"`
-	RedisURL      string `envconfig:"REDIS_URL"`
 }
 
 type service struct {
-	conf    Config
-	client  handler.HTTPClient
-	limiter handler.Limiter
+	conf Config
 }
 
 func NewBuilderFromEnv() *service {
@@ -40,23 +33,8 @@ func New(config Config) *service {
 
 func (s *service) Run(deps workerbuilder.Deps) error {
 
-	if s.client == nil {
-		s.client = &http.Client{
-			Timeout: time.Duration(s.conf.ClientTimeout) * time.Second,
-		}
-	}
+	handler := handler.New()
 
-	if s.limiter == nil {
-		limiter, err := redis.NewLimiter(s.conf.RedisURL)
-		if err != nil {
-			return err
-		}
-		s.limiter = limiter
-	}
-
-	handler := handler.New(s.client, s.limiter)
-
-	// TODO move health set service ready true/false into the Worker
 	deps.Health.SetServiceReady(true)
 	deps.Worker.Run(deps.ConsumeOptions, handler)
 

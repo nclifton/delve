@@ -7,7 +7,7 @@ const (
 
 	QueueNameSubmitFake  = "fake"
 	QueueNameSubmitOptus = "optus"
-	QueueNameSubmitMgage = "mgage"
+	QueueNameSubmitMgage = "mgage.submit"
 
 	QueueNameDLDRFake = "dldr.fake"
 )
