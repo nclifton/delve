@@ -108,7 +108,7 @@ func scanSenderRow(row pgx.Row) (Sender, error) {
 	return s, nil
 }
 
-func (db *sqlDB) CreateSenders(ctx context.Context, newSenders []Sender) ([]Sender, error) {
+func (db *sqlDB) InsertSenders(ctx context.Context, newSenders []Sender) ([]Sender, error) {
 
 	insertSql := "insert into sender (account_id, address, channels, mms_provider_key, country, comment, created_at, updated_at)"
 	returningSql := "returning " + senderSelect
@@ -129,7 +129,6 @@ func (db *sqlDB) CreateSenders(ctx context.Context, newSenders []Sender) ([]Send
 	}
 	valuesSql = strings.Join(valuesRowsSql, ",\n")
 	sqlStr := fmt.Sprintf("%s\nVALUES\n%s\n%s", insertSql, valuesSql, returningSql)
-
 	rows, err := db.sql.Query(ctx, sqlStr, args...)
 	if err != nil {
 		return []Sender{}, err

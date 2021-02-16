@@ -6,10 +6,9 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
+
 
 	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
-	"github.com/burstsms/mtmo-tp/backend/sender/rpc/db"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
 
@@ -57,51 +56,4 @@ func (s *senderImpl) FindSendersByAddress(ctx context.Context, r *senderpb.FindS
 	return &senderpb.FindSendersByAddressReply{
 		Senders: ss,
 	}, nil
-}
-
-func (s *senderImpl) CreateSenders(ctx context.Context, r *senderpb.CreateSendersParams) (*senderpb.CreateSendersReply, error) {
-
-	ss := []*senderpb.Sender{}
-
-	if len(r.Senders) > 0 {
-
-		newSenders := make([]db.Sender, 0, len(r.Senders))
-		for _, sender := range r.Senders {
-			newSenders = append(newSenders, db.Sender{
-				AccountID:      sender.AccountId,
-				Address:        sender.Address,
-				MMSProviderKey: sender.MMSProviderKey,
-				Channels:       sender.Channels,
-				Country:        sender.Country,
-				Comment:        sender.Comment,
-			})
-		}
-
-		dbSenders, err := s.db.CreateSenders(ctx, newSenders)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, s := range dbSenders {
-			ss = append(ss, dbSenderToSender(s))
-		}
-	}
-
-	return &senderpb.CreateSendersReply{
-		Senders: ss,
-	}, nil
-}
-
-func dbSenderToSender(sender db.Sender) *senderpb.Sender {
-	return &senderpb.Sender{
-		Id:             sender.ID,
-		AccountId:      sender.AccountID,
-		Address:        sender.Address,
-		MMSProviderKey: sender.MMSProviderKey,
-		Channels:       sender.Channels,
-		Country:        sender.Country,
-		Comment:        sender.Comment,
-		CreatedAt:      timestamppb.New(sender.CreatedAt),
-		UpdatedAt:      timestamppb.New(sender.UpdatedAt),
-	}
 }
