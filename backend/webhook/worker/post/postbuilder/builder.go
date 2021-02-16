@@ -17,13 +17,13 @@ type Config struct {
 	RedisURL      string `envconfig:"REDIS_URL"`
 }
 
-type postService struct {
+type service struct {
 	conf    Config
 	client  handler.HTTPClient
 	limiter handler.Limiter
 }
 
-func NewBuilderFromEnv() *postService {
+func NewBuilderFromEnv() *service {
 	stLog := logger.NewLogger()
 
 	var config Config
@@ -34,27 +34,27 @@ func NewBuilderFromEnv() *postService {
 	return New(config)
 }
 
-func New(config Config) *postService {
-	return &postService{conf: config}
+func New(config Config) *service {
+	return &service{conf: config}
 }
 
-func (ps *postService) Run(deps workerbuilder.Deps) error {
+func (s *service) Run(deps workerbuilder.Deps) error {
 
-	if ps.client == nil {
-		ps.client = &http.Client{
-			Timeout: time.Duration(ps.conf.ClientTimeout) * time.Second,
+	if s.client == nil {
+		s.client = &http.Client{
+			Timeout: time.Duration(s.conf.ClientTimeout) * time.Second,
 		}
 	}
 
-	if ps.limiter == nil {
-		limiter, err := redis.NewLimiter(ps.conf.RedisURL)
+	if s.limiter == nil {
+		limiter, err := redis.NewLimiter(s.conf.RedisURL)
 		if err != nil {
 			return err
 		}
-		ps.limiter = limiter
+		s.limiter = limiter
 	}
 
-	handler := handler.New(ps.client, ps.limiter)
+	handler := handler.New(s.client, s.limiter)
 
 	// TODO move health set service ready true/false into the Worker
 	deps.Health.SetServiceReady(true)
