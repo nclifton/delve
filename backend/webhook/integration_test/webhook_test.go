@@ -31,7 +31,7 @@ func setupFixtures() {
 	tfx.SetupRedis()
 	tfx.GRPCStart(webhookRPCService())
 	tfx.StartWorker(fixtures.WorkerConfig{
-		ContainerName:  "webhook-post-worker-service",
+		ContainerName:  "webhook-post-worker",
 		RabbitExchange: "webhook",
 		QueueName:      "webhook",
 	}, webhookPostService())

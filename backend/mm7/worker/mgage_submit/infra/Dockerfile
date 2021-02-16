@@ -19,7 +19,7 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /src
 COPY ./backend .
 
-RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/mm7/worker/mgage_submit/cmd
+RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-s -w' -o /app /src/mm7/worker/mgage_submit
 
 # Final stage: the running container
 FROM scratch
