@@ -40,6 +40,8 @@ func (s *Service) SendSMS(params SendSMSParams) (string, error) {
 		return "", NewError(err.Error(), false)
 	}
 
+	req.Header.Add("Content-Type", "text/html; charset=UTF-8")
+
 	q := url.Values{}
 	q.Add("username", params.Username)
 	q.Add("password", params.Password)
