@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -105,14 +104,9 @@ func (s *MMSService) Send(p types.SendParams, r *types.SendReply) error {
 		MessageRef:  p.MessageRef,
 		ContentURLs: p.ContentURLs,
 		TrackLinks:  p.TrackLinks,
+		Status:      "pending",
+		ProviderKey: sender.Sender.GetMMSProviderKey(),
 	}
-
-	newMMS.Status = `pending`
-	newMMS.ProviderKey = `fake`
-	if sender.Sender.MMSProviderKey != "" {
-		newMMS.ProviderKey = sender.Sender.MMSProviderKey
-	}
-	log.Printf("newMMS: %+v, Params: %+v", newMMS, p)
 
 	mms, err := s.db.InsertMMS(ctx, newMMS)
 	if err != nil {

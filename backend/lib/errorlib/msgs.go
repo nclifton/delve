@@ -10,11 +10,12 @@ var (
 	ErrInvalidPhoneNumber                  = errors.New("Invalid mobile number")
 	ErrInvalidRecipientInternationalNumber = errors.New("Invalid recipient international number")
 
-	ErrInvalidSender         = errors.New("Invalid sender")
-	ErrInvalidSenderNotFound = errors.New("Invalid sender: not found")
-	ErrInvalidSenderCountry  = errors.New("Invalid sender: incorrect country")
-	ErrInvalidSenderChannel  = errors.New("Invalid sender: incorrect channel")
-	ErrInvalidSenderAddress  = errors.New("Invalid sender: incorrect address")
+	ErrInvalidSender                    = errors.New("Invalid sender")
+	ErrInvalidSenderNotFound            = errors.New("Invalid sender: not found")
+	ErrInvalidSenderCountry             = errors.New("Invalid sender: incorrect country")
+	ErrInvalidSenderChannel             = errors.New("Invalid sender: incorrect channel")
+	ErrInvalidSenderAddress             = errors.New("Invalid sender: incorrect address")
+	ErrInvalidSenderMMSProviderKeyEmpty = errors.New("Invalid sender: MMSProviderKey can't be empty")
 
 	ErrInvalidSMSTooManyParts = errors.New("SMS is too long")
 	ErrInsufficientBalance    = errors.New("Insufficient balance")
