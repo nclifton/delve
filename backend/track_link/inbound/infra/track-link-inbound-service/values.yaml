@@ -34,7 +34,7 @@ k8sServiceChart:
     # Add ingress rules (cluster ingress endpoints) as a list below
     rules:
       - host: "track.${environmentVariable.dns}"
-        path: /*
+        path: /
 
   # HorizontalPodAutoscaler
   hpa:

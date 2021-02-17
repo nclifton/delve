@@ -45,12 +45,8 @@ resource "kubernetes_ingress" "rabbitmq_ingress" {
     name      = "rabbitmq-ingress"
     namespace = "rabbitmq"
     annotations = {
-      "kubernetes.io/ingress.class"                    = "alb"
-      "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
-      "alb.ingress.kubernetes.io/actions.ssl-redirect" = "{\"Type\": \"redirect\", \"RedirectConfig\": { \"Protocol\": \"HTTPS\", \"Port\": \"443\", \"StatusCode\": \"HTTP_301\"}}"
-      "alb.ingress.kubernetes.io/listen-ports"         = "[{\"HTTP\": 80}, {\"HTTPS\":443}]"
-      "alb.ingress.kubernetes.io/success-codes"        = "200,404"
-      "alb.ingress.kubernetes.io/target-type"          = "ip"
+      "kubernetes.io/ingress.class"                      = "traefik"
+      "cert-manager.io/issuer"                           = "letsencrypt-prod"
     }
     labels = {
       "app" = "rabbitmq"
@@ -58,25 +54,17 @@ resource "kubernetes_ingress" "rabbitmq_ingress" {
   }
 
   spec {
-    rule {
-      http {
-        path {
-          path = "/*"
-
-          backend {
-            service_name = "ssl-redirect"
-            service_port = "use-annotation"
-          }
-        }
-      }
+    tls {
+      hosts       = ["rabbitmq.${var.env_dns}"]
+      secret_name = "rabbitmq-tls"
     }
 
     rule {
-      host = "rabbitmq-management.${var.env_dns}"
+      host = "rabbitmq.${var.env_dns}"
 
       http {
         path {
-          path = "/*"
+          path = "/"
 
           backend {
             service_name = "rabbitmq"

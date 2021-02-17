@@ -7,7 +7,6 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/lib/pq"
 )
 
 const (
@@ -50,26 +49,22 @@ func (db *db) FindByAPIKey(key string) (*types.Account, error) {
 	var account types.Account
 
 	sql := `
-SELECT account.id, account.name, account.created_at, account.updated_at, account.sender_sms, account.sender_mms, account.alaris_username, account.alaris_password, account.alaris_url, account.mms_provider_key
-FROM account
-LEFT JOIN account_api_keys as api_keys ON account.id = api_keys.account_id
-WHERE api_keys.key = $1;
+		SELECT a.id, a.name, a.created_at, a.updated_at, a.alaris_username, a.alaris_password, a.alaris_url
+		FROM account a
+		LEFT JOIN account_api_keys as ak ON a.id = ak.account_id
+		WHERE ak.key = $1;
 	`
 
 	row := db.postgres.QueryRow(bg(), sql, key)
-	err := row.Scan(
+	if err := row.Scan(
 		&account.ID,
 		&account.Name,
 		&account.CreatedAt,
 		&account.UpdatedAt,
-		(*pq.StringArray)(&account.SenderSMS),
-		(*pq.StringArray)(&account.SenderMMS),
 		&account.AlarisUsername,
 		&account.AlarisPassword,
 		&account.AlarisURL,
-		&account.MMSProviderKey,
-	)
-	if err != nil {
+	); err != nil {
 		return nil, err
 	}
 
@@ -81,25 +76,21 @@ func (db *db) FindByID(id string) (*types.Account, error) {
 	var account types.Account
 
 	sql := `
-SELECT account.id, account.name, account.created_at, account.updated_at, account.sender_sms, account.sender_mms, account.alaris_username, account.alaris_password, account.alaris_url, account.mms_provider_key
-FROM account
-WHERE id = $1;
+		SELECT id, name, created_at, updated_at, alaris_username, alaris_password, alaris_url
+		FROM account
+		WHERE id = $1;
 	`
 
 	row := db.postgres.QueryRow(bg(), sql, id)
-	err := row.Scan(
+	if err := row.Scan(
 		&account.ID,
 		&account.Name,
 		&account.CreatedAt,
 		&account.UpdatedAt,
-		(*pq.StringArray)(&account.SenderSMS),
-		(*pq.StringArray)(&account.SenderMMS),
 		&account.AlarisUsername,
 		&account.AlarisPassword,
 		&account.AlarisURL,
-		&account.MMSProviderKey,
-	)
-	if err != nil {
+	); err != nil {
 		return nil, err
 	}
 
