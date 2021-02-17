@@ -15,18 +15,6 @@ type ImportSenderPOSTRequest struct {
 	Data []byte `json:"data"`
 }
 
-	"google.golang.org/grpc/status"
-
-	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
-)
-
-	"github.com/gocarina/gocsv"
-	"github.com/vincent-petithory/dataurl"
-	"google.golang.org/grpc/status"
-
-	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
-)
-
 /**
  * api end point for parsing, validating and inserting sender data provided as a base64 encoded CSV data string
  */
