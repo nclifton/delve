@@ -111,6 +111,9 @@ github.com/go-redis/redis/v7/internal/hashtag
 github.com/go-redis/redis/v7/internal/pool
 github.com/go-redis/redis/v7/internal/proto
 github.com/go-redis/redis/v7/internal/util
+# github.com/gocarina/gocsv v0.0.0-20201208093247-67c824bc04d4
+## explicit
+github.com/gocarina/gocsv
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
 # github.com/golang-migrate/migrate/v4 v4.13.0
@@ -289,6 +292,9 @@ github.com/uber/jaeger-client-go/utils
 # github.com/uber/jaeger-lib v2.2.0+incompatible
 ## explicit
 github.com/uber/jaeger-lib/metrics
+# github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50
+## explicit
+github.com/vincent-petithory/dataurl
 # github.com/vmihailenco/msgpack/v4 v4.3.12
 ## explicit
 github.com/vmihailenco/msgpack/v4
