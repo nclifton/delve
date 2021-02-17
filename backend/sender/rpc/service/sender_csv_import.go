@@ -66,12 +66,12 @@ func dbSenderToSender(sender db.Sender) *senderpb.Sender {
 }
 
 type SenderCSV struct {
-	AccountId      string `csv:"account_id"`
-	Address        string `csv:"address"`
-	Country        string `csv:"country"`
-	Channels       Array  `csv:"channels"`
-	MMSProviderKey string `csv:"mms_provider_key"`
-	Comment        string `csv:"comment"`
+	AccountId      string       `csv:"account_id"`
+	Address        string       `csv:"address"`
+	Country        string       `csv:"country"`
+	Channels       CSVJSONArray `csv:"channels"` // see custom conversion below
+	MMSProviderKey string       `csv:"mms_provider_key"`
+	Comment        string       `csv:"comment"`
 }
 
 func unmarshalSenderCSVDataUrl(csvDataUrl []byte) (csvSenders []SenderCSV, err error) {
@@ -93,10 +93,14 @@ func unmarshalSenderCSVDataUrl(csvDataUrl []byte) (csvSenders []SenderCSV, err e
 
 }
 
-type Array []string
+/*
+below is for a custom conversion to be used by the CSV marshalling and un-marshalling
+*/
+
+type CSVJSONArray []string
 
 // Convert the internal string array to JSON string
-func (a *Array) MarshalCSV() (string, error) {
+func (a *CSVJSONArray) MarshalCSV() (string, error) {
 	str, err := json.Marshal(a)
 	if err != nil {
 		return "", err
@@ -105,12 +109,12 @@ func (a *Array) MarshalCSV() (string, error) {
 }
 
 // Convert the CSV JSON string to string array
-func (a *Array) UnmarshalCSV(csv string) error {
+func (a *CSVJSONArray) UnmarshalCSV(csv string) error {
 	err := json.Unmarshal([]byte(csv), &a)
 	return err
 }
 
-func (a *Array) String() []string {
+func (a *CSVJSONArray) String() []string {
 	array := make([]string, len(*a))
 	for _, str := range *a {
 		array = append(array, str)

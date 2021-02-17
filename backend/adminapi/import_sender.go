@@ -6,6 +6,11 @@ import (
 	"log"
 	"net/http"
 
+	"google.golang.org/grpc/status"
+
+	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
+)
+
 	"github.com/gocarina/gocsv"
 	"github.com/vincent-petithory/dataurl"
 	"google.golang.org/grpc/status"
@@ -18,27 +23,16 @@ import (
  */
 func ImportSenderPOST(r *Route) {
 
-	senders, failed := GetSendersFromRequest(r)
+	senders, failed := getCSVFromRequestBodyJSON(r)
 	if failed {
 		return
 	}
 
-	params := &senderpb.CreateSendersParams{
-		Senders: make([]*senderpb.NewSender, 0, len(senders)),
-	}
-	for _, sender := range senders {
-		log.Printf("%+v\n", sender)
-		params.Senders = append(params.Senders, &senderpb.NewSender{
-			AccountId:      sender.AccountId,
-			Address:        sender.Address,
-			MMSProviderKey: sender.MMSProviderKey,
-			Channels:       sender.Channels,
-			Country:        sender.Country,
-			Comment:        sender.Comment,
+	// discarding the return from the RPC call for now until it gets better defined
+	_, err := r.api.sender.CreateSendersFromCSVDataURL(r.r.Context(),
+		&senderpb.CreateSendersFromCSVDataURLParams{
+			CSV: senders,
 		})
-	}
-
-	_, err := r.api.sender.CreateSenders(r.r.Context(), params)
 	if err != nil {
 		// handler rpc error
 		grpcError := status.Convert(err)
@@ -53,8 +47,25 @@ func ImportSenderPOST(r *Route) {
 	data := payload{
 		Status: "ok",
 	}
-
 	r.Write(data, http.StatusOK)
+
+}
+
+type ImportJSON struct {
+	Data []byte `json:"data"`
+}
+
+func getCSVFromRequestBodyJSON(r *Route) ([]byte, bool) {
+
+	var j ImportJSON
+	err := json.NewDecoder(r.r.Body).Decode(&j)
+	if err != nil {
+		log.Println(err)
+		r.WriteError("Invalid JSON: "+err.Error(), http.StatusBadRequest)
+		return nil, true
+	}
+
+	return j.Data, false
 }
 
 func GetSendersFromRequest(r *Route) ([]SenderCSV, bool) {

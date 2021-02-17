@@ -15,8 +15,8 @@ type MockServiceClient struct {
 	mock.Mock
 }
 
-// CreateSenders provides a mock function with given fields: ctx, in, opts
-func (_m *MockServiceClient) CreateSenders(ctx context.Context, in *CreateSendersParams, opts ...grpc.CallOption) (*CreateSendersReply, error) {
+// CreateSendersFromCSVDataURL provides a mock function with given fields: ctx, in, opts
+func (_m *MockServiceClient) CreateSendersFromCSVDataURL(ctx context.Context, in *CreateSendersFromCSVDataURLParams, opts ...grpc.CallOption) (*CreateSendersFromCSVDataURLReply, error) {
 	_va := make([]interface{}, len(opts))
 	for _i := range opts {
 		_va[_i] = opts[_i]
@@ -26,17 +26,17 @@ func (_m *MockServiceClient) CreateSenders(ctx context.Context, in *CreateSender
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
-	var r0 *CreateSendersReply
-	if rf, ok := ret.Get(0).(func(context.Context, *CreateSendersParams, ...grpc.CallOption) *CreateSendersReply); ok {
+	var r0 *CreateSendersFromCSVDataURLReply
+	if rf, ok := ret.Get(0).(func(context.Context, *CreateSendersFromCSVDataURLParams, ...grpc.CallOption) *CreateSendersFromCSVDataURLReply); ok {
 		r0 = rf(ctx, in, opts...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*CreateSendersReply)
+			r0 = ret.Get(0).(*CreateSendersFromCSVDataURLReply)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *CreateSendersParams, ...grpc.CallOption) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *CreateSendersFromCSVDataURLParams, ...grpc.CallOption) error); ok {
 		r1 = rf(ctx, in, opts...)
 	} else {
 		r1 = ret.Error(1)
