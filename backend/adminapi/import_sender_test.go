@@ -19,11 +19,15 @@ import (
 
 func Test_ImportSenderPOST(t *testing.T) {
 
-	type want struct {
+	type mockStuff struct {
 		createSendersReply *senderpb.CreateSendersFromCSVDataURLReply
 		createSendersError error
-		bodyString         string
-		statusCode         int
+	}
+
+	type want struct {
+		mockStuff  mockStuff
+		bodyString string
+		statusCode int
 	}
 
 	tests := []struct {
@@ -37,25 +41,27 @@ func Test_ImportSenderPOST(t *testing.T) {
 				,GIRAFFE,AU,"[""sms"",""mms""]",,
 				,NOKEY,AU,"[""sms""]",,`,
 			want: want{
-				createSendersReply: &senderpb.CreateSendersFromCSVDataURLReply{
-					Senders: []*senderpb.Sender{
-						{
-							Id:        uuid.New(),
-							Address:   "GIRAFFE",
-							Channels:  []string{"sms", "mms"},
-							Country:   "AU",
-							Comment:   "",
-							CreatedAt: timestamppb.Now(),
-							UpdatedAt: timestamppb.Now(),
-						},
-						{
-							Id:        uuid.New(),
-							Address:   "NOKEY",
-							Channels:  []string{"sms"},
-							Country:   "AU",
-							Comment:   "",
-							CreatedAt: timestamppb.Now(),
-							UpdatedAt: timestamppb.Now(),
+				mockStuff: mockStuff{
+					createSendersReply: &senderpb.CreateSendersFromCSVDataURLReply{
+						Senders: []*senderpb.Sender{
+							{
+								Id:        uuid.New(),
+								Address:   "GIRAFFE",
+								Channels:  []string{"sms", "mms"},
+								Country:   "AU",
+								Comment:   "",
+								CreatedAt: timestamppb.Now(),
+								UpdatedAt: timestamppb.Now(),
+							},
+							{
+								Id:        uuid.New(),
+								Address:   "NOKEY",
+								Channels:  []string{"sms"},
+								Country:   "AU",
+								Comment:   "",
+								CreatedAt: timestamppb.Now(),
+								UpdatedAt: timestamppb.Now(),
+							},
 						},
 					},
 				},
@@ -67,10 +73,12 @@ func Test_ImportSenderPOST(t *testing.T) {
 			csv: `account_id,address,country,channels,mms_provider_key,comment
 				,,AU,"[""sms"",""mms""]",,`,
 			want: want{
-				createSendersReply: &senderpb.CreateSendersFromCSVDataURLReply{},
-				createSendersError: status.Error(codes.Unknown, `something bad happened`),
-				bodyString:         `{"error":"Could not upload senders CSV: something bad happened"}`,
-				statusCode:         http.StatusInternalServerError,
+				mockStuff: mockStuff{
+					createSendersReply: &senderpb.CreateSendersFromCSVDataURLReply{},
+					createSendersError: status.Error(codes.Unknown, `something bad happened`),
+				},
+				bodyString: `{"error":"Could not upload senders CSV: something bad happened"}`,
+				statusCode: http.StatusInternalServerError,
 			},
 		},
 	}
@@ -81,7 +89,7 @@ func Test_ImportSenderPOST(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			j, err := json.Marshal(ImportJSON{
+			j, err := json.Marshal(ImportSenderPOSTRequest{
 				Data: duBytes,
 			})
 			if err != nil {
@@ -99,7 +107,7 @@ func Test_ImportSenderPOST(t *testing.T) {
 				CSV: duBytes,
 			}
 			mock := new(senderpb.MockServiceClient)
-			mock.On("CreateSendersFromCSVDataURL", req.Context(), params).Return(tt.want.createSendersReply, tt.want.createSendersError)
+			mock.On("CreateSendersFromCSVDataURL", req.Context(), params).Return(tt.want.mockStuff.createSendersReply, tt.want.mockStuff.createSendersError)
 			api := NewAdminAPI(&AdminAPIOptions{
 				SenderClient: mock,
 			})
