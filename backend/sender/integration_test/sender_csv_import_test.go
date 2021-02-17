@@ -128,18 +128,52 @@ func Test_CreateSendersFromCSVDataURL(t *testing.T) {
 			wantErr: wantErr{},
 		},
 		{
-			name: "unvalidated sender - blank values",
+			name: "blank address",
 			args: args{
 				csv: `account_id,address,country,channels,mms_provider_key,comment
-					,,,"[]",,`,
+					,,AU,"[""sms""]",,`,
+			},
+			want: want{
+				reply: &senderpb.CreateSendersFromCSVDataURLReply{},
+			},
+		},
+		{
+			name: "invalid CSV number of fields wrong",
+			args: args{
+				csv: `account_id,address,country,channels,mms_provider_key,comment
+					,,,,,,,,,,`,
 			},
 			want: want{
 				reply: &senderpb.CreateSendersFromCSVDataURLReply{},
 			},
 			wantErr: wantErr{
-				status: status.New(codes.Unknown, `ERROR: null value in column "address" violates not-null constraint (SQLSTATE 23502)`),
+				status: status.New(codes.Unknown, `record on line 2: wrong number of fields`),
 				ok:     true, // the grpc service did respond to the call
 			},
+		},
+		{
+			name: "invalid CSV - empty",
+			args: args{
+				csv: ``,
+			},
+			want: want{
+				reply: &senderpb.CreateSendersFromCSVDataURLReply{},
+			},
+			wantErr: wantErr{
+				status: status.New(codes.Unknown, `empty csv file given`),
+				ok:     true, // the grpc service did respond to the call
+			},
+		},		{
+			name: "invalid CSV - no header",
+			args: args{
+				csv: `,,`,
+			},
+			want: want{
+				reply: &senderpb.CreateSendersFromCSVDataURLReply{
+					Senders: []*senderpb.Sender{},
+				},
+			},
+			wantErr: wantErr{},
 		},
 	}
 	for _, tt := range tests {

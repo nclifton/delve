@@ -13,6 +13,17 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
 
+type SenderCSV struct {
+	AccountId      string       `csv:"account_id"`
+	Address        string       `csv:"address"`
+	Country        string       `csv:"country"`
+	Channels       CSVJSONArray `csv:"channels"` // see custom conversion below
+	MMSProviderKey string       `csv:"mms_provider_key"`
+	Comment        string       `csv:"comment"`
+	Status         string       `csv:"status"`
+	Error          string       `csv:"error"`
+}
+
 func (s *senderImpl) CreateSendersFromCSVDataURL(ctx context.Context, r *senderpb.CreateSendersFromCSVDataURLParams) (*senderpb.CreateSendersFromCSVDataURLReply, error) {
 
 	replySenders := []*senderpb.Sender{}
@@ -22,7 +33,13 @@ func (s *senderImpl) CreateSendersFromCSVDataURL(ctx context.Context, r *senderp
 		return nil, err
 	}
 
-	if len(csvSenders) > 0 {
+	// ignoring results here at the moment
+	validCSVSenders, _, err := s.validateCSVSenders(ctx, csvSenders)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(validCSVSenders) > 0 {
 
 		newSenders := make([]db.Sender, 0, len(csvSenders))
 		for _, sender := range csvSenders {
@@ -63,15 +80,6 @@ func dbSenderToSender(sender db.Sender) *senderpb.Sender {
 		CreatedAt:      timestamppb.New(sender.CreatedAt),
 		UpdatedAt:      timestamppb.New(sender.UpdatedAt),
 	}
-}
-
-type SenderCSV struct {
-	AccountId      string       `csv:"account_id"`
-	Address        string       `csv:"address"`
-	Country        string       `csv:"country"`
-	Channels       CSVJSONArray `csv:"channels"` // see custom conversion below
-	MMSProviderKey string       `csv:"mms_provider_key"`
-	Comment        string       `csv:"comment"`
 }
 
 func unmarshalSenderCSVDataUrl(csvDataUrl []byte) (csvSenders []SenderCSV, err error) {
