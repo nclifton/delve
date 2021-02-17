@@ -21,5 +21,5 @@ type DB interface {
 	FindSenderByAddressAndAccountID(ctx context.Context, accountId, address string) (Sender, error)
 	FindSendersByAccountId(ctx context.Context, accountId string) ([]Sender, error)
 	FindSendersByAddress(ctx context.Context, address string) ([]Sender, error)
-	CreateSenders(ctx context.Context, senders []Sender) ([]Sender, error)
+	InsertSenders(ctx context.Context, senders []Sender) ([]Sender, error)
 }

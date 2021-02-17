@@ -20,7 +20,7 @@ type ServiceClient interface {
 	FindSenderByAddressAndAccountID(ctx context.Context, in *FindSenderByAddressAndAccountIDParams, opts ...grpc.CallOption) (*FindSenderByAddressAndAccountIDReply, error)
 	FindSendersByAccountId(ctx context.Context, in *FindSendersByAccountIdParams, opts ...grpc.CallOption) (*FindSendersByAccountIdReply, error)
 	FindSendersByAddress(ctx context.Context, in *FindSendersByAddressParams, opts ...grpc.CallOption) (*FindSendersByAddressReply, error)
-	CreateSenders(ctx context.Context, in *CreateSendersParams, opts ...grpc.CallOption) (*CreateSendersReply, error)
+	CreateSendersFromCSVDataURL(ctx context.Context, in *CreateSendersFromCSVDataURLParams, opts ...grpc.CallOption) (*CreateSendersFromCSVDataURLReply, error)
 }
 
 type serviceClient struct {
@@ -58,9 +58,9 @@ func (c *serviceClient) FindSendersByAddress(ctx context.Context, in *FindSender
 	return out, nil
 }
 
-func (c *serviceClient) CreateSenders(ctx context.Context, in *CreateSendersParams, opts ...grpc.CallOption) (*CreateSendersReply, error) {
-	out := new(CreateSendersReply)
-	err := c.cc.Invoke(ctx, "/senderpb.Service/CreateSenders", in, out, opts...)
+func (c *serviceClient) CreateSendersFromCSVDataURL(ctx context.Context, in *CreateSendersFromCSVDataURLParams, opts ...grpc.CallOption) (*CreateSendersFromCSVDataURLReply, error) {
+	out := new(CreateSendersFromCSVDataURLReply)
+	err := c.cc.Invoke(ctx, "/senderpb.Service/CreateSendersFromCSVDataURL", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ type ServiceServer interface {
 	FindSenderByAddressAndAccountID(context.Context, *FindSenderByAddressAndAccountIDParams) (*FindSenderByAddressAndAccountIDReply, error)
 	FindSendersByAccountId(context.Context, *FindSendersByAccountIdParams) (*FindSendersByAccountIdReply, error)
 	FindSendersByAddress(context.Context, *FindSendersByAddressParams) (*FindSendersByAddressReply, error)
-	CreateSenders(context.Context, *CreateSendersParams) (*CreateSendersReply, error)
+	CreateSendersFromCSVDataURL(context.Context, *CreateSendersFromCSVDataURLParams) (*CreateSendersFromCSVDataURLReply, error)
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -91,8 +91,8 @@ func (UnimplementedServiceServer) FindSendersByAccountId(context.Context, *FindS
 func (UnimplementedServiceServer) FindSendersByAddress(context.Context, *FindSendersByAddressParams) (*FindSendersByAddressReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindSendersByAddress not implemented")
 }
-func (UnimplementedServiceServer) CreateSenders(context.Context, *CreateSendersParams) (*CreateSendersReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateSenders not implemented")
+func (UnimplementedServiceServer) CreateSendersFromCSVDataURL(context.Context, *CreateSendersFromCSVDataURLParams) (*CreateSendersFromCSVDataURLReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSendersFromCSVDataURL not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -161,20 +161,20 @@ func _Service_FindSendersByAddress_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Service_CreateSenders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateSendersParams)
+func _Service_CreateSendersFromCSVDataURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSendersFromCSVDataURLParams)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceServer).CreateSenders(ctx, in)
+		return srv.(ServiceServer).CreateSendersFromCSVDataURL(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/senderpb.Service/CreateSenders",
+		FullMethod: "/senderpb.Service/CreateSendersFromCSVDataURL",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServer).CreateSenders(ctx, req.(*CreateSendersParams))
+		return srv.(ServiceServer).CreateSendersFromCSVDataURL(ctx, req.(*CreateSendersFromCSVDataURLParams))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -196,8 +196,8 @@ var _Service_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Service_FindSendersByAddress_Handler,
 		},
 		{
-			MethodName: "CreateSenders",
-			Handler:    _Service_CreateSenders_Handler,
+			MethodName: "CreateSendersFromCSVDataURL",
+			Handler:    _Service_CreateSendersFromCSVDataURL_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
