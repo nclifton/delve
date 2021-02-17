@@ -24,10 +24,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      senderSms: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        defaultValue: '{""}',
-      },
       alarisUsername: {
         type: DataTypes.STRING,
         defaultValue: "",
@@ -39,14 +35,6 @@ module.exports = (sequelize, DataTypes) => {
       alarisUrl: {
         type: DataTypes.STRING,
         defaultValue: "",
-      },
-      senderMms: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        defaultValue: '{""}',
-      },
-      mmsProviderKey: {
-        type: DataTypes.STRING,
-        defaultValue: "fake",
       },
     },
     {
