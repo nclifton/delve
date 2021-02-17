@@ -2,8 +2,6 @@
 # mtmo-tp
 sends high volumes of transactional SMS (MVP) via https MTMO behind the scenes
 
-SEND IT!
-
 ## Backend
 
 ![Backend](https://github.com/burstsms/mtmo-tp/workflows/Backend/badge.svg?branch=176180995-Webhook-testing-integration-for-CRUD-endpoints)
