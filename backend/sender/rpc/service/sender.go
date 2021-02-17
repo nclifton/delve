@@ -7,7 +7,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-
 	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
