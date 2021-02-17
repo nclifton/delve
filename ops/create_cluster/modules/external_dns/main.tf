@@ -13,7 +13,7 @@ resource "helm_release" "external_dns" {
   chart      = "external-dns"
   namespace  = "external-dns"
   repository = "https://charts.bitnami.com/bitnami"
-  version    = "3.4.1"
+  version    = "4.6.0"
 
   set {
     name  = "provider"

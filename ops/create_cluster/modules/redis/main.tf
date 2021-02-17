@@ -39,12 +39,8 @@ resource "kubernetes_ingress" "redis_commander_ingress" {
     name      = "redis-commander-ingress"
     namespace = "redis"
     annotations = {
-      "kubernetes.io/ingress.class"                    = "alb"
-      "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
-      "alb.ingress.kubernetes.io/actions.ssl-redirect" = "{\"Type\": \"redirect\", \"RedirectConfig\": { \"Protocol\": \"HTTPS\", \"Port\": \"443\", \"StatusCode\": \"HTTP_301\"}}"
-      "alb.ingress.kubernetes.io/listen-ports"         = "[{\"HTTP\": 80}, {\"HTTPS\":443}]"
-      "alb.ingress.kubernetes.io/success-codes"        = "200,404"
-      "alb.ingress.kubernetes.io/target-type"          = "ip"
+      "kubernetes.io/ingress.class"                      = "traefik"
+      "cert-manager.io/issuer"                           = "letsencrypt-prod"
     }
     labels = {
       "app" = "redis-commander"
@@ -52,25 +48,17 @@ resource "kubernetes_ingress" "redis_commander_ingress" {
   }
 
   spec {
-    rule {
-      http {
-        path {
-          path = "/*"
-
-          backend {
-            service_name = "ssl-redirect"
-            service_port = "use-annotation"
-          }
-        }
-      }
+    tls {
+      hosts       = ["redis.${var.env_dns}"]
+      secret_name = "redis-commander-tls"
     }
 
     rule {
-      host = "redis-commander.${var.env_dns}"
+      host = "redis.${var.env_dns}"
 
       http {
         path {
-          path = "/*"
+          path = "/"
 
           backend {
             service_name = "redis-commander"

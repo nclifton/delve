@@ -8,4 +8,4 @@ k8sServiceChart:
   ingress:
     rules:
       - host: "clckme.info"
-        path: /*
+        path: /

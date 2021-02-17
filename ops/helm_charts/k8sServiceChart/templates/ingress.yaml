@@ -18,21 +18,21 @@ metadata:
       {{- end}}
     {{- end}}
 spec:
-    rules:
-        - http:
-              paths:
-                  - path: /*
-                    backend:
-                        serviceName: ssl-redirect
-                        servicePort: use-annotation
-        {{- $root := . -}}
+    tls:
+      - hosts:
         {{- range .Values.ingress.rules}}
-        - host: {{required "value '.Values.ingress.rules.host' is required" .host | quote}}
-          http:
-              paths:
-                  - path: {{required "value '.Values.ingress.rules.path' is required" .path | quote}}
-                    backend:
-                        serviceName: {{required "value 'name' is required" $root.Values.name | quote}}
-                        servicePort: {{required "value 'servicePort' is required" $root.Values.servicePort}}
+          - {{required "value '.Values.ingress.rules.host' is required" .host | quote}}
         {{- end}}
+        secretName: "{{required "value 'name' is required" .Values.name}}-tls"
+    rules:
+      {{- $root := . -}}
+      {{- range .Values.ingress.rules}}
+      - host: {{required "value '.Values.ingress.rules.host' is required" .host | quote}}
+        http:
+            paths:
+                - path: {{required "value '.Values.ingress.rules.path' is required" .path | quote}}
+                  backend:
+                      serviceName: {{required "value 'name' is required" $root.Values.name | quote}}
+                      servicePort: {{required "value 'servicePort' is required" $root.Values.servicePort}}
+      {{- end}}
 {{- end}}

@@ -56,6 +56,8 @@ for service_path in ${service_paths}; do
   if [ ${ENV} = "staging" ]; then
     #/bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "mtmostaging.com" "latest"
     echo "Environment managed by Harness, skipping service deployment..."
+  elif [ ${ENV} = "sre" ]; then
+    /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "sre.mtmostaging.com" "latest"
   elif [ ${ENV} = "qa" ]; then
     /bin/bash ./helm_apply.sh ${chart_dir} ${ENV} "qa.mtmostaging.com" "latest-release"
   elif [ ${ENV} = "production" ]; then

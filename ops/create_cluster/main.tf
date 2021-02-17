@@ -13,7 +13,7 @@ terraform {
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 1.2"
+      version = "~> 2.0.2"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
@@ -39,6 +39,12 @@ provider "aws" {
   region  = var.aws_region
 }
 
+provider "helm" {
+  kubernetes {
+    config_path = "~/.kube/config"
+  }
+}
+
 # Call each child module
 
 module "kubernetes_dashboard" {
@@ -53,8 +59,12 @@ module "linkerd" {
   source = "./modules/linkerd"
 }
 
-module "alb_ingress" {
-  source = "./modules/alb_ingress"
+module "cert_manager" {
+  source = "./modules/cert_manager"
+}
+
+module "traefik" {
+  source = "./modules/traefik"
 }
 
 module "external_dns" {

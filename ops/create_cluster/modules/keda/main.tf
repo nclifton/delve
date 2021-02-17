@@ -9,10 +9,11 @@ resource "kubernetes_namespace" "keda" {
 }
 
 resource "helm_release" "keda" {
-  name      = "keda"
-  chart     = "kedacore/keda"
-  namespace = "keda"
-  version   = "1.5.0"
+  name       = "keda"
+  chart      = "keda"
+  namespace  = "keda"
+  repository = "https://kedacore.github.io/charts"
+  version    = "1.5.0"
 
   depends_on = [kubernetes_namespace.keda]
 }
