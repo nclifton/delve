@@ -45,6 +45,7 @@ func (s *Service) MMSPOST(hc *rest.HandlerContext) {
 			case errorlib.ErrInvalidSenderNotFound.Error(),
 				errorlib.ErrInvalidSenderChannel.Error(),
 				errorlib.ErrInvalidSenderCountry.Error(),
+				errorlib.ErrInvalidSenderMMSProviderKeyEmpty.Error(),
 				errorlib.ErrInvalidMMSLengthMessage.Error(),
 				errorlib.ErrInvalidMMSLengthContentURLs.Error(),
 				errorlib.ErrInvalidRecipientInternationalNumber.Error():
