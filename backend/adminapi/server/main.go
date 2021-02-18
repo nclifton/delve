@@ -49,7 +49,7 @@ func main() {
 
 	tracer, closer, err := jaeger.Connect(env.ContainerName)
 	if err != nil {
-		log.Fatalf("Failed to initialise service: %s reason: %s\n", "adminapi", err)
+		log.Fatalf("Failed to initialise service: %s reason: %s\n", "admin-api", err)
 	}
 	defer closer.Close()
 
@@ -62,6 +62,6 @@ func main() {
 			rpcbuilder.NewClientConn(env.SenderRPCAddress, tracer)),
 	})
 
-	log.Printf("%s service initialised and available on port %s", "adminapi", env.AdminAPIPort)
+	log.Printf("%s service initialised and available on port %s", "admin-api", env.AdminAPIPort)
 	log.Fatal(http.ListenAndServe(":"+env.AdminAPIPort, app.Handler()))
 }
