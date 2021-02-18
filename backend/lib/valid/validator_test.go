@@ -27,6 +27,9 @@ type UserValid struct {
 	Home     *Address
 	Work     []Address `valid:"required"`
 }
+type ByteArrayValid struct {
+	Data []byte `valid:"required"`
+}
 
 type PrivateStruct struct {
 	privateField string `valid:"required,alpha(1|4|87),d_k"`
@@ -54,6 +57,9 @@ func TestValidate(t *testing.T) {
 		{nil, false},
 		{User{"John", "john@yahoo.com", "123G#678", 0, &Address{"Street", "123456"}, []Address{}}, false},
 		{"im not a struct", false},
+		{ByteArrayValid{}, false},
+		{ByteArrayValid{[]byte{}}, false},
+		{ByteArrayValid{[]byte("hello there")}, true},
 	}
 	for _, test := range tests {
 		err := Validate(test.param)

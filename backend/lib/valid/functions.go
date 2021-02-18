@@ -67,9 +67,14 @@ func init() {
 func IsRequired(i interface{}, parent interface{}, params []string) error {
 	v := reflect.ValueOf(i)
 
-	switch v.Kind() {
-	case reflect.Map, reflect.Slice, reflect.Interface, reflect.Ptr:
+	x0 := v.Kind()
+	switch x0 {
+	case reflect.Interface, reflect.Ptr:
 		if v.IsNil() {
+			return errors.New("required")
+		}
+	case reflect.Map, reflect.Slice:
+		if v.IsNil() || v.Len() == 0 {
 			return errors.New("required")
 		}
 	case reflect.String:

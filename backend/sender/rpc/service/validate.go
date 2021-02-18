@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/burstsms/mtmo-tp/backend/sender/rpc/db"
+	"github.com/burstsms/mtmo-tp/backend/lib/valid"
 )
 
 func (s *senderImpl) validateCSVSenders(ctx context.Context, csvSenders []SenderCSV) (validSenders []SenderCSV, results []SenderCSV, err error) {
@@ -26,56 +26,61 @@ func (s *senderImpl) validateCSVSenders(ctx context.Context, csvSenders []Sender
 
 func (s *senderImpl) validateCSVSender(ctx context.Context, csvSender SenderCSV) (bool, SenderCSV, error) {
 
-	validator := &validator{
-		db:     s.db,
-		errors: []string{},
-	}
+	// validator := &validator{
+	// 	db:     s.db,
+	// 	errors: []string{},
+	// }
 
-	err := validator.validateAddress(ctx, csvSender.Address)
+	// err := validator.validateAddress(ctx, csvSender.Address)
+	// if err != nil {
+	// 	return false, csvSender, err
+	// }
+
+	err := valid.Validate(csvSender)
 	if err != nil {
 		return false, csvSender, err
 	}
 
-	csvSender.Status = validator.getStatus()
-	csvSender.Error = validator.getFirstError()
+	// csvSender.Status = validator.getStatus()
+	// csvSender.Error = validator.getFirstError()
 
-	return len(validator.errors) == 0, csvSender, nil
+	return true, csvSender, nil
 }
 
-type validator struct {
-	db     db.DB
-	errors []string
-}
+// type validator struct {
+// 	db     db.DB
+// 	errors []string
+// }
 
-func (v *validator) validateAddress(ctx context.Context, address string) error {
+// func (v *validator) validateAddress(ctx context.Context, address string) error {
 
-	if len(address) == 0 {
-		v.errors = append(v.errors, `Field "address" cannot be empty`)
-		return nil
-	}
-	senders, err := v.db.FindSendersByAddress(ctx, address)
-	if err != nil {
-		return err
-	}
-	if len(senders) > 0 {
-		v.errors = append(v.errors, `Field "address" must be unique`)
-		return nil
-	}
+// 	if len(address) == 0 {
+// 		v.errors = append(v.errors, `Field "address" cannot be empty`)
+// 		return nil
+// 	}
+// 	senders, err := v.db.FindSendersByAddress(ctx, address)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if len(senders) > 0 {
+// 		v.errors = append(v.errors, `Field "address" must be unique`)
+// 		return nil
+// 	}
 
-	return nil
+// 	return nil
 
-}
+// }
 
-func (v *validator) getStatus() string {
-	if len(v.errors) == 0 {
-		return "ok"
-	}
-	return "skipped"
-}
+// func (v *validator) getStatus() string {
+// 	if len(v.errors) == 0 {
+// 		return "ok"
+// 	}
+// 	return "skipped"
+// }
 
-func (v *validator) getFirstError() string {
-	if len(v.errors) == 0 {
-		return ""
-	}
-	return v.errors[0]
-}
+// func (v *validator) getFirstError() string {
+// 	if len(v.errors) == 0 {
+// 		return ""
+// 	}
+// 	return v.errors[0]
+// }

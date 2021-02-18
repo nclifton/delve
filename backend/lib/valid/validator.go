@@ -63,7 +63,7 @@ func validateField(value reflect.Value, field reflect.StructField, parent reflec
 		return fmt.Errorf("invalid value (%s) in field (%s)", value.String(), field.Name)
 	}
 
-	// you can define a validator for a slice or map type and hve it apply to each value
+	// you can define a validator for a slice or map type and have it apply to each value
 	validators = append(validators, getValidators(field.Tag.Get(tagName))...)
 
 	// check the field kind to determine if we need to recurse or iterate
@@ -94,6 +94,11 @@ func validateField(value reflect.Value, field reflect.StructField, parent reflec
 	}
 
 	if kind == reflect.Array || kind == reflect.Slice {
+
+		err := validate(value, field, parent, validators)
+		if err != nil {
+			return err
+		}
 		// iterate the items
 		for i := 0; i < value.Len(); i++ {
 			if err := validateField(value.Index(i), field, parent, validators); err != nil {

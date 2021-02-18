@@ -1,7 +1,6 @@
 package adminapi
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 )
 
 type ImportSenderPOSTRequest struct {
-	Data []byte `json:"data"`
+	Data []byte `json:"data" valid:"required"`
 }
 
 /**
@@ -21,11 +20,12 @@ type ImportSenderPOSTRequest struct {
 func ImportSenderPOST(r *Route) {
 
 	var importSenderPOSTRequest ImportSenderPOSTRequest
-	err := json.NewDecoder(r.r.Body).Decode(&importSenderPOSTRequest)
+
+	err := r.DecodeRequest(&importSenderPOSTRequest)
 
 	if err != nil {
 		log.Println(err)
-		r.WriteError("Invalid JSON: "+err.Error(), http.StatusBadRequest)
+		r.WriteError("Invalid JSON: "+err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 

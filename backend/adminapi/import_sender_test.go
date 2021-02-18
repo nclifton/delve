@@ -80,21 +80,35 @@ func Test_ImportSenderPOST(t *testing.T) {
 				bodyString: `{"error":"Could not upload senders CSV: something bad happened"}`,
 				statusCode: http.StatusInternalServerError,
 			},
+		}, {
+			name: "missing data element",
+			csv:  "",
+			want: want{
+				mockStuff:  mockStuff{},
+				bodyString: "{}",
+				statusCode: 422,
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			rr := httptest.NewRecorder()
+			post := ImportSenderPOSTRequest{}
+			var err error
+			var j []byte
+			if len(tt.csv) > 0 {
+				post.Data, err = dataurl.New([]byte(tt.csv), "text/csv").MarshalText()
+				if err != nil {
+					t.Fatal(err)
+				}
+				j, err = json.Marshal(post)
+				if err != nil {
+					t.Fatal(err)
+				}
+			} else {
+				j = []byte(`{}`)
+			}
 
-			duBytes, err := dataurl.New([]byte(tt.csv), "text/csv").MarshalText()
-			if err != nil {
-				t.Fatal(err)
-			}
-			j, err := json.Marshal(ImportSenderPOSTRequest{
-				Data: duBytes,
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
 			req, err := http.NewRequest("POST", "/v1/import/sender", bytes.NewBuffer(j))
 			if err != nil {
 				t.Fatal(err)
@@ -102,17 +116,13 @@ func Test_ImportSenderPOST(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			// prepare and inject the mock sender RPC service client
-
-			params := &senderpb.CreateSendersFromCSVDataURLParams{
-				CSV: duBytes,
-			}
+			params := &senderpb.CreateSendersFromCSVDataURLParams{CSV: post.Data}
 			mock := new(senderpb.MockServiceClient)
 			mock.On("CreateSendersFromCSVDataURL", req.Context(), params).Return(tt.want.mockStuff.createSendersReply, tt.want.mockStuff.createSendersError)
 			api := NewAdminAPI(&AdminAPIOptions{
 				SenderClient: mock,
 			})
 
-			rr := httptest.NewRecorder()
 			api.Handler().ServeHTTP(rr, req)
 
 			// Check the status code is what we expect.
