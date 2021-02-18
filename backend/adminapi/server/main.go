@@ -18,11 +18,8 @@ import (
 
 var gitref = "unset" // set with go linker in build script
 
-type ContainerEnv struct {
-	ContainerName string `envconfig:"CONTAINER_NAME"`
-}
-
 type Env struct {
+	ContainerName     string `envconfig:"CONTAINER_NAME"`
 	AdminAPIPort      string `envconfig:"ADMINAPI_PORT"`
 	AccountRPCAddress string `envconfig:"ACCOUNT_RPC_ADDRESS"`
 	SMSRPCAddress     string `envconfig:"SMS_RPC_ADDRESS"`
@@ -41,11 +38,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to read env vars:", err)
 	}
-	var cEnv ContainerEnv
-	err = envconfig.Process("", &cEnv)
-	if err != nil {
-		log.Fatal("Failed to read container env vars:", err)
-	}
 
 	log.Printf("ENV: %+v", env)
 
@@ -55,7 +47,7 @@ func main() {
 		DistributedTracerEnabled: env.NRTracing,
 	})
 
-	tracer, closer, err := jaeger.Connect(cEnv.ContainerName)
+	tracer, closer, err := jaeger.Connect(env.ContainerName)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", "adminapi", err)
 	}

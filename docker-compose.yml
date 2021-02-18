@@ -119,12 +119,14 @@ services:
       - SMS_CONTAINER_PORT=10009
       - ACCOUNT_CONTAINER_PORT=10001
 
+      - CONTAINER_NAME=backend
       - TRACK_LINK_CONTAINER_NAME=backend
       - OPTOUT_CONTAINER_NAME=backend
       - MM7_CONTAINER_NAME=backend
       - MMS_CONTAINER_NAME=backend
       - SMS_CONTAINER_NAME=backend
       - ACCOUNT_CONTAINER_NAME=backend
+      - ADMINAPI_CONTAINER_NAME=backend
 
     deploy:
       resources:

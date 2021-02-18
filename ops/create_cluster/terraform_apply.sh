@@ -19,10 +19,8 @@ if ! [[ "${AWS_PROFILE}" =~ ^(mtmo-non-prod|mtmo-prod)$ ]]; then
 fi
 
 CONTEXT=$(kubectl config current-context)
-echo "Current kubectl cluster context is: ${CONTEXT}"
-read -p "Is this the correct context for ${CLUSTER_NAME}? (y/N) "
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+if [[ "${CONTEXT}" != *"${CLUSTER_NAME}"* ]]; then
+    echo "Context does not contain environment name, aborting."
     kubectl config get-contexts
     echo "Select the correct context above and change to it using: kubectl config use-context <CONTEXT_NAME>"
     exit 1
@@ -31,6 +29,8 @@ fi
 ENV_DNS="mtmostaging.com"
 if [[ "${CLUSTER_NAME}" == "tp-qa" ]]; then
     ENV_DNS="qa.mtmostaging.com"
+elif [[ "${CLUSTER_NAME}" == "tp-sre" ]]; then
+    ENV_DNS="sre.mtmostaging.com"
 elif [[ "${CLUSTER_NAME}" == "tp-production" ]]; then
     ENV_DNS="tp.mtmo.io"
 fi
