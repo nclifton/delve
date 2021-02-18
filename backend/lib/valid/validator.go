@@ -94,6 +94,11 @@ func validateField(value reflect.Value, field reflect.StructField, parent reflec
 	}
 
 	if kind == reflect.Array || kind == reflect.Slice {
+		// validate as an array (required, length?)
+		if err := validate(value, field, parent, validators); err != nil {
+			return err
+		}
+
 		// iterate the items
 		for i := 0; i < value.Len(); i++ {
 			if err := validateField(value.Index(i), field, parent, validators); err != nil {
