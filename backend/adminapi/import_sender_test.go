@@ -28,6 +28,7 @@ func Test_ImportSenderPOST(t *testing.T) {
 		mockStuff  mockStuff
 		bodyString string
 		statusCode int
+		jsonError  *JSONErrors
 	}
 
 	tests := []struct {
@@ -80,17 +81,31 @@ func Test_ImportSenderPOST(t *testing.T) {
 				bodyString: `{"error":"Could not upload senders CSV: something bad happened"}`,
 				statusCode: http.StatusInternalServerError,
 			},
+		}, {
+			name: "empty data",
+			csv:  "",
+			want: want{
+				statusCode: http.StatusUnprocessableEntity,
+				jsonError: &JSONErrors{
+					Error:     "Validation Error",
+					ErrorData: map[string]string{"data": "required"},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			duBytes, err := dataurl.New([]byte(tt.csv), "text/csv").MarshalText()
-			if err != nil {
-				t.Fatal(err)
+			var duBytes []byte
+			var err error
+			if tt.csv != "" {
+				duBytes, err = dataurl.New([]byte(tt.csv), "text/csv").MarshalText()
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 			j, err := json.Marshal(ImportSenderPOSTRequest{
-				Data: duBytes,
+				Data: string(duBytes),
 			})
 			if err != nil {
 				t.Fatal(err)
@@ -119,7 +134,15 @@ func Test_ImportSenderPOST(t *testing.T) {
 			assert.Equal(t, tt.want.statusCode, rr.Code, "handler returned wrong status code")
 
 			// Check the response body is what we expect.
-			assert.JSONEq(t, tt.want.bodyString, rr.Body.String(), "handler returned unexpected body")
+			if tt.want.jsonError == nil {
+				assert.JSONEq(t, tt.want.bodyString, rr.Body.String(), "handler returned unexpected body")
+			} else {
+				bytes, err := json.Marshal(tt.want.jsonError)
+				if err != nil {
+					t.Fatalf("wanted JSON Errors failed to marshal %+v", err)
+				}
+				assert.JSONEq(t, string(bytes), rr.Body.String(), "handler returned unexpected body")
+			}
 
 		})
 	}
