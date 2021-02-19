@@ -1,0 +1,55 @@
+/* 
+* account.proto
+*
+* definition of the account rpc service
+*/
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/burstsms/mtmo-tp/backend/account/rpc/accountpb";
+
+package accountpb;
+
+message NoParams {}
+message NoReply {}
+
+message FindAccountByAPIKeyParams {
+    string key = 1;
+}
+
+message FindAccountByAPIKeyReply {
+    Account account = 1;
+}
+
+message FindAccountByIDParams {
+    string id = 1;
+}
+
+message FindAccountByIDReply {
+    Account account = 1;
+}
+
+message Account {
+    string id = 1;  
+    string name =2;
+    string alaris_username =3;
+    string alaris_password =4;
+    string alaris_url =5;
+    repeated AccountAPIKey account_api_key = 6;
+    google.protobuf.Timestamp Created_at = 7;
+    google.protobuf.Timestamp Updated_at = 8;
+}
+
+message AccountAPIKey {
+    string description =1;
+    string key =2;
+    google.protobuf.Timestamp Created_at = 3;
+    google.protobuf.Timestamp Updated_at = 4;
+ }
+
+service Service {
+    rpc FindAccountByAPIKey(FindAccountByAPIKeyParams) returns (FindAccountByAPIKeyReply);
+    rpc FindAccountByID(FindAccountByIDParams) returns (FindAccountByIDReply);
+}

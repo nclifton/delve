@@ -26,7 +26,7 @@ func (s *Service) WebhookCreatePOST(hc *rest.HandlerContext) {
 	}
 
 	res, err := s.WebhookClient.Insert(hc.Context(), &webhookpb.InsertParams{
-		AccountId: account.ID,
+		AccountId: account.GetId(),
 		Event:     req.Event,
 		Name:      req.Name,
 		URL:       req.URL,
@@ -48,7 +48,7 @@ func (s *Service) WebhookGET(hc *rest.HandlerContext) {
 		return
 	}
 
-	res, err := s.WebhookClient.FindByID(hc.Context(), &webhookpb.FindByIDParams{AccountId: account.ID, WebhookId: id})
+	res, err := s.WebhookClient.FindByID(hc.Context(), &webhookpb.FindByIDParams{AccountId: account.GetId(), WebhookId: id})
 	if err != nil {
 		st, ok := status.FromError(err)
 		if ok {
@@ -66,7 +66,7 @@ func (s *Service) WebhookGET(hc *rest.HandlerContext) {
 func (s *Service) WebhookListGET(hc *rest.HandlerContext) {
 	account := accountFromCtx(hc)
 
-	res, err := s.WebhookClient.Find(hc.Context(), &webhookpb.FindParams{AccountId: account.ID})
+	res, err := s.WebhookClient.Find(hc.Context(), &webhookpb.FindParams{AccountId: account.GetId()})
 	if err != nil {
 		hc.LogFatal(err)
 	}
@@ -83,7 +83,7 @@ func (s *Service) WebhookDELETE(hc *rest.HandlerContext) {
 		return
 	}
 
-	_, err = s.WebhookClient.Delete(hc.Context(), &webhookpb.DeleteParams{AccountId: account.ID, Id: int64(id)})
+	_, err = s.WebhookClient.Delete(hc.Context(), &webhookpb.DeleteParams{AccountId: account.GetId(), Id: int64(id)})
 	if err != nil {
 		hc.LogFatal(err)
 	}
@@ -114,7 +114,7 @@ func (s *Service) WebhookUpdatePUT(hc *rest.HandlerContext) {
 
 	res, err := s.WebhookClient.Update(hc.Context(), &webhookpb.UpdateParams{
 		Id:        int64(id),
-		AccountId: account.ID,
+		AccountId: account.GetId(),
 		Event:     req.Event,
 		Name:      req.Name,
 		URL:       req.URL,

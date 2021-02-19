@@ -3,7 +3,6 @@ package rpc
 import (
 	"encoding/gob"
 
-	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpc"
 	optOut "github.com/burstsms/mtmo-tp/backend/optout/rpc/client"
@@ -46,7 +45,6 @@ func NewService(
 	postgresURL string,
 	rabbitmq rabbit.Conn,
 	webhook webhookpb.ServiceClient,
-	account *account.Client,
 	tracklink *tracklink.Client,
 	redisURL string,
 	optOut *optOut.Client,

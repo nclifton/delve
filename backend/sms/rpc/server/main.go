@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 
-	accountRPC "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
@@ -28,7 +27,6 @@ type Env struct {
 	RabbitExchangeType  string `envconfig:"RABBIT_EXCHANGE_TYPE"`
 	WebhookRPCAddress   string `envconfig:"WEBHOOK_RPC_ADDRESS"`
 	SenderRPCAddress    string `envconfig:"SENDER_RPC_ADDRESS"`
-	AccountRPCAddress   string `envconfig:"ACCOUNT_RPC_ADDRESS"`
 	TrackLinkDomain     string `envconfig:"TRACKLINK_DOMAIN"`
 	OptOutLinkDomain    string `envconfig:"OPTOUTLINK_DOMAIN"`
 	TrackLinkRPCAddress string `envconfig:"TRACK_LINK_RPC_ADDRESS"`
@@ -76,7 +74,7 @@ func main() {
 	srpc := senderpb.NewServiceClient(
 		rpcbuilder.NewClientConn(env.SenderRPCAddress, tracer),
 	)
-	arpc := accountRPC.New(env.AccountRPCAddress)
+
 	tlrpc := tracklinkRPC.NewClient(env.TrackLinkRPCAddress)
 	orpc := optOutRPC.NewClient(env.OptOutRPCAddress)
 
@@ -85,7 +83,7 @@ func main() {
 		OptOutLinkDomain: env.OptOutLinkDomain,
 	}
 
-	smsrpc, err := smsRPC.NewService(features, env.PostgresURL, rabbitmq, wrpc, arpc, tlrpc, env.RedisURL, orpc, srpc)
+	smsrpc, err := smsRPC.NewService(features, env.PostgresURL, rabbitmq, wrpc, tlrpc, env.RedisURL, orpc, srpc)
 	if err != nil {
 		log.Fatalf("Failed to initialise service: %s reason: %s\n", smsRPC.Name, err)
 	}

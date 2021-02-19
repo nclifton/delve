@@ -1,10 +1,12 @@
 package adminapi
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/burstsms/mtmo-tp/backend/account/rpc/accountpb"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	sms "github.com/burstsms/mtmo-tp/backend/sms/rpc/client"
 )
@@ -26,6 +28,7 @@ type ReportLine struct {
 }
 
 func UsageReportGET(r *Route) {
+	ctx := context.Background()
 
 	type report map[string]*ReportLine
 	data := make(report)
@@ -84,7 +87,7 @@ func UsageReportGET(r *Route) {
 		line := make(line)
 		// get the account id
 		accountName := "unknown"
-		res, err := r.api.account.FindByID(v.AccountID)
+		res, err := r.api.account.FindAccountByID(ctx, &accountpb.FindAccountByIDParams{Id: v.AccountID})
 		if err != nil {
 			log.Printf("Could not find associated account: %s", err.Error())
 		}

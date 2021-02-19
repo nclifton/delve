@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/account/rpc/accountpb"
 	"github.com/burstsms/mtmo-tp/backend/adminapi"
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/nr"
@@ -54,10 +54,11 @@ func main() {
 	defer closer.Close()
 
 	app := adminapi.NewAdminAPI(&adminapi.AdminAPIOptions{
-		NrApp:         newrelicM,
-		SMSClient:     sms.New(env.SMSRPCAddress),
-		MMSClient:     mms.New(env.MMSRPCAddress),
-		AccountClient: account.New(env.AccountRPCAddress),
+		NrApp:     newrelicM,
+		SMSClient: sms.New(env.SMSRPCAddress),
+		MMSClient: mms.New(env.MMSRPCAddress),
+		AccountClient: accountpb.NewServiceClient(
+			rpcbuilder.NewClientConn(env.AccountRPCAddress, tracer)),
 		SenderClient: senderpb.NewServiceClient(
 			rpcbuilder.NewClientConn(env.SenderRPCAddress, tracer)),
 	})

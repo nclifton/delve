@@ -29,12 +29,7 @@ services:
       - ADMINAPI_PORT=10014
       - ADMINAPI_SMS_RPC_ADDRESS=backend:10009
       - ADMINAPI_MMS_RPC_ADDRESS=backend:10007
-      - ADMINAPI_ACCOUNT_RPC_ADDRESS=backend:10001
-
-      - ACCOUNT_RPC_PORT=10001
-      - ACCOUNT_RPC_HOST=backend
-      - ACCOUNT_POSTGRES_URL=postgresql://postgres:example@postgres/account
-      - ACCOUNT_REDIS_URL=redis:6379
+      - ADMINAPI_ACCOUNT_RPC_ADDRESS=account-rpc-service:10001
 
       - MMS_RABBIT_URL=amqp://tp:TheToiletPaperPassword@rabbitmq:5672/mms
       - MMS_RABBIT_EXCHANGE=mms
@@ -316,6 +311,24 @@ services:
     env_file:
       - backend/mm7/migration/infra/values/dev-values.env
 
+  account-rpc-service:
+    build:
+      context: .
+      dockerfile: ops/dev/docker-compose/DockerfileDomain.dev
+    hostname: account-rpc-service
+    entrypoint: ["/go/bin/modd", "--file=./account/rpc/modd.conf"]
+    tty: true
+    volumes:
+      - ./backend:/backend
+    ports:
+      - "10001:10001"
+    env_file:
+      - backend/account/rpc/infra/values/dev-values.env
+    depends_on:
+      - postgres
+      - jaeger
+      - redis
+  
   webhook-rpc-service:
     build:
       context: .
