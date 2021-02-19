@@ -36,8 +36,11 @@ resource "aws_rds_cluster" "postgresql" {
   master_username = "foo"
   master_password = "barbut8chars"
 
+  storage_encrypted = true
+  
   deletion_protection       = true
-  final_snapshot_identifier = "sendsei-final-snapshot"
+  final_snapshot_identifier = "${terraform.workspace}-final-snapshot"
+  backup_retention_period   = 30
 
   db_subnet_group_name   = aws_db_subnet_group.dbsubnet.id
   availability_zones     = ["ap-southeast-2a", "ap-southeast-2b", "ap-southeast-2c"]
