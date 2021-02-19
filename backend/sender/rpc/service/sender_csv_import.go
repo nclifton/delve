@@ -9,20 +9,26 @@ import (
 	"github.com/vincent-petithory/dataurl"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/valid"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/db"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
 )
 
 type SenderCSV struct {
-	AccountId      string       `csv:"account_id" validate:"omitempty,uuid"`
-	Address        string       `csv:"address" validate:"required"`
-	Country        string       `csv:"country" validate:"required"`
-	Channels       CSVJSONArray `csv:"channels" validate:"required"` // see custom conversion below
-	MMSProviderKey string       `csv:"mms_provider_key" validate:"omitempty"`
-	Comment        string       `csv:"comment" validate:"omitempty"`
+	AccountId      string       `csv:"account_id" valid:""`
+	Address        string       `csv:"address" valid:"required"`
+	Country        string       `csv:"country" valid:"required"`
+	Channels       CSVJSONArray `csv:"channels" valid:"required"` // see custom CSV Field conversion below
+	MMSProviderKey string       `csv:"mms_provider_key"`
+	Comment        string       `csv:"comment"`
 	Status         string       `csv:"status"`
 	Error          string       `csv:"error"`
 }
+
+const (
+	CSV_STATUS_SKIPPED = "skipped"
+	CSV_STATUS_OK      = "ok"
+)
 
 func (s *senderImpl) CreateSendersFromCSVDataURL(ctx context.Context, r *senderpb.CreateSendersFromCSVDataURLParams) (*senderpb.CreateSendersFromCSVDataURLReply, error) {
 
@@ -33,27 +39,12 @@ func (s *senderImpl) CreateSendersFromCSVDataURL(ctx context.Context, r *senderp
 		return nil, err
 	}
 
-	// ignoring results here at the moment
-	validCSVSenders, _, err := s.validateCSVSenders(ctx, csvSenders)
-	if err != nil {
-		return nil, err
-	}
+	// ignoring results here at the moment until we have the validation available and working how we want it
+	validSenders, _ := s.validateCSVSenders(ctx, csvSenders)
 
-	if len(validCSVSenders) > 0 {
+	if len(validSenders) > 0 {
 
-		newSenders := make([]db.Sender, 0, len(csvSenders))
-		for _, sender := range csvSenders {
-			newSenders = append(newSenders, db.Sender{
-				AccountID:      sender.AccountId,
-				Address:        sender.Address,
-				MMSProviderKey: sender.MMSProviderKey,
-				Channels:       sender.Channels,
-				Country:        sender.Country,
-				Comment:        sender.Comment,
-			})
-		}
-
-		dbSenders, err := s.db.InsertSenders(ctx, newSenders)
+		dbSenders, err := s.db.InsertSenders(ctx, validSenders)
 		if err != nil {
 			return nil, err
 		}
@@ -99,6 +90,29 @@ func unmarshalSenderCSVDataUrl(csvDataUrl []byte) (csvSenders []SenderCSV, err e
 
 	return csvSenders, nil
 
+}
+
+func (s *senderImpl) validateCSVSenders(ctx context.Context, csvSenders []SenderCSV) ([]db.Sender, []SenderCSV) {
+	validSenders := make([]db.Sender, 0, len(csvSenders))
+	validatedCSVSenders := make([]SenderCSV, 0, len(csvSenders))
+	for _, csvSender := range csvSenders {
+		err := valid.Validate(csvSender)
+		if err != nil {
+			csvSender.Status = CSV_STATUS_SKIPPED
+			csvSender.Error = err.Error()
+		} else {
+			validSenders = append(validSenders, db.Sender{
+				AccountID:      csvSender.AccountId,
+				Address:        csvSender.Address,
+				MMSProviderKey: csvSender.MMSProviderKey,
+				Channels:       csvSender.Channels,
+				Country:        csvSender.Country,
+				Comment:        csvSender.Comment,
+			})
+		}
+		validatedCSVSenders = append(validatedCSVSenders, csvSender)
+	}
+	return validSenders, validatedCSVSenders
 }
 
 /*

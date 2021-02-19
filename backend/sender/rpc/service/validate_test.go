@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/db"
 )
@@ -20,14 +21,16 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 		args    []interface{}
 		returns []interface{}
 	}
+	type want struct {
+		validSenders     []db.Sender
+		validatedSenders []SenderCSV
+	}
 
 	tests := []struct {
-		name       string
-		args       args
-		mock       []mock
-		wantValid  bool
-		wantResult SenderCSV
-		wantErr    error
+		name string
+		args args
+		mock []mock
+		want want
 	}{
 		{
 			name: "blank address",
@@ -43,16 +46,18 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 					Error:          "",
 				},
 			},
-			wantValid: false,
-			wantResult: SenderCSV{
-				AccountId:      "",
-				Address:        "",
-				Country:        "AU",
-				Channels:       []string{"sms"},
-				MMSProviderKey: "",
-				Comment:        "",
-				Status:         "skipped",
-				Error:          `Field "address" cannot be empty`,
+			want: want{
+				validSenders: []db.Sender{},
+				validatedSenders: []SenderCSV{{
+					AccountId:      "",
+					Address:        "",
+					Country:        "AU",
+					Channels:       []string{"sms"},
+					MMSProviderKey: "",
+					Comment:        "",
+					Status:         CSV_STATUS_SKIPPED,
+					Error:          "Address: required",
+				}},
 			},
 		},
 		{
@@ -78,16 +83,18 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 					}}, nil},
 				},
 			},
-			wantValid: false,
-			wantResult: SenderCSV{
-				AccountId:      "",
-				Address:        "RHINO",
-				Country:        "AU",
-				Channels:       []string{"sms"},
-				MMSProviderKey: "",
-				Comment:        "",
-				Status:         "skipped",
-				Error:          `Field "address" must be unique`,
+			want: want{
+				validSenders: []db.Sender{},
+				validatedSenders: []SenderCSV{{
+					AccountId:      "",
+					Address:        "RHINO",
+					Country:        "AU",
+					Channels:       []string{"sms"},
+					MMSProviderKey: "",
+					Comment:        "",
+					Status:         CSV_STATUS_SKIPPED,
+					Error:          "Address: exists",
+				}},
 			},
 		},
 	}
@@ -100,21 +107,9 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 			s := &senderImpl{
 				db: mockDb,
 			}
-			valid, result, err := s.validateCSVSender(ctx, tt.args.csvSender)
-			if err != nil {
-				if tt.wantErr != nil {
-					t.Errorf("senderImpl.validateCSVSender() error = %v, \n\twantErr %v", err, tt.wantErr)
-				} else {
-					t.Errorf("unexpected error: %+v", err)
-				}
-			}
-
-			if valid != tt.wantValid {
-				t.Errorf("senderImpl.validateCSVSender() valid = %v, \n\twant %v", valid, tt.wantValid)
-			}
-			if !reflect.DeepEqual(result, tt.wantResult) {
-				t.Errorf("senderImpl.validateCSVSender() result = %+v, \n\twant %+v", result, tt.wantResult)
-			}
+			validSenders, validatedSenders := s.validateCSVSenders(ctx, []SenderCSV{tt.args.csvSender})
+			assert.Equal(t, tt.want.validatedSenders, validatedSenders, "validated senders")
+			assert.Equal(t, tt.want.validSenders, validSenders, "valid senders")
 		})
 	}
 }
