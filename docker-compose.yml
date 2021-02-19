@@ -366,6 +366,7 @@ services:
       - backend/sender/rpc/infra/values/dev-values.env
     depends_on:
       - postgres
+  
   api:
     build:
       context: .
@@ -394,6 +395,20 @@ services:
     depends_on:
       - rabbitmq
       - jaeger
+
+  mgage-receiver-api:
+    build:
+      context: .
+      dockerfile: ops/dev/docker-compose/DockerfileDomain.dev
+    hostname: mgage-receiver-api
+    entrypoint: ["/go/bin/modd", "--file=./mm7/mgage_receiver/modd.conf"]
+    tty: true
+    volumes:
+      - ./backend:/backend
+    ports:
+      - "10016:10016"
+    env_file:
+      - backend/mm7/mgage_receiver/infra/values/dev-values.env
 
 volumes:
   redis_data:
