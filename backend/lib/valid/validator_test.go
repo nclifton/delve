@@ -27,6 +27,9 @@ type UserValid struct {
 	Home     *Address
 	Work     []Address `valid:"required"`
 }
+type ByteArrayValid struct {
+	Data []byte `valid:"required"`
+}
 
 //TODO data URL validation?
 type Arrays struct {

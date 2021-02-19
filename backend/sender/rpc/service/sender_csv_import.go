@@ -14,12 +14,12 @@ import (
 )
 
 type SenderCSV struct {
-	AccountId      string       `csv:"account_id"`
-	Address        string       `csv:"address"`
-	Country        string       `csv:"country"`
-	Channels       CSVJSONArray `csv:"channels"` // see custom conversion below
-	MMSProviderKey string       `csv:"mms_provider_key"`
-	Comment        string       `csv:"comment"`
+	AccountId      string       `csv:"account_id" validate:"omitempty,uuid"`
+	Address        string       `csv:"address" validate:"required"`
+	Country        string       `csv:"country" validate:"required"`
+	Channels       CSVJSONArray `csv:"channels" validate:"required"` // see custom conversion below
+	MMSProviderKey string       `csv:"mms_provider_key" validate:"omitempty"`
+	Comment        string       `csv:"comment" validate:"omitempty"`
 	Status         string       `csv:"status"`
 	Error          string       `csv:"error"`
 }
