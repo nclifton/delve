@@ -105,7 +105,7 @@ func Test_ImportSenderPOST(t *testing.T) {
 				}
 			}
 			j, err := json.Marshal(ImportSenderPOSTRequest{
-				Data: string(duBytes),
+				Data: duBytes,
 			})
 			if err != nil {
 				t.Fatal(err)
@@ -118,12 +118,14 @@ func Test_ImportSenderPOST(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			// prepare and inject the mock sender RPC service client
-			params := &senderpb.CreateSendersFromCSVDataURLParams{CSV: post.Data}
+			params := &senderpb.CreateSendersFromCSVDataURLParams{CSV: duBytes}
 			mock := new(senderpb.MockServiceClient)
 			mock.On("CreateSendersFromCSVDataURL", req.Context(), params).Return(tt.want.mockStuff.createSendersReply, tt.want.mockStuff.createSendersError)
 			api := NewAdminAPI(&AdminAPIOptions{
 				SenderClient: mock,
 			})
+
+			rr := httptest.NewRecorder()
 
 			api.Handler().ServeHTTP(rr, req)
 
