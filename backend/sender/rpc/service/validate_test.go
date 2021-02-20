@@ -61,7 +61,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 			},
 		},
 		{
-			name: "address not unique",
+			name: "address not new",
 			args: args{
 				csvSender: SenderCSV{
 					AccountId:      "",
@@ -93,7 +93,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 					MMSProviderKey: "",
 					Comment:        "",
 					Status:         CSV_STATUS_SKIPPED,
-					Error:          "Address: exists",
+					Error:          "Address: is not new",
 				}},
 			},
 		},

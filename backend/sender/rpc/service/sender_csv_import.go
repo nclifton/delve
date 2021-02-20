@@ -3,7 +3,6 @@ package service
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 
 	"github.com/gocarina/gocsv"
 	"github.com/vincent-petithory/dataurl"
@@ -16,7 +15,7 @@ import (
 
 type SenderCSV struct {
 	AccountId      string       `csv:"account_id" valid:""`
-	Address        string       `csv:"address" valid:"required"`
+	Address        string       `csv:"address" valid:"required,address_new"`
 	Country        string       `csv:"country" valid:"required"`
 	Channels       CSVJSONArray `csv:"channels" valid:"required"` // see custom CSV Field conversion below
 	MMSProviderKey string       `csv:"mms_provider_key"`
@@ -96,7 +95,7 @@ func (s *senderImpl) validateCSVSenders(ctx context.Context, csvSenders []Sender
 	validSenders := make([]db.Sender, 0, len(csvSenders))
 	validatedCSVSenders := make([]SenderCSV, 0, len(csvSenders))
 	for _, csvSender := range csvSenders {
-		err := valid.Validate(csvSender)
+		err := valid.Validate(csvSender, s.addressValidator(ctx))
 		if err != nil {
 			csvSender.Status = CSV_STATUS_SKIPPED
 			csvSender.Error = err.Error()
@@ -113,33 +112,4 @@ func (s *senderImpl) validateCSVSenders(ctx context.Context, csvSenders []Sender
 		validatedCSVSenders = append(validatedCSVSenders, csvSender)
 	}
 	return validSenders, validatedCSVSenders
-}
-
-/*
-below is for a custom conversion to be used by the CSV marshalling and un-marshalling
-*/
-
-type CSVJSONArray []string
-
-// Convert the internal string array to JSON string
-func (a *CSVJSONArray) MarshalCSV() (string, error) {
-	str, err := json.Marshal(a)
-	if err != nil {
-		return "", err
-	}
-	return string(str), nil
-}
-
-// Convert the CSV JSON string to string array
-func (a *CSVJSONArray) UnmarshalCSV(csv string) error {
-	err := json.Unmarshal([]byte(csv), &a)
-	return err
-}
-
-func (a *CSVJSONArray) String() []string {
-	array := make([]string, len(*a))
-	for _, str := range *a {
-		array = append(array, str)
-	}
-	return array
 }

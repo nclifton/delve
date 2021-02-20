@@ -13,14 +13,14 @@ var (
 )
 
 type CustomValidator struct {
-	name string
-	fn   ValidatorFunc
+	Name string
+	Fn   ValidatorFunc
 }
 
 func Validate(s interface{}, customValidators ...CustomValidator) error {
 
 	for _, vfn := range customValidators {
-		TagMap[vfn.name] = vfn.fn
+		TagMap[vfn.Name] = vfn.Fn
 	}
 
 	if s == nil {

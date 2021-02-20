@@ -126,8 +126,8 @@ func TestCustomValidate(t *testing.T) {
 
 func myCustomValidator(message string, match string) CustomValidator {
 	return CustomValidator{
-		name: "custom",
-		fn: func(i interface{}, parent interface{}, params []string) error {
+		Name: "custom",
+		Fn: func(i interface{}, parent interface{}, params []string) error {
 			if i != match {
 				return errors.New(message)
 			}
