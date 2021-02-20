@@ -158,3 +158,14 @@ func nilIfBlank(v string) interface{} {
 	}
 	return v
 }
+
+func (db *sqlDB) SenderAddressExists(ctx context.Context, address string) (bool, error) {
+
+	var exists bool
+	err := db.sql.QueryRow(ctx, `SELECT exists (SELECT FROM sender WHERE address = $1)`, address).Scan(&exists)
+	if err != nil && err != pgx.ErrNoRows {
+		return false, err
+	}
+
+	return exists, nil
+}
