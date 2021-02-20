@@ -35,66 +35,28 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 		{
 			name: "blank address",
 			args: args{
-				csvSender: SenderCSV{
-					AccountId:      "",
-					Address:        "",
-					Country:        "AU",
-					Channels:       []string{"sms"},
-					MMSProviderKey: "",
-					Comment:        "",
-					Status:         "",
-					Error:          "",
-				},
+				SenderCSV{"", "", "AU", []string{"sms"}, "", "", "", ""},
 			},
 			want: want{
-				validSenders: []db.Sender{},
-				validatedSenders: []SenderCSV{{
-					AccountId:      "",
-					Address:        "",
-					Country:        "AU",
-					Channels:       []string{"sms"},
-					MMSProviderKey: "",
-					Comment:        "",
-					Status:         CSV_STATUS_SKIPPED,
-					Error:          "Address: required",
-				}},
+				[]db.Sender{},
+				[]SenderCSV{
+					{"", "", "AU", []string{"sms"}, "", "", CSV_STATUS_SKIPPED, "Address: required"},
+				},
 			},
 		},
 		{
 			name: "address not new",
 			args: args{
-				csvSender: SenderCSV{
-					AccountId:      "",
-					Address:        "RHINO",
-					Country:        "AU",
-					Channels:       []string{"sms"},
-					MMSProviderKey: "",
-					Comment:        "",
-					Status:         "",
-					Error:          "",
-				},
+				SenderCSV{"", "RHINO", "AU", []string{"sms"}, "", "", "", ""},
 			},
 			mock: []mock{
-				{
-					method: "FindSendersByAddress",
-					args:   []interface{}{ctx, "RHINO"},
-					returns: []interface{}{[]db.Sender{{
-						Address: "RHINO",
-					}}, nil},
-				},
+				{"SenderAddressExists", []interface{}{ctx, "RHINO"}, []interface{}{true, nil}},
 			},
 			want: want{
-				validSenders: []db.Sender{},
-				validatedSenders: []SenderCSV{{
-					AccountId:      "",
-					Address:        "RHINO",
-					Country:        "AU",
-					Channels:       []string{"sms"},
-					MMSProviderKey: "",
-					Comment:        "",
-					Status:         CSV_STATUS_SKIPPED,
-					Error:          "Address: is not new",
-				}},
+				[]db.Sender{},
+				[]SenderCSV{
+					{"", "RHINO", "AU", []string{"sms"}, "", "", CSV_STATUS_SKIPPED, "Address: is not new"},
+				},
 			},
 		},
 	}

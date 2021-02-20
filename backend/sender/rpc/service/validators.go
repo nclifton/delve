@@ -12,11 +12,11 @@ func (s *senderImpl) addressValidator(ctx context.Context) valid.CustomValidator
 	return valid.CustomValidator{
 		Name: "address_new",
 		Fn: func(i interface{}, parent interface{}, params []string) error {
-			senders, err := s.db.FindSendersByAddress(ctx, fmt.Sprintf("%v", i))
+			exists, err := s.db.SenderAddressExists(ctx, fmt.Sprintf("%v", i))
 			if err != nil {
 				return err
 			}
-			if len(senders) > 0 {
+			if exists {
 				return errors.New("is not new")
 			}
 			return nil

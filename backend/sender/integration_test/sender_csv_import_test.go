@@ -136,6 +136,15 @@ func Test_CreateSendersFromCSVDataURL(t *testing.T) {
 			want: want{
 				reply: &senderpb.CreateSendersFromCSVDataURLReply{},
 			},
+		},		{
+			name: "address not new - in database already",
+			args: args{
+				csv: `account_id,address,country,channels,mms_provider_key,comment
+					,FISH,AU,"[""sms""]",,`,
+			},
+			want: want{
+				reply: &senderpb.CreateSendersFromCSVDataURLReply{},
+			},
 		},
 		{
 			name: "invalid CSV number of fields wrong",
@@ -221,6 +230,15 @@ func Test_CreateSendersFromCSVDataURL(t *testing.T) {
 
 func setupForCreate(t *testing.T) *testDeps {
 	s := newSetup(t, tfx)
-
+	s.HaveInDatabase("sender", assertdb.Row{
+		"id":               s.uuids[0],
+		"account_id":       s.uuids[1],
+		"address":          "FISH",
+		"mms_provider_key": "optus",
+		"channels":         []string{"mms", "sms"},
+		"country":          "AU",
+		"comment":          "Slartibartfast",
+		"created_at":       s.dates[0],
+		"updated_at":       s.dates[0]})
 	return s
 }
