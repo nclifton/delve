@@ -30,7 +30,11 @@ type WebhookCreatePOSTRequest struct {
 
 ### Built-In Available Rules
 
- - `required`:    
+ - `required`:  
+    - if the value is a string it cannot be blank (""), an empty string
+	- if the value is an array it cannot be empty, length 0
+	- if an array of strings, the strings in the array cannot be blank, an empty string
+	- if not a string, the value or values if an array, cannot be the type's zero value
  - `url`:,
  - `email`: 
  - `integer`:
@@ -39,6 +43,9 @@ type WebhookCreatePOSTRequest struct {
  - `rune_length`:
  - `range`:
  - `contains`:
+    - Contains parameter is an array of strings. 
+	- Validation is true if the value equals one of the strings in the params string array.
+    - This is effectively a "one-of" validation and not a string contains string validation
  - `webhook_url`:
 
 
