@@ -92,6 +92,14 @@ func IsRequired(i interface{}, parent interface{}, params []string) error {
 }
 
 func IsURL(i interface{}, parent interface{}, params []string) error {
+
+	// ignore arrays and slices, this validator will apply to the elements of this value if it's and array
+	v := reflect.ValueOf(i)
+	kind := v.Kind()
+	if kind == reflect.Array || kind == reflect.Slice {
+		return nil
+	}
+
 	maxURLRuneCount := 2083
 	minURLRuneCount := 3
 
@@ -137,6 +145,14 @@ func IsURL(i interface{}, parent interface{}, params []string) error {
 }
 
 func IsInteger(i interface{}, parent interface{}, params []string) error {
+
+	// ignore arrays and slices, this validator will apply to the elements of this value if it's and array
+	v := reflect.ValueOf(i)
+	kind := v.Kind()
+	if kind == reflect.Array || kind == reflect.Slice {
+		return nil
+	}
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -148,6 +164,14 @@ func IsInteger(i interface{}, parent interface{}, params []string) error {
 
 // TODO uppercase letters are not supported
 func IsEmail(i interface{}, parent interface{}, params []string) error {
+
+	// ignore arrays and slices, this validator will apply to the elements of this value if it's and array
+	v := reflect.ValueOf(i)
+	kind := v.Kind()
+	if kind == reflect.Array || kind == reflect.Slice {
+		return nil
+	}
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -161,6 +185,14 @@ func IsEmail(i interface{}, parent interface{}, params []string) error {
 }
 
 func IsAlpha(i interface{}, parent interface{}, params []string) error {
+
+	// ignore arrays and slices, this validator will apply to the elements of this value if it's and array
+	v := reflect.ValueOf(i)
+	kind := v.Kind()
+	if kind == reflect.Array || kind == reflect.Slice {
+		return nil
+	}
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -184,6 +216,13 @@ func Contains(i interface{}, parent interface{}, params []string) error {
 		return errors.New("expected at least 1 param to compare against")
 	}
 
+	// ignore arrays and slices, this validator will apply to the elements of this value if it's and array
+	v := reflect.ValueOf(i)
+	kind := v.Kind()
+	if kind == reflect.Array || kind == reflect.Slice {
+		return nil
+	}
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -203,6 +242,14 @@ func Contains(i interface{}, parent interface{}, params []string) error {
 }
 
 func Length(i interface{}, parent interface{}, params []string) error {
+
+	// ignore arrays and slices, this validator will apply to the elements of this value if it's and array
+	v := reflect.ValueOf(i)
+	kind := v.Kind()
+	if kind == reflect.Array || kind == reflect.Slice {
+		return nil
+	}
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -212,6 +259,14 @@ func Length(i interface{}, parent interface{}, params []string) error {
 }
 
 func RuneLength(i interface{}, parent interface{}, params []string) error {
+
+	// ignore arrays and slices, this validator will apply to the elements of this value if it's and array
+	v := reflect.ValueOf(i)
+	kind := v.Kind()
+	if kind == reflect.Array || kind == reflect.Slice {
+		return nil
+	}
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")

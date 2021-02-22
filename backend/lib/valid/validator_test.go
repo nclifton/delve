@@ -30,18 +30,10 @@ type UserValid struct {
 	Work     []Address `valid:"required"`
 }
 
+//TODO data URL validation?
+
 type Arrays struct {
 	Data []byte `valid:"required"`
-}
-
-type PrivateStruct struct {
-	privateField string `valid:"required,alpha(1|4|87),d_k"`
-	NonZero      int
-	ListInt      []int
-	ListString   []string `valid:"alpha(1|2|3)"`
-	Work         [2]Address
-	Home         Address
-	Map          map[string]Address
 }
 
 func TestValidate(t *testing.T) {
@@ -74,6 +66,16 @@ func TestValidate(t *testing.T) {
 		}
 	}
 
+}
+
+type PrivateStruct struct {
+	privateField string `valid:"required,alpha(1|4|87),d_k"`
+	NonZero      int
+	ListInt      []int
+	ListString   []string `valid:"alpha(1|2|3)"`
+	Work         [2]Address
+	Home         Address
+	Map          map[string]Address
 }
 
 func TestValidatePrivateStruct(t *testing.T) {
