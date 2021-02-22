@@ -30,6 +30,7 @@ type UserValid struct {
 	Work     []Address `valid:"required"`
 }
 
+//TODO data URL validation?
 type Arrays struct {
 	Data []byte `valid:"required"`
 }
