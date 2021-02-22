@@ -129,5 +129,5 @@ var _Service_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "account.proto",
+	Metadata: "account/rpc/accountpb/account.proto",
 }

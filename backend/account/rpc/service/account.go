@@ -6,6 +6,9 @@ import (
 
 	"github.com/burstsms/mtmo-tp/backend/account/rpc/accountpb"
 	"github.com/burstsms/mtmo-tp/backend/account/rpc/db"
+	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -20,6 +23,10 @@ func (a *accountImpl) FindAccountByAPIKey(ctx context.Context, p *accountpb.Find
 			return a.db.FindAccountByAPIKey(ctx, p.GetKey())
 		},
 	); err != nil {
+		if _, ok := err.(errorlib.NotFoundErr); ok {
+			err = status.Error(codes.NotFound, err.Error())
+		}
+
 		return nil, err
 	}
 
@@ -39,6 +46,10 @@ func (a *accountImpl) FindAccountByID(ctx context.Context, p *accountpb.FindAcco
 			return a.db.FindAccountByID(ctx, p.GetId())
 		},
 	); err != nil {
+		if _, ok := err.(errorlib.NotFoundErr); ok {
+			err = status.Error(codes.NotFound, err.Error())
+		}
+
 		return nil, err
 	}
 

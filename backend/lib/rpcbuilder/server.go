@@ -21,6 +21,7 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/jaeger"
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/rabbit"
+	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 )
 
 type Config struct {
@@ -28,6 +29,7 @@ type Config struct {
 	ContainerPort               int    `envconfig:"CONTAINER_PORT"`
 	RabbitURL                   string `envconfig:"RABBIT_URL"`
 	PostgresURL                 string `envconfig:"POSTGRES_URL"`
+	RedisURL                    string `envconfig:"REDIS_URL"`
 	TracerDisable               bool   `envconfig:"TRACER_DISABLE"`
 	RabbitIgnoreClosedQueueConn bool   `envconfig:"RABBIT_IGNORE_CLOSED_QUEUE_CONN"`
 	HealthCheckPort             string `envconfig:"HEALTH_CHECK_PORT" default:"8086"`
@@ -44,6 +46,7 @@ type Deps struct {
 	Tracer       opentracing.Tracer
 	RabbitConn   wabbit.Conn
 	PostgresConn *pgxpool.Pool
+	Redis        *redis.Connection
 	Server       *grpc.Server
 }
 
@@ -55,6 +58,7 @@ type rpcServerProperties struct {
 	tracerCloser io.Closer
 	rabbitConn   wabbit.Conn
 	postgresConn *pgxpool.Pool
+	redisConn    *redis.Connection
 	lis          net.Listener
 	server       *grpc.Server
 	serverOpts   []grpc.ServerOption
@@ -184,6 +188,26 @@ func (g *rpcServerProperties) createRabbitConn(ctx context.Context) error {
 	return nil
 }
 
+func (g *rpcServerProperties) createRedisConn(ctx context.Context) error {
+	if g.conf.RedisURL == "" {
+		return nil
+	}
+
+	g.logFields(ctx).Infof("Starting redis connection")
+
+	redis, err := redis.Connect(g.conf.RedisURL)
+	if err != nil {
+		return fmt.Errorf("failed to init redis: %s\n with error: %s", g.conf.RedisURL, err)
+	}
+
+	g.redisConn = redis
+
+	return nil
+}
+
+/*
+
+ */
 func (g *rpcServerProperties) SetCustomListener(lis net.Listener) {
 	g.lis = lis
 }
@@ -207,24 +231,19 @@ func (g *rpcServerProperties) Listener() net.Listener {
 }
 
 func (g *rpcServerProperties) setupDeps(ctx context.Context) error {
-	var err error
-
-	err = g.createJaegerConn(ctx)
-	if err != nil {
+	if err := g.createJaegerConn(ctx); err != nil {
 		return err
 	}
 
-	err = g.createPostgresConn(ctx)
-	if err != nil {
+	if err := g.createPostgresConn(ctx); err != nil {
 		return err
 	}
 
-	err = g.createRabbitConn(ctx)
-	if err != nil {
+	if err := g.createRabbitConn(ctx); err != nil {
 		return err
 	}
 
-	return nil
+	return g.createRedisConn(ctx)
 }
 
 func (g *rpcServerProperties) Start(ctx context.Context) error {
@@ -240,6 +259,7 @@ func (g *rpcServerProperties) Start(ctx context.Context) error {
 		Tracer:       g.tracer,
 		RabbitConn:   g.rabbitConn,
 		PostgresConn: g.postgresConn,
+		Redis:        g.redisConn,
 		Server:       g.server,
 	}); err != nil {
 		return err

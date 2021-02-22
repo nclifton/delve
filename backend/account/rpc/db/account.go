@@ -3,8 +3,11 @@ package db
 import (
 	"context"
 
+	"github.com/burstsms/mtmo-tp/backend/lib/errorlib"
 	"github.com/jackc/pgx/v4"
 )
+
+const msgAccountNotFound = "account not found"
 
 const accountFields = `a.id, 
 a.created_at, 
@@ -38,6 +41,10 @@ func (db *sqlDB) FindAccountByAPIKey(ctx context.Context, key string) (Account, 
 
 	row := db.sql.QueryRow(ctx, sql, key)
 	if err := scanAccount(row, &account); err != nil {
+		if err == pgx.ErrNoRows {
+			return Account{}, errorlib.NotFoundErr{Message: msgAccountNotFound}
+		}
+
 		return Account{}, err
 	}
 
@@ -55,6 +62,10 @@ func (db *sqlDB) FindAccountByID(ctx context.Context, id string) (Account, error
 
 	row := db.sql.QueryRow(ctx, query, id)
 	if err := scanAccount(row, &account); err != nil {
+		if err == pgx.ErrNoRows {
+			return Account{}, errorlib.NotFoundErr{Message: msgAccountNotFound}
+		}
+
 		return Account{}, err
 	}
 
