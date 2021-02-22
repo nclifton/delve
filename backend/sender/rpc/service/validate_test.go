@@ -83,7 +83,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 				},
 			},
 		}, {
-			name: "provider key is not one of enum",
+			name: "mms provider key is not one of enum",
 			args: args{
 				SenderCSV{"", "RHINO", "AU", []string{"sms"}, "bad", "", "", ""},
 			},
@@ -94,7 +94,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 			want: want{
 				[]db.Sender{},
 				[]SenderCSV{
-					{"", "RHINO", "AU", []string{"sms"}, "bad", "", CSV_STATUS_SKIPPED, "MMSProviderKey: is not one of fake|optus|mgage"},
+					{"", "RHINO", "AU", []string{"sms"}, "bad", "", CSV_STATUS_SKIPPED, "MMSProviderKey: bad did not match any of fake,optus,mgage"},
 				},
 			},
 		}, {
@@ -123,7 +123,22 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 			want: want{
 				[]db.Sender{},
 				[]SenderCSV{
-					{"", "RHINO", "AU", []string{"bad"}, "", "", CSV_STATUS_SKIPPED, "Channels: is not one of mms|sms"},
+					{"", "RHINO", "AU", []string{"bad"}, "", "", CSV_STATUS_SKIPPED, "Channels: bad did not match any of mms,sms"},
+				},
+			},
+		}, {
+			name: "country is not one of",
+			args: args{
+				SenderCSV{"", "RHINO", "DE", []string{"sms"}, "", "", "", ""},
+			},
+			mock: []mock{
+				{"GetSenderEnums", []interface{}{ctx}, []interface{}{senderEnums, nil}, 1},
+				{"SenderAddressExists", []interface{}{ctx, "RHINO"}, []interface{}{false, nil}, 1},
+			},
+			want: want{
+				[]db.Sender{},
+				[]SenderCSV{
+					{"", "RHINO", "DE", []string{"sms"}, "", "", CSV_STATUS_SKIPPED, "Country: DE did not match any of au,AU,us,US"},
 				},
 			},
 		},

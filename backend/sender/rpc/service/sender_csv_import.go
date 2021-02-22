@@ -16,7 +16,7 @@ import (
 type SenderCSV struct {
 	AccountId      string       `csv:"account_id" valid:""`
 	Address        string       `csv:"address" valid:"required,address_new"`
-	Country        string       `csv:"country" valid:"required"`
+	Country        string       `csv:"country" valid:"required,contains(au|AU|us|US)"`
 	Channels       CSVJSONArray `csv:"channels" valid:"required,sender_enum(channel)"` // see custom CSV Field conversion below
 	MMSProviderKey string       `csv:"mms_provider_key" valid:"sender_enum(provider_key)"`
 	Comment        string       `csv:"comment"`

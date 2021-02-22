@@ -56,7 +56,7 @@ func (s *senderImpl) senderEnumValidator(ctx context.Context) valid.CustomValida
 					return nil
 				}
 			}
-			return fmt.Errorf("is not one of %s", strings.Join(enumValues, "|"))
+			return fmt.Errorf("%s did not match any of %s", i.(string), strings.Join(enumValues, ","))
 		},
 		ExcludeKinds: []reflect.Kind{reflect.Array, reflect.Slice},
 	}
