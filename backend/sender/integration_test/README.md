@@ -11,12 +11,3 @@ Uses gnomock containerised dependency services for RabbitMQ and Postgres
 cd sender/integration_test
 go test -timeout 30s -tags integration -run ^Test_.*$  github.com/burstsms/mtmo-tp/backend/sender/integration_test
 ```
-
-## Notes:
-requires environment variables set for the tests
-```
-        MIGRATION_ROOT="file://../migration/sql"
-        TEST_FIXTURE_POSTGRES_USER=gnomock
-        TEST_FIXTURE_POSTGRES_USER_PASSWORD=gnomick
-
-```

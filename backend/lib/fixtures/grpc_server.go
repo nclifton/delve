@@ -24,6 +24,7 @@ func (tfx *TestFixtures) GRPCStart(service rpcbuilder.Service) {
 			ContainerPort:               0,
 			RabbitURL:                   tfx.Rabbit.ConnStr,
 			PostgresURL:                 tfx.Postgres.ConnStr,
+			RedisURL:                    tfx.Redis.Address,
 			TracerDisable:               true,
 			RabbitIgnoreClosedQueueConn: true,
 			HealthCheckPort:             tfx.config.RPCHealthCheckPort,

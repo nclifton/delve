@@ -9,12 +9,10 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/account/rpc/db"
 	"github.com/burstsms/mtmo-tp/backend/account/rpc/service"
 	"github.com/burstsms/mtmo-tp/backend/lib/logger"
-	"github.com/burstsms/mtmo-tp/backend/lib/redis"
 	"github.com/burstsms/mtmo-tp/backend/lib/rpcbuilder"
 )
 
 type Config struct {
-	RedisURL string `envconfig:"REDIS_URL"`
 }
 
 type builder struct {
@@ -38,16 +36,11 @@ func NewBuilderFromEnv() *builder {
 func (b *builder) Run(deps rpcbuilder.Deps) error {
 	pdb := db.NewSQLDB(deps.PostgresConn)
 
-	redis, err := redis.Connect(b.conf.RedisURL)
-	if err != nil {
+	if err := deps.Redis.EnableCache(); err != nil {
 		return err
 	}
 
-	if err := redis.EnableCache(); err != nil {
-		return err
-	}
-
-	accountpb.RegisterServiceServer(deps.Server, service.NewAccountService(pdb, redis))
+	accountpb.RegisterServiceServer(deps.Server, service.NewAccountService(pdb, deps.Redis))
 
 	return nil
 }
