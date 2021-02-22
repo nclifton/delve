@@ -26,7 +26,14 @@ func TestDeclareRetryQueues(t *testing.T) {
 
 	testscale := []time.Duration{time.Second, 2 * time.Second, 3 * time.Second}
 
-	err = rabbit.DeclareRetryQueues(mockConn, "test.thing", "test.thing.exchange", "test.thing.key", testscale)
+	opts := rabbit.DLXOptions{
+		ResourceName:   "test.thing",
+		TargetExchange: "test.thing.exchange",
+		TargetKey:      "test.thing.key",
+		BackoffScale:   testscale,
+		Type:           "retry",
+	}
+	err = rabbit.DeclareDLXQueues(mockConn, opts)
 	if err != nil {
 		t.Fatalf("Could not setup Retry Queues: %s", err)
 	}
@@ -125,6 +132,55 @@ func TestGenerateRetry(t *testing.T) {
 
 			if opts.RouteKey != test.expectedKey {
 				t.Fatalf("Did not get expected routekey (%s) for retry options: %+v", test.expectedKey, test.opts)
+			}
+
+		})
+	}
+
+}
+
+func TestGenerateRequeue(t *testing.T) {
+
+	retryTests := []struct {
+		name          string
+		expectedKey   string
+		expectedError bool
+		opts          rabbit.GenerateRequeueOptions
+	}{
+		{
+			name:        "initial requeue",
+			expectedKey: "testing-requeue1",
+			opts: rabbit.GenerateRequeueOptions{
+				RouteKey:     "testing",
+				Exchange:     "testing-requeue",
+				ExchangeType: "topic",
+				Delivery:     server.NewDelivery(nil, []byte("{}"), 1, "1", wabbit.Option{}),
+			},
+		},
+		{
+			name:        "second requeue",
+			expectedKey: "testing-requeue1",
+			opts: rabbit.GenerateRequeueOptions{
+				RouteKey:     "testing",
+				Exchange:     "testing-requeue",
+				ExchangeType: "topic",
+				Delivery:     server.NewDelivery(nil, []byte("{}"), 1, "1", wabbit.Option{}),
+			},
+		},
+	}
+
+	for _, test := range retryTests {
+		t.Run(test.name, func(t *testing.T) {
+			opts, err := rabbit.GenerateRequeue(test.opts)
+			if !test.expectedError && err != nil {
+				t.Error(err)
+			}
+			if test.expectedError && err == nil {
+				t.Fatalf("Expected an error from test: %+v not result; %+v", test, opts)
+			}
+
+			if opts.RouteKey != test.expectedKey {
+				t.Fatalf("Did not get expected routekey (%s) for requeue options: %+v", test.expectedKey, test.opts)
 			}
 
 		})

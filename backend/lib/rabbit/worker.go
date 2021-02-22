@@ -129,19 +129,61 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 						}
 						continue
 					}
+					retryOpts.Ctx = ctx
+					retryOpts.Tracer = w.tracer
+
 					err = Publish(w.con, retryOpts, msg.Body())
 					if err != nil {
 						log.Printf("could not retry message (%s): %s", msg.MessageId(), err)
 					}
-				} else {
-					err := handler.OnFinalFailure(ctx, msg.Body())
-					if err != nil {
-						log.Printf("could not handle final failure for message (%s): %s", msg.MessageId(), err)
+					log.Printf("Ack on retry !!!")
+					if err := msg.Ack(false); err != nil {
+						log.Printf("failed to ack message (%s): %s", msg.MessageId(), err)
 					}
 
+				} else {
 					err = msg.Reject(true)
 					if err != nil {
 						log.Printf("could not reject message (%s): %s", msg.MessageId(), err)
+					}
+				}
+			case *ErrRequeueWorkerMessage:
+				if opts.DelayRequeue > 0 {
+					delayOpts, err := GenerateRequeue(GenerateRequeueOptions{
+						Exchange:     fmt.Sprintf("%s-requeue", opts.QueueName),
+						ExchangeType: "topic",
+						Delivery:     msg,
+						RouteKey:     opts.QueueName + "-delay",
+					})
+					if err != nil {
+						log.Printf("could not retry message (%s): %s", msg.MessageId(), err)
+						err := handler.OnFinalFailure(ctx, msg.Body())
+						if err != nil {
+							log.Printf("could not handle final failure for message (%s): %s", msg.MessageId(), err)
+						}
+
+						err = msg.Reject(false)
+						if err != nil {
+							log.Printf("could not reject message (%s): %s", msg.MessageId(), err)
+						}
+						continue
+					}
+					delayOpts.Ctx = ctx
+					delayOpts.Tracer = w.tracer
+
+					err = Publish(w.con, delayOpts, msg.Body())
+					if err != nil {
+						log.Printf("could not delay requeue message (%s): %s", msg.MessageId(), err)
+					}
+					log.Printf("Ack on requeue delay!!!")
+					if err := msg.Ack(false); err != nil {
+						log.Printf("failed to ack message (%s): %s", msg.MessageId(), err)
+					}
+
+				} else {
+					err = msg.Reject(true)
+					if err != nil {
+						log.Printf("could not reject and requeue message (%s): %s", msg.MessageId(), err)
 					}
 				}
 			default:
@@ -155,10 +197,12 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 					log.Printf("could not reject message (%s): %s", msg.MessageId(), err)
 				}
 			}
-		}
+		} else {
+			log.Printf("Ack !!!")
+			if err := msg.Ack(false); err != nil {
+				log.Printf("failed to ack message (%s): %s", msg.MessageId(), err)
+			}
 
-		if err := msg.Ack(false); err != nil {
-			log.Printf("failed to ack message (%s): %s", msg.MessageId(), err)
 		}
 
 		log.Printf("worker: %s successfully processed the msg", w.name)
@@ -166,6 +210,8 @@ func (w *Worker) Run(opts ConsumeOptions, handler MessageHandler) {
 		if w.tracer != nil {
 			sp.Finish()
 		}
+
 	}
 
+	log.Printf("Finished message loop")
 }

@@ -20,12 +20,26 @@ type ErrRetryWorkerMessage struct {
 	message string
 }
 
+func (e *ErrRetryWorkerMessage) Error() string {
+	return e.message
+}
+
 func NewErrRetryWorkerMessage(message string) *ErrRetryWorkerMessage {
 	return &ErrRetryWorkerMessage{
 		message: message,
 	}
 }
 
-func (e *ErrRetryWorkerMessage) Error() string {
+type ErrRequeueWorkerMessage struct {
+	message string
+}
+
+func (e *ErrRequeueWorkerMessage) Error() string {
 	return e.message
+}
+
+func NewErrRequeueWorkerMessage(message string) *ErrRequeueWorkerMessage {
+	return &ErrRequeueWorkerMessage{
+		message: message,
+	}
 }

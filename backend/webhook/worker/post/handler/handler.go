@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -45,7 +44,7 @@ func (h *handler) Handle(ctx context.Context, body []byte, headers map[string]in
 	}
 
 	if data.RateLimit > 0 && !h.limiter.Allow(data.URL, float64(data.RateLimit), data.RateLimit) {
-		return errors.New("Hit Ratelimit")
+		return rabbit.NewErrRequeueWorkerMessage("Rate limit exceeded")
 	}
 
 	payload, err := json.Marshal(data.Payload)
