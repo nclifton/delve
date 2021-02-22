@@ -64,6 +64,12 @@ func init() {
 	}
 }
 
+/**
+ *     - if the value is a string it cannot be blank (""), an empty string
+ *	- if the value is an array it cannot be empty, length 0
+ *	- if an array of strings, the strings in the array cannot be blank, an empty string
+ *	- if not a string, the value or values if an array, cannot be the type's zero value
+ */
 func IsRequired(i interface{}, parent interface{}, params []string) error {
 	v := reflect.ValueOf(i)
 
@@ -166,6 +172,12 @@ func IsAlpha(i interface{}, parent interface{}, params []string) error {
 
 	return nil
 }
+
+/**
+ *  - Contains parameter is an array of strings.
+ *  - Validation is true if the value equals one of the strings in the params string array.
+ *  - This is effectively a "one-of" validation and not a string contains string validation
+ */
 
 func Contains(i interface{}, parent interface{}, params []string) error {
 	if len(params) == 0 {

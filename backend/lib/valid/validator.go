@@ -12,7 +12,17 @@ var (
 	paramsRegexp = regexp.MustCompile(`\((.*)\)$`)
 )
 
-func Validate(s interface{}) error {
+type CustomValidator struct {
+	Name string
+	Fn   ValidatorFunc
+}
+
+func Validate(s interface{}, customValidators ...CustomValidator) error {
+
+	for _, vfn := range customValidators {
+		TagMap[vfn.Name] = vfn.Fn
+	}
+
 	if s == nil {
 		return fmt.Errorf("can not validate nil")
 	}

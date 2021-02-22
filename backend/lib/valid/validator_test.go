@@ -3,6 +3,8 @@ package valid
 import (
 	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type Address struct {
@@ -87,5 +89,45 @@ func TestValidatePrivateStruct(t *testing.T) {
 		{"Street", "123456"}}, Address{"Street", "123456"}, map[string]Address{"address": {"Street", "123456"}}})
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+type CustomTest struct {
+	Data string `valid:"custom"`
+}
+
+func TestCustomValidate(t *testing.T) {
+	var tests = []struct {
+		param    interface{}
+		expected bool
+		message  string
+	}{
+		{CustomTest{"good"}, false, "Data: no no no"},
+		{CustomTest{"bad"}, true, ""},
+	}
+	for _, test := range tests {
+		err := Validate(test.param, myCustomValidator("no no no", "bad"))
+		if (err == nil) != test.expected {
+			t.Errorf("Expected ValidateStruct(%#v) to be %v, got %v", test.param, test.expected, (err == nil))
+			if err != nil {
+				t.Errorf("Got Error on ValidateStruct(%#v): %s", test.param, err)
+			}
+		}
+		if !test.expected && err != nil {
+			assert.Equal(t, test.message, err.Error(), "expected error message")
+		}
+	}
+
+}
+
+func myCustomValidator(message string, match string) CustomValidator {
+	return CustomValidator{
+		Name: "custom",
+		Fn: func(i interface{}, parent interface{}, params []string) error {
+			if i != match {
+				return errors.New(message)
+			}
+			return nil
+		},
 	}
 }

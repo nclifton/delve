@@ -10,9 +10,11 @@ import (
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
+
+	"github.com/burstsms/mtmo-tp/backend/lib/valid"
 )
 
-type Validator = func(v interface{}) error
+type Validator = func(v interface{}, cvs ...valid.CustomValidator) error
 
 // HandlerContext injected into handlers/routes, provides various utils for I/O and logging
 type HandlerContext struct {
