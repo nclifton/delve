@@ -63,7 +63,7 @@ func (h *OptusSubmitHandler) Handle(ctx context.Context, body []byte, headers ma
 	}
 
 	if !r.Allow {
-		return rabbit.NewErrRequeueWorkerMessage(fmt.Sprintf("Failed sending message id: %s Error: rate limit reached", msg.ID))
+		return rabbit.NewErrRetryWorkerMessage(fmt.Sprintf("Failed sending message id: %s Error: rate limit reached", msg.ID))
 	}
 
 	var images [][]byte
