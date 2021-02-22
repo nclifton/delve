@@ -32,6 +32,18 @@ var TagMap = map[string]ValidatorFunc{
 	"webhook_url": IsWebhookURL,
 }
 
+var ruleExcludeKinds = map[string][]reflect.Kind{
+	"url":         {reflect.Array, reflect.Slice},
+	"email":       {reflect.Array, reflect.Slice},
+	"integer":     {reflect.Array, reflect.Slice},
+	"alpha":       {reflect.Array, reflect.Slice},
+	"length":      {reflect.Array, reflect.Slice},
+	"rune_length": {reflect.Array, reflect.Slice},
+	"range":       {reflect.Array, reflect.Slice},
+	"contains":    {reflect.Array, reflect.Slice},
+	"webhook_url": {reflect.Array, reflect.Slice},
+}
+
 var reservedIPNets []*net.IPNet
 
 func init() {
@@ -92,6 +104,7 @@ func IsRequired(i interface{}, parent interface{}, params []string) error {
 }
 
 func IsURL(i interface{}, parent interface{}, params []string) error {
+
 	maxURLRuneCount := 2083
 	minURLRuneCount := 3
 
@@ -137,6 +150,7 @@ func IsURL(i interface{}, parent interface{}, params []string) error {
 }
 
 func IsInteger(i interface{}, parent interface{}, params []string) error {
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -148,6 +162,7 @@ func IsInteger(i interface{}, parent interface{}, params []string) error {
 
 // TODO uppercase letters are not supported
 func IsEmail(i interface{}, parent interface{}, params []string) error {
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -161,6 +176,7 @@ func IsEmail(i interface{}, parent interface{}, params []string) error {
 }
 
 func IsAlpha(i interface{}, parent interface{}, params []string) error {
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -203,6 +219,7 @@ func Contains(i interface{}, parent interface{}, params []string) error {
 }
 
 func Length(i interface{}, parent interface{}, params []string) error {
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -212,6 +229,7 @@ func Length(i interface{}, parent interface{}, params []string) error {
 }
 
 func RuneLength(i interface{}, parent interface{}, params []string) error {
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
