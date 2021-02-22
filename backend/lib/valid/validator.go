@@ -74,7 +74,7 @@ func validateField(value reflect.Value, field reflect.StructField, parent reflec
 	}
 
 	// you can define a validator for a slice or map type and have it apply to each value
-	validators = append(validators, excludeValidatorsForValueType(value, getValidators(field.Tag.Get(tagName)))...)
+	validators = append(validators, excludeValidatorsForValueKind(value.Kind(), getValidators(field.Tag.Get(tagName)))...)
 
 	// check the field kind to determine if we need to recurse or iterate
 	kind := value.Kind()
@@ -154,7 +154,7 @@ func validate(value reflect.Value, field reflect.StructField, parent reflect.Val
 	return nil
 }
 
-func excludeValidatorsForValueType(value reflect.Value, validators []validator) []validator {
+func excludeValidatorsForValueKind(kind reflect.Kind, validators []validator) []validator {
 
 	filtered := []validator{}
 
@@ -163,7 +163,7 @@ ValidatorLoop:
 		excludeKinds, has := ruleExcludeKinds[validator.name]
 		if has {
 			for _, excludeKind := range excludeKinds {
-				if excludeKind == value.Kind() {
+				if excludeKind == kind {
 					continue ValidatorLoop
 				}
 			}
