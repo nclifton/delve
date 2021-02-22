@@ -1,0 +1,7 @@
+BEGIN;
+
+ALTER TABLE account DROP COLUMN mode;
+ALTER TABLE account DROP COLUMN parent_id;
+DROP TYPE IF EXISTS account_mode;
+
+COMMIT;

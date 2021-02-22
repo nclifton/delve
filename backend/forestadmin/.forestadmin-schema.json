@@ -71,6 +71,36 @@
       "inverseOf": null,
       "validations": []
     }, {
+      "field": "mode",
+      "type": ["Enum"],
+      "defaultValue": null,
+      "enums": ["live", "sandbox"],
+      "integration": null,
+      "isFilterable": true,
+      "isPrimaryKey": false,
+      "isReadOnly": false,
+      "isRequired": true,
+      "isSortable": true,
+      "isVirtual": false,
+      "reference": null,
+      "inverseOf": null,
+      "validations": []
+    },{
+      "field": "parentId",
+      "type": "String",
+      "defaultValue": null,
+      "enums": null,
+      "integration": null,
+      "isFilterable": true,
+      "isPrimaryKey": false,
+      "isReadOnly": false,
+      "isRequired": false,
+      "isSortable": true,
+      "isVirtual": false,
+      "reference": null,
+      "inverseOf": null,
+      "validations": []
+    }, {
       "field": "createdAt",
       "type": "Date",
       "defaultValue": null,
