@@ -65,7 +65,7 @@ func (h *SenderHandler) Handle(ctx context.Context, body []byte, headers map[str
 		return rabbit.NewErrWorkerMessageParse(err.Error())
 	}
 	log.Printf("[SMS Send] got message: %+v", jobdata)
-	if !h.limiter.Allow(jobdata.AlarisUser, float64(100), 100) {
+	if !h.limiter.Allow(jobdata.AlarisUser, float64(3000), 3500) {
 		log.Printf("[SMS Send] retrying %s due to ratelimit", jobdata.ID)
 		return rabbit.NewErrRetryWorkerMessage(fmt.Sprintf("[SMS Send] retrying %s due to ratelimit", jobdata.ID))
 	}
