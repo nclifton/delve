@@ -13,14 +13,16 @@ var (
 )
 
 type CustomValidator struct {
-	Name string
-	Fn   ValidatorFunc
+	Name         string
+	Fn           ValidatorFunc
+	ExcludeKinds []reflect.Kind
 }
 
 func Validate(s interface{}, customValidators ...CustomValidator) error {
 
 	for _, vfn := range customValidators {
 		TagMap[vfn.Name] = vfn.Fn
+		ruleExcludeKinds[vfn.Name] = vfn.ExcludeKinds
 	}
 
 	if s == nil {
