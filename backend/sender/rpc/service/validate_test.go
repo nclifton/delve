@@ -12,6 +12,10 @@ import (
 func Test_senderImpl_validateCSVSender(t *testing.T) {
 
 	ctx := context.TODO()
+	senderEnums := db.SenderEnums{
+		"provider_key": []string{"fake", "optus", "mgage"},
+		"channel":      []string{"mms", "sms"},
+	}
 
 	type args struct {
 		csvSender SenderCSV
@@ -58,13 +62,42 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 					{"", "RHINO", "AU", []string{"sms"}, "", "", CSV_STATUS_SKIPPED, "Address: is not new"},
 				},
 			},
+		}, {
+			name: "country required",
+			args: args{
+				SenderCSV{"", "RHINO", "", []string{"sms"}, "", "", "", ""},
+			},
+			mock: []mock{
+				{"SenderAddressExists", []interface{}{ctx, "RHINO"}, []interface{}{false, nil}},
+			},
+			want: want{
+				[]db.Sender{},
+				[]SenderCSV{
+					{"", "RHINO", "", []string{"sms"}, "", "", CSV_STATUS_SKIPPED, "Country: required"},
+				},
+			},
+		}, {
+			name: "provider key is not one of enum",
+			args: args{
+				SenderCSV{"", "RHINO", "AU", []string{"sms"}, "bad", "", "", ""},
+			},
+			mock: []mock{
+				{"GetSenderEnums", []interface{}{ctx}, []interface{}{senderEnums, nil}},
+				{"SenderAddressExists", []interface{}{ctx, "RHINO"}, []interface{}{false, nil}},
+			},
+			want: want{
+				[]db.Sender{},
+				[]SenderCSV{
+					{"", "RHINO", "AU", []string{"sms"}, "bad", "", CSV_STATUS_SKIPPED, "MMSProviderKey: is not one of fake|optus|mgage"},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDb := new(db.MockDB)
 			for _, mock := range tt.mock {
-				mockDb.On(mock.method, mock.args...).Return(mock.returns...)
+				mockDb.On(mock.method, mock.args...).Return(mock.returns...).Once()
 			}
 			s := &senderImpl{
 				db: mockDb,
@@ -72,6 +105,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 			validSenders, validatedSenders := s.validateCSVSenders(ctx, []SenderCSV{tt.args.csvSender})
 			assert.Equal(t, tt.want.validatedSenders, validatedSenders, "validated senders")
 			assert.Equal(t, tt.want.validSenders, validSenders, "valid senders")
+			mockDb.AssertExpectations(t)
 		})
 	}
 }

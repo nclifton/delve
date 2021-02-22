@@ -16,3 +16,6 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v3.14
 RUN unzip protoc-3.14.0-linux-x86_64.zip -d /usr/local
 
 RUN GO111MODULE=on go get google.golang.org/protobuf/cmd/protoc-gen-go google.golang.org/grpc/cmd/protoc-gen-go-grpc
+
+# install mockery - mock from interface code generator
+RUN GO111MODULE=on go get github.com/vektra/mockery/v2/.../

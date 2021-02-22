@@ -18,7 +18,7 @@ type SenderCSV struct {
 	Address        string       `csv:"address" valid:"required,address_new"`
 	Country        string       `csv:"country" valid:"required"`
 	Channels       CSVJSONArray `csv:"channels" valid:"required"` // see custom CSV Field conversion below
-	MMSProviderKey string       `csv:"mms_provider_key"`
+	MMSProviderKey string       `csv:"mms_provider_key" valid:"sender_enum(provider_key)"`
 	Comment        string       `csv:"comment"`
 	Status         string       `csv:"status"`
 	Error          string       `csv:"error"`
@@ -95,7 +95,7 @@ func (s *senderImpl) validateCSVSenders(ctx context.Context, csvSenders []Sender
 	validSenders := make([]db.Sender, 0, len(csvSenders))
 	validatedCSVSenders := make([]SenderCSV, 0, len(csvSenders))
 	for _, csvSender := range csvSenders {
-		err := valid.Validate(csvSender, s.addressValidator(ctx))
+		err := valid.Validate(csvSender, s.addressValidator(ctx), s.senderEnumValidator(ctx))
 		if err != nil {
 			csvSender.Status = CSV_STATUS_SKIPPED
 			csvSender.Error = err.Error()
