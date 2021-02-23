@@ -55,6 +55,7 @@ func main() {
 		ExchangeType:  msg.SMSSendMessage.ExchangeType,
 		RouteKey:      msg.SMSSendMessage.RouteKey,
 		RetryScale:    []time.Duration{5 * time.Second, 10 * time.Second, 20 * time.Second},
+		DelayRequeue:  5 * time.Second,
 	}
 
 	nrOpts := &agent.Options{

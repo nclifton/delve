@@ -6,7 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 
-	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/account/rpc/accountpb"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/logger"
 	"github.com/burstsms/mtmo-tp/backend/lib/middleware/recovery"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
@@ -16,14 +16,14 @@ import (
 
 type AdminAPIOptions struct {
 	NrApp         func(http.Handler) http.Handler
-	AccountClient *account.Client
+	AccountClient accountpb.ServiceClient
 	SMSClient     *sms.Client
 	MMSClient     *mms.Client
 	SenderClient  senderpb.ServiceClient
 }
 
 type RPCClients struct {
-	account *account.Client
+	account accountpb.ServiceClient
 	sms     *sms.Client
 	mms     *mms.Client
 	sender  senderpb.ServiceClient

@@ -31,6 +31,7 @@ jobs:
         env:
           DOCKER_API_VERSION: 1.39
         run: |
+          ./backend/account/integration_test/run.sh
           ./backend/webhook/integration_test/run.sh
           ./backend/sender/integration_test/run.sh
 

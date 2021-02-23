@@ -42,6 +42,7 @@ type ConsumeOptions struct {
 	ExchangeType         string
 	RouteKey             string
 	RetryScale           []time.Duration
+	DelayRequeue         time.Duration
 	AllowConnectionClose bool
 }
 
@@ -188,8 +189,30 @@ func Consume(con Conn, options ConsumeOptions) (chan Delivery, chan bool, error)
 		return nil, nil, err
 	}
 
+	if options.DelayRequeue > 0 {
+		opts := DLXOptions{
+			ResourceName:   options.QueueName,
+			Type:           "delay",
+			TargetExchange: options.Exchange,
+			TargetKey:      options.RouteKey,
+			BackoffScale:   []time.Duration{options.DelayRequeue},
+		}
+		err = DeclareDLXQueues(con, opts)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
 	if len(options.RetryScale) > 0 {
-		err = DeclareRetryQueues(con, options.QueueName, options.Exchange, options.RouteKey, options.RetryScale)
+		opts := DLXOptions{
+			ResourceName:   options.QueueName,
+			Type:           "retry",
+			TargetExchange: options.Exchange,
+			TargetKey:      options.RouteKey,
+			BackoffScale:   options.RetryScale,
+		}
+
+		err = DeclareDLXQueues(con, opts)
 		if err != nil {
 			return nil, nil, err
 		}

@@ -32,6 +32,17 @@ var TagMap = map[string]ValidatorFunc{
 	"webhook_url": IsWebhookURL,
 }
 
+var RuleExcludeKinds = map[string][]reflect.Kind{
+	"url":         {reflect.Array, reflect.Slice},
+	"email":       {reflect.Array, reflect.Slice},
+	"integer":     {reflect.Array, reflect.Slice},
+	"alpha":       {reflect.Array, reflect.Slice},
+	"length":      {reflect.Array, reflect.Slice},
+	"rune_length": {reflect.Array, reflect.Slice},
+	"range":       {reflect.Array, reflect.Slice},
+	"webhook_url": {reflect.Array, reflect.Slice},
+}
+
 var reservedIPNets []*net.IPNet
 
 func init() {
@@ -92,6 +103,7 @@ func IsRequired(i interface{}, parent interface{}, params []string) error {
 }
 
 func IsURL(i interface{}, parent interface{}, params []string) error {
+
 	maxURLRuneCount := 2083
 	minURLRuneCount := 3
 
@@ -137,6 +149,7 @@ func IsURL(i interface{}, parent interface{}, params []string) error {
 }
 
 func IsInteger(i interface{}, parent interface{}, params []string) error {
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -148,6 +161,7 @@ func IsInteger(i interface{}, parent interface{}, params []string) error {
 
 // TODO uppercase letters are not supported
 func IsEmail(i interface{}, parent interface{}, params []string) error {
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -161,6 +175,7 @@ func IsEmail(i interface{}, parent interface{}, params []string) error {
 }
 
 func IsAlpha(i interface{}, parent interface{}, params []string) error {
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -177,11 +192,21 @@ func IsAlpha(i interface{}, parent interface{}, params []string) error {
  *  - Contains parameter is an array of strings.
  *  - Validation is true if the value equals one of the strings in the params string array.
  *  - This is effectively a "one-of" validation and not a string contains string validation
+ *  - if the field is an array we need to check that the field is not empty. It won't contain what we're looking for if it's empty will it?
  */
 
 func Contains(i interface{}, parent interface{}, params []string) error {
 	if len(params) == 0 {
 		return errors.New("expected at least 1 param to compare against")
+	}
+
+	v := reflect.ValueOf(i)
+	kind := v.Kind()
+	if kind == reflect.Array || kind == reflect.Slice || kind == reflect.Map {
+		if v.Len() == 0 {
+			return fmt.Errorf("%s did not match any of %s", i, strings.Join(params, ","))
+		}
+		return nil // we need to wait for the call from the elements loop
 	}
 
 	str, ok := i.(string)
@@ -203,6 +228,7 @@ func Contains(i interface{}, parent interface{}, params []string) error {
 }
 
 func Length(i interface{}, parent interface{}, params []string) error {
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")
@@ -212,6 +238,7 @@ func Length(i interface{}, parent interface{}, params []string) error {
 }
 
 func RuneLength(i interface{}, parent interface{}, params []string) error {
+
 	str, ok := i.(string)
 	if !ok {
 		return errors.New("expected string type")

@@ -124,15 +124,15 @@ func getProviderDetail(providerKey string) (ProviderDetail, error) {
 	switch providerKey {
 	case worker.FakeProviderKey:
 		return ProviderDetail{
-			Rate:            1.0,
+			Rate:            10,
 			Burst:           20,
 			ImageSizeMaxKB:  400,
 			QueueNameSubmit: worker.QueueNameSubmitFake,
 		}, nil
 	case worker.OptusProviderKey:
 		return ProviderDetail{
-			Rate:            1.0,
-			Burst:           20,
+			Rate:            10,
+			Burst:           15,
 			ImageSizeMaxKB:  450,
 			QueueNameSubmit: worker.QueueNameSubmitOptus,
 		}, nil

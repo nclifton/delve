@@ -80,6 +80,29 @@ func (_m *MockDB) FindSendersByAddress(ctx context.Context, address string) ([]S
 	return r0, r1
 }
 
+// GetSenderEnums provides a mock function with given fields: ctx
+func (_m *MockDB) GetSenderEnums(ctx context.Context) (SenderEnums, error) {
+	ret := _m.Called(ctx)
+
+	var r0 SenderEnums
+	if rf, ok := ret.Get(0).(func(context.Context) SenderEnums); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(SenderEnums)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // InsertSenders provides a mock function with given fields: ctx, senders
 func (_m *MockDB) InsertSenders(ctx context.Context, senders []Sender) ([]Sender, error) {
 	ret := _m.Called(ctx, senders)

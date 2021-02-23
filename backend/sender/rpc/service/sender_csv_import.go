@@ -16,9 +16,9 @@ import (
 type SenderCSV struct {
 	AccountId      string       `csv:"account_id" valid:""`
 	Address        string       `csv:"address" valid:"required,address_new"`
-	Country        string       `csv:"country" valid:"required"`
-	Channels       CSVJSONArray `csv:"channels" valid:"required"` // see custom CSV Field conversion below
-	MMSProviderKey string       `csv:"mms_provider_key"`
+	Country        string       `csv:"country" valid:"required,contains(au|AU|us|US)"`
+	Channels       CSVJSONArray `csv:"channels" valid:"required,sender_enum(channel)"` // see custom CSV Field conversion below
+	MMSProviderKey string       `csv:"mms_provider_key" valid:"sender_enum(provider_key),required_if(Channels|contains|mms)"`
 	Comment        string       `csv:"comment"`
 	Status         string       `csv:"status"`
 	Error          string       `csv:"error"`
@@ -95,11 +95,18 @@ func (s *senderImpl) validateCSVSenders(ctx context.Context, csvSenders []Sender
 	validSenders := make([]db.Sender, 0, len(csvSenders))
 	validatedCSVSenders := make([]SenderCSV, 0, len(csvSenders))
 	for _, csvSender := range csvSenders {
-		err := valid.Validate(csvSender, s.addressValidator(ctx))
+		err := valid.Validate(
+			csvSender,
+			s.addressValidator(ctx),
+			s.senderEnumValidator(ctx),
+			requiredIf(),
+		)
 		if err != nil {
 			csvSender.Status = CSV_STATUS_SKIPPED
 			csvSender.Error = err.Error()
 		} else {
+			csvSender.Status = CSV_STATUS_OK
+			csvSender.Error = ""
 			validSenders = append(validSenders, db.Sender{
 				AccountID:      csvSender.AccountId,
 				Address:        csvSender.Address,

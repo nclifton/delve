@@ -36,6 +36,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         defaultValue: "",
       },
+      mode: {
+        type: DataTypes.STRING,
+        defaultValue: "live",
+      },
+      parentId: {
+        type: DataTypes.UUID,
+        defaultValue: null,
+      },
     },
     {
       tableName: "account",

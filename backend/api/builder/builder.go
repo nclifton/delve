@@ -1,9 +1,10 @@
 package builder
 
 import (
+	"context"
 	"log"
 
-	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/account/rpc/accountpb"
 	"github.com/burstsms/mtmo-tp/backend/api/service"
 	"github.com/burstsms/mtmo-tp/backend/lib/rest"
 	"github.com/burstsms/mtmo-tp/backend/lib/restbuilder"
@@ -48,6 +49,8 @@ func (b *serviceBuilder) SetAuthenticator(authenticator rest.Authenticator) {
 }
 
 func (b *serviceBuilder) Run(deps restbuilder.Deps) error {
+	ctx := context.Background()
+
 	if b.clients == nil {
 		b.clients = &service.Clients{
 			SenderClient: senderpb.NewServiceClient(
@@ -56,15 +59,17 @@ func (b *serviceBuilder) Run(deps restbuilder.Deps) error {
 			WebhookClient: webhookpb.NewServiceClient(
 				rpcbuilder.NewClientConn(b.conf.WebhookRPCAddress, deps.Tracer),
 			),
-			AccountClient: account.New(b.conf.AccountRPCAddress),
-			MMSClient:     mms.New(b.conf.MMSRPCAddress),
-			SMSClient:     sms.New(b.conf.SMSRPCAddress),
+			AccountClient: accountpb.NewServiceClient(
+				rpcbuilder.NewClientConn(b.conf.AccountRPCAddress, deps.Tracer),
+			),
+			MMSClient: mms.New(b.conf.MMSRPCAddress),
+			SMSClient: sms.New(b.conf.SMSRPCAddress),
 		}
 	}
 
 	if b.authenticator == nil {
 		b.authenticator = func(key string) (interface{}, error) {
-			reply, err := b.clients.AccountClient.FindByAPIKey(key)
+			reply, err := b.clients.AccountClient.FindAccountByAPIKey(ctx, &accountpb.FindAccountByAPIKeyParams{Key: key})
 			if err != nil {
 				return nil, err
 			}

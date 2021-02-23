@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	account "github.com/burstsms/mtmo-tp/backend/account/rpc/client"
+	"github.com/burstsms/mtmo-tp/backend/account/rpc/accountpb"
 	"github.com/burstsms/mtmo-tp/backend/lib/rest"
 	mms "github.com/burstsms/mtmo-tp/backend/mms/rpc/client"
 	"github.com/burstsms/mtmo-tp/backend/sender/rpc/senderpb"
@@ -19,7 +19,7 @@ const ClientsKey = "clients"
 type Clients struct {
 	SenderClient  senderpb.ServiceClient
 	WebhookClient webhookpb.ServiceClient
-	AccountClient *account.Client
+	AccountClient accountpb.ServiceClient
 	SMSClient     *sms.Client
 	MMSClient     *mms.Client
 }
@@ -28,13 +28,13 @@ type Service struct {
 	*Clients
 }
 
-func accountFromCtx(hc *rest.HandlerContext) *account.Account {
+func accountFromCtx(hc *rest.HandlerContext) *accountpb.Account {
 	auth := hc.FromContext(rest.AuthKey)
 	if auth == nil {
 		hc.LogFatal(errors.New("accountFromCtx: Could not retrieve 'auth' from ctx"))
 	}
 
-	account, ok := auth.(*account.Account)
+	account, ok := auth.(*accountpb.Account)
 	if !ok {
 		hc.LogFatal(errors.New("accountFromCtx: Could not coerce 'auth' to type *account.Account"))
 	}

@@ -116,6 +116,21 @@
       "inverseOf": null,
       "validations": []
     }, {
+      "field": "mode",
+      "type": "String",
+      "defaultValue": "live",
+      "enums": null,
+      "integration": null,
+      "isFilterable": true,
+      "isPrimaryKey": false,
+      "isReadOnly": false,
+      "isRequired": false,
+      "isSortable": true,
+      "isVirtual": false,
+      "reference": null,
+      "inverseOf": null,
+      "validations": []
+    }, {
       "field": "name",
       "type": "String",
       "defaultValue": null,
@@ -134,6 +149,21 @@
         "type": "is present",
         "value": null
       }]
+    }, {
+      "field": "parentId",
+      "type": "String",
+      "defaultValue": null,
+      "enums": null,
+      "integration": null,
+      "isFilterable": true,
+      "isPrimaryKey": false,
+      "isReadOnly": false,
+      "isRequired": false,
+      "isSortable": true,
+      "isVirtual": false,
+      "reference": null,
+      "inverseOf": null,
+      "validations": []
     }, {
       "field": "senders",
       "type": ["String"],

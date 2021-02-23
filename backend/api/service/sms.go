@@ -28,13 +28,13 @@ func (s *Service) SMSPOST(hc *rest.HandlerContext) {
 	res, err := s.SMSClient.Send(sms.SendParams{
 		MessageRef: req.MessageRef,
 		Message:    req.Message,
-		AccountID:  account.ID,
+		AccountID:  account.GetId(),
 		Sender:     req.Sender,
 		Recipient:  req.Recipient,
 		Country:    req.Country,
-		AlarisUser: account.AlarisUsername,
-		AlarisPass: account.AlarisPassword,
-		AlarisURL:  account.AlarisURL,
+		AlarisUser: account.GetAlarisUsername(),
+		AlarisPass: account.GetAlarisPassword(),
+		AlarisURL:  account.GetAlarisUrl(),
 		TrackLinks: req.TrackLinks,
 	})
 

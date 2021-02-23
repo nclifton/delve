@@ -28,7 +28,7 @@ func (s *Service) MMSPOST(hc *rest.HandlerContext) {
 	}
 
 	reply, err := s.MMSClient.Send(mms.SendParams{
-		AccountID:   account.ID,
+		AccountID:   account.GetId(),
 		Subject:     req.Subject,
 		Message:     req.Message,
 		Recipient:   req.Recipient,

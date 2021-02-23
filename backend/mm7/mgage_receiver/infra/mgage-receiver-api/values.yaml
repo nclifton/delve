@@ -1,8 +1,8 @@
 # The subchart contains default values which can be overridden here
 k8sServiceChart:
-  name: adminapi
+  name: mgage-receiver-api
   # Component is the group of services (domain) the service belongs to
-  component: api
+  component: mm7
   namespace: tp
   # Harness can create a namespace if not exists so this is set to true in Harness.
   # Helm install will error if the namespace already exists so set this to false
@@ -21,16 +21,19 @@ k8sServiceChart:
   #podAnnotations:
 
   # Possible values for ServiceType are: ClusterIP | NodePort | LoadBalancer | ExternalName
-  serviceType: ClusterIP
-  servicePort: 10014
-  serviceTargetPort: 10014
-  # For Headless Services (e.g. RabbitMQ Consumers)
+  serviceType: NodePort
+  servicePort: 10016
+  # For Headless Services (e.g. RabbitMQ Consumers) 
   # uncomment the below and ignore serviceType, servicePort and serviceTargetPort
   #serviceClusterIP: None
 
   # Cluster Ingress
   ingress:
-    enabled: false
+    enabled: true
+    # Add ingress rules (cluster ingress endpoints) as a list below
+    rules:
+      - host: "api.${environmentVariable.dns}"
+        path: /*
 
   # HorizontalPodAutoscaler
   hpa:
@@ -73,12 +76,4 @@ k8sServiceChart:
   # Specify all environment variables to be added to the container.
   env:
     config:
-      NR_NAME: "${env.name}"
-      NR_LICENSE: "3289b893db560c39096d3c222d4a33037c24f943"
-      NR_TRACING: "true"
-      ADMINAPI_PORT: "10014"
-      ACCOUNT_RPC_ADDRESS: "account-rpc-service:10001"
-      SMS_RPC_ADDRESS: "sms-rpc-service:10009"
-      MMS_RPC_ADDRESS: "mms-rpc-service:10007"
-      WEBHOOK_RPC_ADDRESS: "webhook-rpc-service:10002"
-      SENDER_RPC_ADDRESS: "sender-rpc-service:10015"
+      CONTAINER_NAME: "mgage-receiver-api"

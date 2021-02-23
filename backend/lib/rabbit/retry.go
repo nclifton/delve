@@ -13,14 +13,22 @@ import (
 // RetryScale is used as the default retry scale for retrying jobs
 var RetryScale = []time.Duration{time.Minute, 2 * time.Minute, 5 * time.Minute, 10 * time.Minute, 30 * time.Minute}
 
-// DeclareRetryQueues sets the resource up with the bindigns for a retry queue to a target DLX
-func DeclareRetryQueues(con Conn, ResourceName string, RetryExchange string, RetryKey string, RetryScale []time.Duration) error {
+type DLXOptions struct {
+	ResourceName   string
+	Type           string
+	TargetExchange string
+	TargetKey      string
+	BackoffScale   []time.Duration
+}
+
+// DeclareDLXQueues sets the resource up with the bindings for a queue to a target DLX
+func DeclareDLXQueues(con Conn, options DLXOptions) error {
 	ch, err := con.Channel()
 	if err != nil {
 		return err
 	}
 
-	sourceExchange := fmt.Sprintf("%s-retry", ResourceName)
+	sourceExchange := fmt.Sprintf("%s-%s", options.ResourceName, options.Type)
 
 	if err = ch.ExchangeDeclare(
 		sourceExchange,
@@ -35,17 +43,17 @@ func DeclareRetryQueues(con Conn, ResourceName string, RetryExchange string, Ret
 		return err
 	}
 
-	for i, time := range RetryScale {
+	for i, time := range options.BackoffScale {
 		queue, err := ch.QueueDeclare(
-			fmt.Sprintf("%s-retry%d", ResourceName, i+1),
+			fmt.Sprintf("%s-%s%d", options.ResourceName, options.Type, i+1),
 			wabbit.Option{
 				"durable":   true,
 				"delete":    false,
 				"exclusive": false,
 				"noWait":    false,
 				"args": amqp.Table{
-					"x-dead-letter-exchange":    RetryExchange,
-					"x-dead-letter-routing-key": RetryKey,
+					"x-dead-letter-exchange":    options.TargetExchange,
+					"x-dead-letter-routing-key": options.TargetKey,
 					"x-message-ttl":             time.Milliseconds(),
 				},
 			},
@@ -55,7 +63,7 @@ func DeclareRetryQueues(con Conn, ResourceName string, RetryExchange string, Ret
 			return err
 		}
 
-		bindKey := fmt.Sprintf("%s-retry%d", ResourceName, i+1)
+		bindKey := fmt.Sprintf("%s-%s%d", options.ResourceName, options.Type, i+1)
 
 		err = ch.QueueBind(queue.Name(), bindKey, sourceExchange, wabbit.Option{"noWait": false})
 
@@ -86,7 +94,7 @@ var matchRetries = regexp.MustCompile(`-retry(\d+$)`)
 // PublishRetry send a retry job with exponential backoff
 func GenerateRetry(options GenerateRetryOptions) (PublishOptions, error) {
 	if len(options.Delivery.Body()) <= 0 {
-		return PublishOptions{}, fmt.Errorf("Cant retry a delivery wit an empty body: %+v", options.Delivery)
+		return PublishOptions{}, fmt.Errorf("Cant retry a delivery with an empty body: %+v", options.Delivery)
 	}
 	headers := options.Delivery.Headers()
 
@@ -104,13 +112,43 @@ func GenerateRetry(options GenerateRetryOptions) (PublishOptions, error) {
 		}
 	}
 
-	if retryCount >= options.MaxRetries {
+	if options.MaxRetries > 0 && retryCount >= options.MaxRetries {
 		return PublishOptions{}, fmt.Errorf("Message exceeded > %d attempts so not retrying", options.MaxRetries)
 	}
 
 	retryCount++
 
 	bindKey := fmt.Sprintf("%s-retry%d", options.RouteKey, retryCount)
+
+	opt := PublishOptions{
+		RouteKey:       bindKey,
+		Exchange:       options.Exchange,
+		ExchangeType:   options.ExchangeType,
+		DontEncodeJson: true,
+	}
+
+	return opt, nil
+}
+
+// GenerateRequeueOptions specify headers and properties for a message before publishing.
+type GenerateRequeueOptions struct {
+	// RouteKey specifies the routing key when publishing to exchange.
+	RouteKey string
+
+	// Exchange is the name of the exchange to publish.
+	Exchange     string
+	ExchangeType string
+
+	Delivery Delivery
+}
+
+// Generate Request send a requeue job with the configured delay
+func GenerateRequeue(options GenerateRequeueOptions) (PublishOptions, error) {
+	if len(options.Delivery.Body()) <= 0 {
+		return PublishOptions{}, fmt.Errorf("Cant requeue a delivery with an empty body: %+v", options.Delivery)
+	}
+
+	bindKey := fmt.Sprintf("%s-requeue%d", options.RouteKey, 1)
 
 	opt := PublishOptions{
 		RouteKey:       bindKey,

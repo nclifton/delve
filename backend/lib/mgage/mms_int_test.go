@@ -1,6 +1,6 @@
 // +build integration
 
-package client
+package mgage
 
 import (
 	"context"

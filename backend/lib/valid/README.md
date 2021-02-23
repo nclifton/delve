@@ -17,6 +17,9 @@ valid.Validate(v, customValidators ...CustomValidator)
 Accepts an interface but it must be a struct
 
 Specify validation rules using struct tags
+ - rule parameters specified in parentheses after the rule name
+ - multiple rule parameters separated by bar `|` in the parentheses
+ - multiple rules separated by comma
 
 ```
 type WebhookCreatePOSTRequest struct {
@@ -26,6 +29,8 @@ type WebhookCreatePOSTRequest struct {
 	RateLimit int    `json:"rate_limit" valid:"range(0|10000)"`
 }
 ```
+
+
 
 
 ### Built-In Available Rules
