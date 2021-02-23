@@ -35,6 +35,12 @@ type Arrays struct {
 	Data []byte `valid:"required"`
 }
 
+type ContainsTest struct {
+	Thing1 [][]string `valid:"contains(thing2)"`
+	Thing2 []string   `valid:"contains(thing3)"`
+	Thing3 string     `valid:"contains(thing4)"`
+}
+
 func TestValidate(t *testing.T) {
 	var tests = []struct {
 		param    interface{}
@@ -54,6 +60,10 @@ func TestValidate(t *testing.T) {
 		{Arrays{[]byte{}}, false},
 		{Arrays{[]byte("")}, false},
 		{Arrays{[]byte("hello there")}, true},
+		{ContainsTest{[][]string{{"thing2"}}, []string{"thing3"}, "thing4"}, true},
+		{ContainsTest{[][]string{{"thing2"}}, []string{"thing3"}, ""}, false},
+		{ContainsTest{[][]string{{"thing2"}}, []string{}, ""}, false},
+		{ContainsTest{[][]string{{}}, []string{}, ""}, false},
 	}
 	for _, test := range tests {
 		err := Validate(test.param)
