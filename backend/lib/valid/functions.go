@@ -202,11 +202,11 @@ func Contains(i interface{}, parent interface{}, params []string) error {
 
 	v := reflect.ValueOf(i)
 	kind := v.Kind()
-	if kind == reflect.Array || kind == reflect.Slice || kind == reflect.Map {
+	if kind == reflect.Array || kind == reflect.Slice {
 		if v.Len() == 0 {
 			return fmt.Errorf("%s did not match any of %s", i, strings.Join(params, ","))
 		}
-		return nil // we need to wait for the call from the elements loop
+		return nil // we need to wait for the call from the array/slice elements loop
 	}
 
 	str, ok := i.(string)
