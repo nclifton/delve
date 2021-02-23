@@ -18,7 +18,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 	}
 
 	type args struct {
-		csvSender SenderCSV
+		csvSenders []SenderCSV
 	}
 	type mock struct {
 		method  string
@@ -40,7 +40,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 		{
 			name: "blank address",
 			args: args{
-				SenderCSV{"", "", "AU", []string{"sms"}, "", "", "", ""},
+				[]SenderCSV{{"", "", "AU", []string{"sms"}, "", "", "", ""}},
 			},
 			mock: []mock{
 				{"GetSenderEnums", []interface{}{ctx}, []interface{}{senderEnums, nil}, 1},
@@ -55,7 +55,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 		{
 			name: "address not new",
 			args: args{
-				SenderCSV{"", "RHINO", "AU", []string{"sms"}, "", "", "", ""},
+				[]SenderCSV{{"", "RHINO", "AU", []string{"sms"}, "", "", "", ""}},
 			},
 			mock: []mock{
 				{"GetSenderEnums", []interface{}{ctx}, []interface{}{senderEnums, nil}, 1},
@@ -70,7 +70,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 		}, {
 			name: "country required",
 			args: args{
-				SenderCSV{"", "RHINO", "", []string{"sms"}, "", "", "", ""},
+				[]SenderCSV{{"", "RHINO", "", []string{"sms"}, "", "", "", ""}},
 			},
 			mock: []mock{
 				{"GetSenderEnums", []interface{}{ctx}, []interface{}{senderEnums, nil}, 1},
@@ -85,7 +85,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 		}, {
 			name: "mms provider key is not one of enum",
 			args: args{
-				SenderCSV{"", "RHINO", "AU", []string{"sms"}, "bad", "", "", ""},
+				[]SenderCSV{{"", "RHINO", "AU", []string{"sms"}, "bad", "", "", ""}},
 			},
 			mock: []mock{
 				{"GetSenderEnums", []interface{}{ctx}, []interface{}{senderEnums, nil}, 2},
@@ -100,7 +100,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 		}, {
 			name: "channels required",
 			args: args{
-				SenderCSV{"", "RHINO", "AU", []string{}, "", "", "", ""},
+				[]SenderCSV{{"", "RHINO", "AU", []string{}, "", "", "", ""}},
 			},
 			mock: []mock{
 				{"SenderAddressExists", []interface{}{ctx, "RHINO"}, []interface{}{false, nil}, 1},
@@ -114,7 +114,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 		}, {
 			name: "channels is not one of",
 			args: args{
-				SenderCSV{"", "RHINO", "AU", []string{"bad"}, "", "", "", ""},
+				[]SenderCSV{{"", "RHINO", "AU", []string{"bad"}, "", "", "", ""}},
 			},
 			mock: []mock{
 				{"GetSenderEnums", []interface{}{ctx}, []interface{}{senderEnums, nil}, 1},
@@ -129,7 +129,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 		}, {
 			name: "country is not one of",
 			args: args{
-				SenderCSV{"", "RHINO", "DE", []string{"sms"}, "", "", "", ""},
+				[]SenderCSV{{"", "RHINO", "DE", []string{"sms"}, "", "", "", ""}},
 			},
 			mock: []mock{
 				{"GetSenderEnums", []interface{}{ctx}, []interface{}{senderEnums, nil}, 1},
@@ -144,7 +144,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 		}, {
 			name: "mms provider key required if channels contains mms - error",
 			args: args{
-				SenderCSV{"", "RHINO", "AU", []string{"mms"}, "", "", "", ""},
+				[]SenderCSV{{"", "RHINO", "AU", []string{"mms"}, "", "", "", ""}},
 			},
 			mock: []mock{
 				{"GetSenderEnums", []interface{}{ctx}, []interface{}{senderEnums, nil}, 1},
@@ -159,7 +159,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 		}, {
 			name: "mms provider key required if channels contains mms - ok",
 			args: args{
-				SenderCSV{"", "RHINO", "AU", []string{"mms"}, "fake", "", "", ""},
+				[]SenderCSV{{"", "RHINO", "AU", []string{"mms"}, "fake", "", "", ""}},
 			},
 			mock: []mock{
 				{"GetSenderEnums", []interface{}{ctx}, []interface{}{senderEnums, nil}, 2},
@@ -177,6 +177,25 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 					{"", "RHINO", "AU", []string{"mms"}, "fake", "", CSV_STATUS_OK, ""},
 				},
 			},
+		}, {
+			name: "all address occupancies skipped if occurs more than once",
+			args: args{
+				[]SenderCSV{
+					{"", "RHINO", "AU", []string{"mms"}, "fake", "", "", ""},
+					{"", "RHINO", "AU", []string{"mms"}, "fake", "", "", ""},
+				},
+			},
+			mock: []mock{
+				{"GetSenderEnums", []interface{}{ctx}, []interface{}{senderEnums, nil}, 4},
+				{"SenderAddressExists", []interface{}{ctx, "RHINO"}, []interface{}{false, nil}, 2},
+			},
+			want: want{
+				[]db.Sender{},
+				[]SenderCSV{
+					{"", "RHINO", "AU", []string{"mms"}, "fake", "", CSV_STATUS_SKIPPED, "Address: multiple occurrence in upload"},
+					{"", "RHINO", "AU", []string{"mms"}, "fake", "", CSV_STATUS_SKIPPED, "Address: multiple occurrence in upload"},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -188,7 +207,7 @@ func Test_senderImpl_validateCSVSender(t *testing.T) {
 			s := &senderImpl{
 				db: mockDb,
 			}
-			validSenders, validatedSenders := s.validateCSVSenders(ctx, []SenderCSV{tt.args.csvSender})
+			validSenders, validatedSenders := s.validateCSVSenders(ctx, tt.args.csvSenders)
 			assert.Equal(t, tt.want.validatedSenders, validatedSenders, "validated senders")
 			assert.Equal(t, tt.want.validSenders, validSenders, "valid senders")
 			mockDb.AssertExpectations(t)

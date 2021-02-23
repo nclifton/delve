@@ -15,7 +15,7 @@ import (
 
 type SenderCSV struct {
 	AccountId      string       `csv:"account_id" valid:""`
-	Address        string       `csv:"address" valid:"required,address_new"`
+	Address        string       `csv:"address" valid:"required,address_new,address_unique_in_upload"`
 	Country        string       `csv:"country" valid:"required,contains(au|AU|us|US)"`
 	Channels       CSVJSONArray `csv:"channels" valid:"required,sender_enum(channel)"` // see custom CSV Field conversion below
 	MMSProviderKey string       `csv:"mms_provider_key" valid:"sender_enum(provider_key),required_if(Channels|contains|mms)"`
@@ -97,9 +97,10 @@ func (s *senderImpl) validateCSVSenders(ctx context.Context, csvSenders []Sender
 	for _, csvSender := range csvSenders {
 		err := valid.Validate(
 			csvSender,
-			s.addressValidator(ctx),
+			addressOccurrenceValidator(csvSenders),
+			s.addressDbValidator(ctx),
 			s.senderEnumValidator(ctx),
-			requiredIf(),
+			requiredIfValidator(),
 		)
 		if err != nil {
 			csvSender.Status = CSV_STATUS_SKIPPED

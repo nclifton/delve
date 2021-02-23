@@ -10,7 +10,39 @@ import (
 	"github.com/burstsms/mtmo-tp/backend/lib/valid"
 )
 
-func (s *senderImpl) addressValidator(ctx context.Context) valid.CustomValidator {
+/**
+ * Address string `valid:"address_unique_in_upload"`
+ *
+ * **NOTE:** this is only intended for the address field.
+ * Reflection would be required to be able to use this to validate other fields
+ */
+func addressOccurrenceValidator(csvSenders []SenderCSV) valid.CustomValidator {
+	return valid.CustomValidator{
+		Name: "address_unique_in_upload",
+		Fn: func(i interface{}, parent interface{}, params []string) error {
+			cnt := 0
+			for _, csvSender := range csvSenders {
+				if csvSender.Address == i.(string) {
+					cnt++
+				}
+			}
+			if cnt > 1 {
+				return errors.New("multiple occurrence in upload")
+			}
+			return nil
+		},
+		ExcludeKinds: []reflect.Kind{reflect.Array, reflect.Slice},
+	}
+
+}
+
+/**
+ * Address string `valid:"address_new"`
+ *
+ * **NOTE:** this is only intended for the address field.
+ * Checks that the specified address does not exists in the sender database sender table
+ */
+func (s *senderImpl) addressDbValidator(ctx context.Context) valid.CustomValidator {
 	return valid.CustomValidator{
 		Name: "address_new",
 		Fn: func(i interface{}, parent interface{}, params []string) error {
@@ -27,6 +59,13 @@ func (s *senderImpl) addressValidator(ctx context.Context) valid.CustomValidator
 	}
 }
 
+/**
+ * `valid:sender_enum(<database enum type name>)`
+ *
+ * Checks that the field value value matches one of the defined values for the named database enum type.
+ * This validator does not assume the role of the "required" validator, if the field is empty this validator will not validate the field.
+ *
+ */
 func (s *senderImpl) senderEnumValidator(ctx context.Context) valid.CustomValidator {
 	return valid.CustomValidator{
 		Name: "sender_enum",
@@ -62,7 +101,23 @@ func (s *senderImpl) senderEnumValidator(ctx context.Context) valid.CustomValida
 	}
 }
 
-func requiredIf() valid.CustomValidator {
+/**
+ * ... `valid:"required_if(<field name>[|<rule>[|rule parameters]])`
+ *
+ * conditional required. The field being validated is validated as required if another field passes a specified validation
+ *
+ * example:
+ *
+ * MMSProviderKey string `valid:required_id(Channels|contains|mms)`
+ *
+ * The field `MMSProviderKey` will be "required" if the `Channels` field "contains" `mms`.
+ * This rule uses the `contains` rule to check that the `Channels` field contains the value `mms`.
+ * The check field, in this case `Channels`, may be an array field
+ *
+ * reflect is used by this validator function.
+ *
+ */
+func requiredIfValidator() valid.CustomValidator {
 	return valid.CustomValidator{
 		Name: "required_if",
 		Fn: func(i interface{}, parent interface{}, params []string) error {
