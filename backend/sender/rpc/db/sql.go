@@ -158,3 +158,58 @@ func nilIfBlank(v string) interface{} {
 	}
 	return v
 }
+
+func (db *sqlDB) SenderAddressExists(ctx context.Context, address string) (bool, error) {
+
+	var exists bool
+	err := db.sql.QueryRow(ctx, `SELECT exists (SELECT FROM sender WHERE address = $1)`, address).Scan(&exists)
+	if err != nil && err != pgx.ErrNoRows {
+		return false, err
+	}
+
+	return exists, nil
+}
+
+var senderEnums SenderEnums
+
+func (db *sqlDB) GetSenderEnums(ctx context.Context) (SenderEnums, error) {
+
+	//we should cache this locally so we don't need to make this query more than once during the lifetime of the service
+	if senderEnums != nil {
+		return senderEnums, nil
+	}
+
+	rows, err := db.sql.Query(ctx,
+		`SELECT type.typname, array_agg(enum.enumlabel) as value from pg_enum as enum join pg_type as type on (type.oid = enum.enumtypid) group by type.typname`,
+	)
+	if err != nil {
+		return SenderEnums{}, err
+	}
+	defer rows.Close()
+
+	names := make([]string, 0)
+	valueArrays := make([][]string, 0)
+	var idx int = 0
+	var pgValues pgtype.EnumArray
+	enums := SenderEnums{}
+	for rows.Next() {
+
+		names = append(names, "")
+		valueArrays = append(valueArrays, []string{})
+
+		if err := rows.Scan(&names[idx], &pgValues); err != nil {
+			return SenderEnums{}, err
+		}
+
+		if err := pgValues.AssignTo(&valueArrays[idx]); err != nil {
+			return SenderEnums{}, err
+		}
+
+		enums[names[idx]] = valueArrays[idx]
+		idx++
+	}
+
+	senderEnums = enums
+
+	return enums, nil
+}

@@ -83,7 +83,7 @@ type JSONErrors struct {
 }
 
 func (r *Route) WriteValidatorError(err error) {
-	r.Write(&JSONErrors{Error: "Validation Error", ErrorData: valid.ErrorsByField(err)}, http.StatusOK)
+	r.Write(&JSONErrors{Error: "Validation Error", ErrorData: valid.ErrorsByField(err)}, http.StatusUnprocessableEntity)
 }
 
 // ** This looks like deadcode **

@@ -31,7 +31,6 @@ type UserValid struct {
 }
 
 //TODO data URL validation?
-
 type Arrays struct {
 	Data []byte `valid:"required"`
 }

@@ -128,18 +128,61 @@ func Test_CreateSendersFromCSVDataURL(t *testing.T) {
 			wantErr: wantErr{},
 		},
 		{
-			name: "unvalidated sender - blank values",
+			name: "blank address",
 			args: args{
 				csv: `account_id,address,country,channels,mms_provider_key,comment
-					,,,"[]",,`,
+					,,AU,"[""sms""]",,`,
+			},
+			want: want{
+				reply: &senderpb.CreateSendersFromCSVDataURLReply{},
+			},
+		},		{
+			name: "address not new - in database already",
+			args: args{
+				csv: `account_id,address,country,channels,mms_provider_key,comment
+					,FISH,AU,"[""sms""]",,`,
+			},
+			want: want{
+				reply: &senderpb.CreateSendersFromCSVDataURLReply{},
+			},
+		},
+		{
+			name: "invalid CSV number of fields wrong",
+			args: args{
+				csv: `account_id,address,country,channels,mms_provider_key,comment
+					,,,,,,,,,,`,
 			},
 			want: want{
 				reply: &senderpb.CreateSendersFromCSVDataURLReply{},
 			},
 			wantErr: wantErr{
-				status: status.New(codes.Unknown, `ERROR: null value in column "address" violates not-null constraint (SQLSTATE 23502)`),
+				status: status.New(codes.Unknown, `record on line 2: wrong number of fields`),
 				ok:     true, // the grpc service did respond to the call
 			},
+		},
+		{
+			name: "invalid CSV - empty",
+			args: args{
+				csv: ``,
+			},
+			want: want{
+				reply: &senderpb.CreateSendersFromCSVDataURLReply{},
+			},
+			wantErr: wantErr{
+				status: status.New(codes.Unknown, `empty csv file given`),
+				ok:     true, // the grpc service did respond to the call
+			},
+		},		{
+			name: "invalid CSV - no header",
+			args: args{
+				csv: `,,`,
+			},
+			want: want{
+				reply: &senderpb.CreateSendersFromCSVDataURLReply{
+					Senders: []*senderpb.Sender{},
+				},
+			},
+			wantErr: wantErr{},
 		},
 	}
 	for _, tt := range tests {
@@ -187,6 +230,15 @@ func Test_CreateSendersFromCSVDataURL(t *testing.T) {
 
 func setupForCreate(t *testing.T) *testDeps {
 	s := newSetup(t, tfx)
-
+	s.HaveInDatabase("sender", assertdb.Row{
+		"id":               s.uuids[0],
+		"account_id":       s.uuids[1],
+		"address":          "FISH",
+		"mms_provider_key": "optus",
+		"channels":         []string{"mms", "sms"},
+		"country":          "AU",
+		"comment":          "Slartibartfast",
+		"created_at":       s.dates[0],
+		"updated_at":       s.dates[0]})
 	return s
 }

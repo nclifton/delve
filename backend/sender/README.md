@@ -11,7 +11,7 @@ see [integration test readme](./integration_test/README.md)
 
 ## Mock RPC Service Client
 
-Trying out providing a generated mock for the ServiceClient for use in API unit tests and possibly in integration tests of domain services where the sender service is a dependency.
+Generated mock for the ServiceClient for use in API unit tests and possibly in integration tests of domain services where the sender service is a dependency.
 
 mock service client (`senderpb.MockServiceClient`) is generated using [ vektra/mockery ](https://github.com/vektra/mockery/blob/master/pkg/generator.go).
 
